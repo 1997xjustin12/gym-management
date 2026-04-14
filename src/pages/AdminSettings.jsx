@@ -24,6 +24,7 @@ export default function AdminSettings() {
     priceSemiAnnual: '',
     priceAnnual: '',
     telegramChatId: '',
+    telegramBotToken: '',
   });
   const [saving, setSaving] = useState(false);
   const fileRef = useRef();
@@ -38,7 +39,8 @@ export default function AdminSettings() {
       priceQuarterly:  settings.priceQuarterly  || '',
       priceSemiAnnual: settings.priceSemiAnnual || '',
       priceAnnual:     settings.priceAnnual     || '',
-      telegramChatId:  settings.telegramChatId  || '',
+      telegramChatId:   settings.telegramChatId   || '',
+      telegramBotToken: settings.telegramBotToken || '',
     }));
   }, [settings]);
 
@@ -194,7 +196,18 @@ export default function AdminSettings() {
               Get notified via Telegram when a member submits a payment request.
             </p>
             <div>
-              <label className="block text-slate-300 text-sm font-medium mb-1.5">Telegram Chat ID</label>
+              <label className="block text-slate-300 text-sm font-medium mb-1.5">Bot Token</label>
+              <input
+                type="text"
+                value={form.telegramBotToken}
+                onChange={(e) => set('telegramBotToken', e.target.value)}
+                placeholder="e.g. 7123456789:AAFxyz..."
+                className="w-full bg-slate-700 border border-slate-600 focus:border-sky-500 text-white rounded-xl px-4 py-3 outline-none transition-colors placeholder:text-slate-500 text-sm font-mono"
+              />
+              <p className="text-slate-500 text-xs mt-1.5">Get this from @BotFather on Telegram</p>
+            </div>
+            <div>
+              <label className="block text-slate-300 text-sm font-medium mb-1.5">Chat ID</label>
               <input
                 type="text"
                 value={form.telegramChatId}
@@ -203,14 +216,14 @@ export default function AdminSettings() {
                 className="w-full bg-slate-700 border border-slate-600 focus:border-sky-500 text-white rounded-xl px-4 py-3 outline-none transition-colors placeholder:text-slate-500 text-sm font-mono"
               />
               <p className="text-slate-500 text-xs mt-1.5">
-                Get your Chat ID: message your bot on Telegram, then open{' '}
+                Message your bot, then open{' '}
                 <span className="text-sky-400 font-mono">api.telegram.org/bot&#123;TOKEN&#125;/getUpdates</span>
               </p>
             </div>
-            {form.telegramChatId && (
+            {form.telegramBotToken && form.telegramChatId && (
               <div className="flex items-center gap-2 bg-sky-500/10 border border-sky-500/30 rounded-xl px-3 py-2">
                 <div className="w-2 h-2 bg-sky-400 rounded-full animate-pulse" />
-                <p className="text-sky-300 text-xs">Notifications will be sent to Chat ID: <span className="font-mono font-bold">{form.telegramChatId}</span></p>
+                <p className="text-sky-300 text-xs">Notifications active → Chat ID: <span className="font-mono font-bold">{form.telegramChatId}</span></p>
               </div>
             )}
           </div>

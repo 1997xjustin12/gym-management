@@ -50,7 +50,7 @@ const uploadPhoto = async (base64DataUrl, memberId) => {
     .upload(path, blob, { contentType: 'image/jpeg', upsert: true });
   if (error) throw error;
   const { data } = supabase.storage.from('member-photos').getPublicUrl(path);
-  return data.publicUrl;
+  return `${data.publicUrl}?v=${Date.now()}`;
 };
 
 const removePhoto = async (memberId) => {

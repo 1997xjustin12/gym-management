@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { Camera, User, Phone, Calendar, Tag, FileText, RefreshCw, Save, Trash2 } from 'lucide-react';
+import { Camera, User, Phone, Calendar, Tag, FileText, RefreshCw, Save, Trash2, AlertTriangle } from 'lucide-react';
 import { useGym } from '../context/GymContext';
 import Navbar from '../components/Navbar';
 import CameraCapture from '../components/CameraCapture';
@@ -22,11 +22,13 @@ export default function RegisterMember() {
   const { id } = useParams();
   const isEdit = Boolean(id);
   const navigate = useNavigate();
-  const { addMember, updateMember, getMemberById } = useGym();
+  const { addMember, updateMember, deleteMember, getMemberById } = useGym();
 
   const [form, setForm] = useState(EMPTY_FORM);
   const [showCamera, setShowCamera] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [deleting, setDeleting] = useState(false);
 
   useEffect(() => {
     if (isEdit && id) {
@@ -69,6 +71,19 @@ export default function RegisterMember() {
       toast.error(err.message || 'Something went wrong. Please try again.');
     } finally {
       setSaving(false);
+    }
+  };
+
+  const handleDelete = async () => {
+    setDeleting(true);
+    try {
+      await deleteMember(id);
+      toast.success('Member deleted.');
+      navigate('/admin/members');
+    } catch (err) {
+      toast.error(err.message || 'Failed to delete member.');
+      setDeleting(false);
+      setShowDeleteConfirm(false);
     }
   };
 
@@ -205,8 +220,60 @@ export default function RegisterMember() {
               </>
             )}
           </button>
+
+          {/* Delete button (edit mode only) */}
+          {isEdit && (
+            <button
+              type="button"
+              onClick={() => setShowDeleteConfirm(true)}
+              className="w-full flex items-center justify-center gap-2 bg-red-500/10 hover:bg-red-500/20 border border-red-500/30 text-red-400 font-bold py-3.5 rounded-2xl transition-colors text-sm"
+            >
+              <Trash2 size={16} /> Delete Member
+            </button>
+          )}
         </form>
       </div>
+
+      {/* Delete Confirmation Modal */}
+      {showDeleteConfirm && (
+        <div className="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4">
+          <div className="bg-slate-800 rounded-2xl w-full max-w-sm border border-slate-700 shadow-2xl">
+            <div className="px-5 py-4 border-b border-slate-700 flex items-center gap-3">
+              <div className="w-9 h-9 bg-red-500/20 rounded-xl flex items-center justify-center shrink-0">
+                <AlertTriangle size={18} className="text-red-400" />
+              </div>
+              <div>
+                <h3 className="text-white font-bold">Delete Member</h3>
+                <p className="text-slate-400 text-sm">{form.name}</p>
+              </div>
+            </div>
+            <div className="p-5 space-y-4">
+              <p className="text-slate-300 text-sm">
+                This will permanently delete this member and their photo. This action cannot be undone.
+              </p>
+              <div className="flex gap-3">
+                <button
+                  onClick={() => setShowDeleteConfirm(false)}
+                  disabled={deleting}
+                  className="flex-1 bg-slate-700 hover:bg-slate-600 text-white py-3 rounded-xl font-medium text-sm transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={handleDelete}
+                  disabled={deleting}
+                  className="flex-1 bg-red-500 hover:bg-red-600 disabled:opacity-50 text-white py-3 rounded-xl font-bold text-sm transition-colors flex items-center justify-center gap-2"
+                >
+                  {deleting
+                    ? <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                    : <><Trash2 size={14} /> Delete</>
+                  }
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Camera Modal */}
       {showCamera && (

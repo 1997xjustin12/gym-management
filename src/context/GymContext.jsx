@@ -108,8 +108,19 @@ export function GymProvider({ children }) {
     }
   };
 
+  // ── Duplicate name check ─────────────────────────────────────
+  const isNameTaken = (name, excludeId = null) => {
+    const normalized = name.trim().toLowerCase();
+    return members.some(
+      (m) => m.name.trim().toLowerCase() === normalized && m.id !== excludeId
+    );
+  };
+
   // ── CRUD ─────────────────────────────────────────────────────
   const addMember = async (formData) => {
+    if (isNameTaken(formData.name)) {
+      throw new Error(`A member named "${formData.name}" already exists.`);
+    }
     const endDate = calculateEndDate(formData.membershipStartDate, formData.membershipType);
     const { data: inserted, error: insertError } = await supabase
       .from('members')
@@ -143,6 +154,9 @@ export function GymProvider({ children }) {
   };
 
   const updateMember = async (id, formData) => {
+    if (isNameTaken(formData.name, id)) {
+      throw new Error(`A member named "${formData.name}" already exists.`);
+    }
     const existing = members.find((m) => m.id === id);
     const startDate = formData.membershipStartDate ?? existing?.membershipStartDate;
     const membershipType = formData.membershipType ?? existing?.membershipType;

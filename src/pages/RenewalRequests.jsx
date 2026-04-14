@@ -228,7 +228,7 @@ export default function RenewalRequests() {
                       </div>
 
                       {/* Actions */}
-                      {req.status === 'pending' && (
+                      {(req.status === 'pending' || req.status === 'rejected') && (
                         <div className="flex gap-2 px-5 pb-4">
                           <button
                             onClick={() => handleApprove(req)}
@@ -240,13 +240,15 @@ export default function RenewalRequests() {
                               : <><CheckCircle size={16} /> Approve &amp; Renew</>
                             }
                           </button>
-                          <button
-                            onClick={() => openReject(req)}
-                            disabled={busy}
-                            className="flex-1 flex items-center justify-center gap-2 bg-red-500/10 hover:bg-red-500/20 border border-red-500/30 text-red-400 font-bold py-2.5 rounded-xl transition-colors text-sm"
-                          >
-                            <XCircle size={16} /> Reject
-                          </button>
+                          {req.status === 'pending' && (
+                            <button
+                              onClick={() => openReject(req)}
+                              disabled={busy}
+                              className="flex-1 flex items-center justify-center gap-2 bg-red-500/10 hover:bg-red-500/20 border border-red-500/30 text-red-400 font-bold py-2.5 rounded-xl transition-colors text-sm"
+                            >
+                              <XCircle size={16} /> Reject
+                            </button>
+                          )}
                         </div>
                       )}
                     </div>

@@ -16,7 +16,7 @@ const PLAN_PRICE_KEY = {
 };
 
 export default function MemberPortal() {
-  const { findMembers, getMemberStatus, MEMBERSHIP_OPTIONS, settings, submitRenewalRequest } = useGym();
+  const { findMembers, getMemberStatus, MEMBERSHIP_OPTIONS, settings, submitRenewalRequest, renewalRequests } = useGym();
   const [query, setQuery]     = useState('');
   const [results, setResults] = useState(null);
   const [searched, setSearched] = useState(false);
@@ -143,6 +143,9 @@ export default function MemberPortal() {
               results.map((member) => {
                 const { status, daysLeft } = getMemberStatus(member);
                 const needsRenewal = status === 'expiring' || status === 'expired';
+                const latestRequest = renewalRequests
+                  .filter((r) => r.member_id === member.id)
+                  .sort((a, b) => new Date(b.created_at) - new Date(a.created_at))[0];
                 return (
                   <div
                     key={member.id}
@@ -214,13 +217,45 @@ export default function MemberPortal() {
                         </div>
                       )}
 
+                      {/* Latest renewal request status */}
+                      {latestRequest && (
+                        <div className={`rounded-xl p-4 space-y-1 border ${
+                          latestRequest.status === 'pending'
+                            ? 'bg-orange-500/10 border-orange-500/30'
+                            : latestRequest.status === 'rejected'
+                            ? 'bg-red-500/10 border-red-500/30'
+                            : 'bg-green-500/10 border-green-500/30'
+                        }`}>
+                          <div className="flex items-center gap-2">
+                            {latestRequest.status === 'pending' && <Clock size={14} className="text-orange-400" />}
+                            {latestRequest.status === 'rejected' && <XCircle size={14} className="text-red-400" />}
+                            {latestRequest.status === 'approved' && <CheckCircle size={14} className="text-green-400" />}
+                            <p className={`text-sm font-semibold ${
+                              latestRequest.status === 'pending' ? 'text-orange-300'
+                              : latestRequest.status === 'rejected' ? 'text-red-300'
+                              : 'text-green-300'
+                            }`}>
+                              Payment {latestRequest.status === 'pending' ? 'Pending Review'
+                                : latestRequest.status === 'rejected' ? 'Rejected'
+                                : 'Approved'}
+                            </p>
+                          </div>
+                          {latestRequest.status === 'rejected' && latestRequest.admin_notes && (
+                            <p className="text-red-400/80 text-xs pl-5">Reason: {latestRequest.admin_notes}</p>
+                          )}
+                          {latestRequest.status === 'pending' && (
+                            <p className="text-orange-400/70 text-xs pl-5">Your payment is being reviewed by the admin.</p>
+                          )}
+                        </div>
+                      )}
+
                       {/* Pay via GCash button */}
-                      {needsRenewal && settings.gcashNumber && (
+                      {needsRenewal && settings.gcashNumber && latestRequest?.status !== 'pending' && (
                         <button
                           onClick={() => setRenewTarget(member)}
                           className="w-full flex items-center justify-center gap-2 bg-green-500 hover:bg-green-600 text-white font-bold py-3 rounded-xl transition-colors"
                         >
-                          <CreditCard size={18} /> Pay via GCash
+                          <CreditCard size={18} /> {latestRequest?.status === 'rejected' ? 'Resubmit Payment' : 'Pay via GCash'}
                         </button>
                       )}
                     </div>

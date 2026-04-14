@@ -69,8 +69,8 @@ export default function CameraCapture({ onCapture, onClose }) {
   };
 
   return (
-    <div className="fixed inset-0 bg-black/90 z-50 flex items-end sm:items-center justify-center">
-      <div className="bg-slate-800 rounded-t-3xl sm:rounded-2xl w-full max-w-sm overflow-hidden shadow-2xl">
+    <div className="fixed inset-0 bg-black/90 z-50 flex items-center justify-center p-4">
+      <div className="bg-slate-800 rounded-2xl w-full max-w-sm overflow-hidden shadow-2xl">
         {/* Header */}
         <div className="flex items-center justify-between px-5 py-4 border-b border-slate-700">
           <h3 className="text-white font-semibold text-lg">Take Photo</h3>

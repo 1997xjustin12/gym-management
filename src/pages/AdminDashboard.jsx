@@ -1,7 +1,9 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Users, UserCheck, AlertTriangle, UserX, UserPlus, MessageSquare, ChevronRight, Send } from 'lucide-react';
+import { Users, UserCheck, AlertTriangle, UserX, UserPlus, MessageSquare, ChevronRight, Send, Download } from 'lucide-react';
 import { useGym } from '../context/GymContext';
+import { exportMembersToExcel } from '../utils/exportExcel';
+import toast from 'react-hot-toast';
 import Navbar from '../components/Navbar';
 import StatusBadge from '../components/StatusBadge';
 import SMSModal from '../components/SMSModal';
@@ -123,7 +125,7 @@ export default function AdminDashboard() {
         {/* Quick Actions */}
         <div>
           <h2 className="text-white font-semibold mb-3">Quick Actions</h2>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
             <button
               onClick={() => navigate('/admin/register')}
               className="flex items-center gap-4 bg-slate-800 hover:bg-slate-750 border border-slate-700 hover:border-orange-500/50 rounded-2xl p-4 text-left transition-all"
@@ -134,6 +136,20 @@ export default function AdminDashboard() {
               <div>
                 <p className="text-white font-semibold">Register Member</p>
                 <p className="text-slate-400 text-xs">Add a new gym member</p>
+              </div>
+              <ChevronRight size={18} className="ml-auto text-slate-600" />
+            </button>
+
+            <button
+              onClick={() => { exportMembersToExcel(members); toast.success('Excel file downloaded!'); }}
+              className="flex items-center gap-4 bg-slate-800 hover:bg-slate-750 border border-slate-700 hover:border-green-500/50 rounded-2xl p-4 text-left transition-all"
+            >
+              <div className="w-11 h-11 bg-green-500/20 rounded-xl flex items-center justify-center">
+                <Download size={22} className="text-green-400" />
+              </div>
+              <div>
+                <p className="text-white font-semibold">Export Members</p>
+                <p className="text-slate-400 text-xs">Download Excel report</p>
               </div>
               <ChevronRight size={18} className="ml-auto text-slate-600" />
             </button>

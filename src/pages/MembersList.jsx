@@ -1,11 +1,12 @@
 import { useState, useMemo } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { Search, UserPlus, Pencil, MessageSquare, Trash2, X } from 'lucide-react';
+import { Search, UserPlus, Pencil, MessageSquare, Trash2, X, Download } from 'lucide-react';
 import { useGym } from '../context/GymContext';
 import Navbar from '../components/Navbar';
 import StatusBadge from '../components/StatusBadge';
 import SMSModal from '../components/SMSModal';
 import { formatDate, formatPhoneDisplay } from '../utils/helpers';
+import { exportMembersToExcel } from '../utils/exportExcel';
 import toast from 'react-hot-toast';
 
 const FILTERS = ['all', 'active', 'expiring', 'expired'];
@@ -62,12 +63,25 @@ export default function MembersList() {
             <h1 className="text-xl font-bold text-white">All Members</h1>
             <p className="text-slate-400 text-sm">{filtered.length} of {members.length}</p>
           </div>
-          <button
-            onClick={() => navigate('/admin/register')}
-            className="flex items-center gap-2 bg-orange-500 hover:bg-orange-600 text-white px-4 py-2.5 rounded-xl font-semibold text-sm transition-colors"
-          >
-            <UserPlus size={16} /> Add
-          </button>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => {
+                exportMembersToExcel(members);
+                toast.success('Excel file downloaded!');
+              }}
+              className="flex items-center gap-2 bg-green-600 hover:bg-green-700 text-white px-3 py-2.5 rounded-xl font-semibold text-sm transition-colors"
+              title="Export to Excel"
+            >
+              <Download size={16} />
+              <span className="hidden sm:block">Export</span>
+            </button>
+            <button
+              onClick={() => navigate('/admin/register')}
+              className="flex items-center gap-2 bg-orange-500 hover:bg-orange-600 text-white px-4 py-2.5 rounded-xl font-semibold text-sm transition-colors"
+            >
+              <UserPlus size={16} /> Add
+            </button>
+          </div>
         </div>
 
         {/* Search */}

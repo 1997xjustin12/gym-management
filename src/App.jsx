@@ -29,7 +29,7 @@ function LoadingScreen() {
 }
 
 export default function App() {
-  const { loading } = useGym();
+  const { loading, authLoading } = useGym();
 
   return (
     <>
@@ -48,7 +48,7 @@ export default function App() {
         }}
       />
 
-      {loading ? (
+      {loading || authLoading ? (
         <LoadingScreen />
       ) : (
         <Routes>

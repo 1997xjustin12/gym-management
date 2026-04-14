@@ -9,8 +9,8 @@ export default function Navbar({ title, showBack }) {
   const location = useLocation();
   const expiring = getExpiringMembers();
 
-  const handleLogout = () => {
-    adminLogout();
+  const handleLogout = async () => {
+    await adminLogout();
     toast.success('Logged out');
     navigate('/');
   };

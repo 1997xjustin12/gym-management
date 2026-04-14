@@ -66,7 +66,7 @@ export default function RegisterMember() {
       navigate('/admin/members');
     } catch (err) {
       console.error(err);
-      toast.error('Something went wrong. Please try again.');
+      toast.error(err.message || 'Something went wrong. Please try again.');
     } finally {
       setSaving(false);
     }

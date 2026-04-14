@@ -54,7 +54,12 @@ export default function CameraCapture({ onCapture, onClose }) {
     const canvas = canvasRef.current;
     canvas.width = w;
     canvas.height = h;
-    canvas.getContext('2d').drawImage(video, 0, 0, w, h);
+    const ctx = canvas.getContext('2d');
+    if (facingMode === 'user') {
+      ctx.translate(w, 0);
+      ctx.scale(-1, 1);
+    }
+    ctx.drawImage(video, 0, 0, w, h);
     const dataUrl = canvas.toDataURL('image/jpeg', 0.82);
     setCapturedPhoto(dataUrl);
     if (streamRef.current) {

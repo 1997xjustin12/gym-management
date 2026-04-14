@@ -1,6 +1,7 @@
 import { useNavigate } from 'react-router-dom';
-import { Dumbbell, ShieldCheck, User } from 'lucide-react';
+import { ShieldCheck, User } from 'lucide-react';
 import { useGym } from '../context/GymContext';
+import GymLogo from '../components/GymLogo';
 
 export default function Home() {
   const navigate = useNavigate();
@@ -11,17 +12,10 @@ export default function Home() {
       {/* Hero */}
       <div className="flex-1 flex flex-col items-center justify-center px-6 py-16 text-center">
         {/* Logo */}
-        <div className="mb-6 relative">
-          <div className="w-20 h-20 bg-orange-500 rounded-2xl flex items-center justify-center shadow-lg shadow-orange-500/30">
-            <Dumbbell size={40} className="text-white" />
-          </div>
-          <div className="absolute -inset-1 bg-orange-500/20 rounded-3xl blur-xl -z-10" />
+        <div className="mb-8 relative">
+          <GymLogo size={160} />
+          <div className="absolute -inset-4 bg-red-500/10 rounded-full blur-2xl -z-10" />
         </div>
-
-        <h1 className="text-4xl sm:text-5xl font-black text-white mb-2 tracking-tight">
-          POWER <span className="text-orange-500">FITNESS</span> GYM
-        </h1>
-        <div className="w-12 h-1 bg-orange-500 rounded-full mx-auto mb-10" />
 
         {/* Portal Cards */}
         <div className="w-full max-w-sm space-y-4">

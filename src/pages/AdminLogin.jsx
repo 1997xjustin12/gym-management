@@ -1,8 +1,9 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { Dumbbell, Lock, Eye, EyeOff, ArrowLeft, Mail, ShieldAlert } from 'lucide-react';
+import { Lock, Eye, EyeOff, ArrowLeft, Mail, ShieldAlert } from 'lucide-react';
 import { useGym } from '../context/GymContext';
 import toast from 'react-hot-toast';
+import GymLogo from '../components/GymLogo';
 
 const MAX_ATTEMPTS = 5;
 const LOCKOUT_MS = 5 * 60 * 1000; // 5 minutes
@@ -117,9 +118,7 @@ export default function AdminLogin() {
 
         {/* Logo */}
         <div className="flex items-center gap-3 mb-8">
-          <div className="w-12 h-12 bg-orange-500 rounded-xl flex items-center justify-center shadow-lg shadow-orange-500/30">
-            <Dumbbell size={24} className="text-white" />
-          </div>
+          <GymLogo size={56} />
           <div>
             <h1 className="text-white font-black text-xl tracking-tight">
               POWER<span className="text-orange-500"> FITNESS</span>

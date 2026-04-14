@@ -1,7 +1,8 @@
 import { Link, useNavigate, useLocation } from 'react-router-dom';
-import { Dumbbell, LogOut, Users, LayoutDashboard, UserPlus, ArrowLeft, ClipboardList } from 'lucide-react';
+import { LogOut, Users, LayoutDashboard, UserPlus, ArrowLeft, ClipboardList } from 'lucide-react';
 import { useGym } from '../context/GymContext';
 import toast from 'react-hot-toast';
+import GymLogo from './GymLogo';
 
 export default function Navbar({ title, showBack }) {
   const { isAdminLoggedIn, adminLogout, getExpiringMembers } = useGym();
@@ -29,9 +30,7 @@ export default function Navbar({ title, showBack }) {
             </button>
           ) : (
             <Link to={isAdminLoggedIn ? '/admin' : '/'} className="flex items-center gap-2 shrink-0">
-              <div className="w-8 h-8 bg-orange-500 rounded-lg flex items-center justify-center">
-                <Dumbbell size={16} className="text-white" />
-              </div>
+              <GymLogo size={34} />
               <span className="font-bold text-white hidden sm:block">Power Fitness</span>
             </Link>
           )}

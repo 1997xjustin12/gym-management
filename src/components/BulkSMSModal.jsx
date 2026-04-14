@@ -5,7 +5,7 @@ import { useGym } from '../context/GymContext';
 import toast from 'react-hot-toast';
 
 export default function BulkSMSModal({ onClose }) {
-  const { getExpiringMembers, getMemberStatus } = useGym();
+  const { getExpiringMembers, getMemberStatus, logAction } = useGym();
   const expiring = getExpiringMembers();
   const [sent, setSent] = useState({});
 
@@ -13,11 +13,12 @@ export default function BulkSMSModal({ onClose }) {
   const allSent = expiring.length > 0 && expiring.every((m) => sent[m.id]);
   const sentCount = Object.keys(sent).length;
 
-  const handleSend = (member) => {
+  const handleSend = async (member) => {
     const { daysLeft } = getMemberStatus(member);
     const message = buildSmsMessage(member, daysLeft);
     openSmsApp(member.contactNumber, message);
     markSent(member.id);
+    await logAction('SMS_SENT', `Sent SMS notification to: ${member.name}`, member.name, member.id);
   };
 
   const handleCopyAll = () => {

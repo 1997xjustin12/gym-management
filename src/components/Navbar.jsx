@@ -1,5 +1,5 @@
 import { Link, useNavigate, useLocation } from 'react-router-dom';
-import { Dumbbell, LogOut, Users, LayoutDashboard, UserPlus, ArrowLeft } from 'lucide-react';
+import { Dumbbell, LogOut, Users, LayoutDashboard, UserPlus, ArrowLeft, ClipboardList } from 'lucide-react';
 import { useGym } from '../context/GymContext';
 import toast from 'react-hot-toast';
 
@@ -46,6 +46,7 @@ export default function Navbar({ title, showBack }) {
             <NavLink to="/admin" icon={<LayoutDashboard size={16} />} label="Dashboard" active={location.pathname === '/admin'} />
             <NavLink to="/admin/members" icon={<Users size={16} />} label="Members" active={location.pathname === '/admin/members'} badge={expiring.length} />
             <NavLink to="/admin/register" icon={<UserPlus size={16} />} label="Add" active={location.pathname === '/admin/register'} />
+            <NavLink to="/admin/logs" icon={<ClipboardList size={16} />} label="Logs" active={location.pathname === '/admin/logs'} />
             <button
               onClick={handleLogout}
               className="ml-1 p-2 text-slate-400 hover:text-red-400 hover:bg-red-400/10 rounded-lg transition-colors"

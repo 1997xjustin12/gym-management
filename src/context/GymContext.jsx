@@ -94,6 +94,20 @@ export function GymProvider({ children }) {
     return addDays(new Date(startDate), days).toISOString().split('T')[0];
   };
 
+  // ── Activity logging ─────────────────────────────────────────
+  const logAction = async (action, description, memberName = null, memberId = null) => {
+    try {
+      await supabase.from('activity_logs').insert([{
+        action,
+        description,
+        member_name: memberName,
+        member_id: memberId,
+      }]);
+    } catch (err) {
+      console.error('Log failed:', err);
+    }
+  };
+
   // ── CRUD ─────────────────────────────────────────────────────
   const addMember = async (formData) => {
     const endDate = calculateEndDate(formData.membershipStartDate, formData.membershipType);
@@ -124,6 +138,7 @@ export function GymProvider({ children }) {
 
     const member = toMember(inserted);
     setMembers((prev) => [member, ...prev]);
+    await logAction('MEMBER_ADDED', `Registered new member: ${member.name}`, member.name, member.id);
     return member;
   };
 
@@ -162,14 +177,22 @@ export function GymProvider({ children }) {
 
     const updated = toMember(data);
     setMembers((prev) => prev.map((m) => (m.id === id ? updated : m)));
+    const isRenewal = existing?.membershipStartDate !== startDate;
+    if (isRenewal) {
+      await logAction('MEMBERSHIP_RENEWED', `Renewed membership for: ${updated.name}`, updated.name, id);
+    } else {
+      await logAction('MEMBER_UPDATED', `Updated member info: ${updated.name}`, updated.name, id);
+    }
     return updated;
   };
 
   const deleteMember = async (id) => {
+    const member = members.find((m) => m.id === id);
     await removePhoto(id);
     const { error } = await supabase.from('members').delete().eq('id', id);
     if (error) throw error;
     setMembers((prev) => prev.filter((m) => m.id !== id));
+    await logAction('MEMBER_DELETED', `Removed member: ${member?.name}`, member?.name, id);
   };
 
   const getMemberById = (id) => members.find((m) => m.id === id);
@@ -222,6 +245,7 @@ export function GymProvider({ children }) {
         getExpiringMembers,
         adminLogin,
         adminLogout,
+        logAction,
         MEMBERSHIP_OPTIONS,
         refreshMembers: loadMembers,
       }}

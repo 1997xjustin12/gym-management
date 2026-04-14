@@ -1,8 +1,10 @@
 import { X, MessageSquare, Copy, ExternalLink } from 'lucide-react';
 import { buildSmsMessage, openSmsApp, formatPhoneDisplay } from '../utils/helpers';
+import { useGym } from '../context/GymContext';
 import toast from 'react-hot-toast';
 
 export default function SMSModal({ member, daysLeft, onClose }) {
+  const { logAction } = useGym();
   const message = buildSmsMessage(member, daysLeft);
 
   const handleCopy = () => {
@@ -11,9 +13,10 @@ export default function SMSModal({ member, daysLeft, onClose }) {
     });
   };
 
-  const handleOpenSms = () => {
+  const handleOpenSms = async () => {
     openSmsApp(member.contactNumber, message);
     toast.success(`Opening SMS for ${member.name}`);
+    await logAction('SMS_SENT', `Sent SMS notification to: ${member.name}`, member.name, member.id);
   };
 
   return (

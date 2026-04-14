@@ -8,6 +8,7 @@ import AdminDashboard from './pages/AdminDashboard';
 import MembersList from './pages/MembersList';
 import RegisterMember from './pages/RegisterMember';
 import MemberPortal from './pages/MemberPortal';
+import AdminLogs from './pages/AdminLogs';
 
 function PrivateRoute({ children }) {
   const { isAdminLoggedIn } = useGym();
@@ -58,6 +59,7 @@ export default function App() {
           <Route path="/admin/members" element={<PrivateRoute><MembersList /></PrivateRoute>} />
           <Route path="/admin/register" element={<PrivateRoute><RegisterMember /></PrivateRoute>} />
           <Route path="/admin/members/:id/edit" element={<PrivateRoute><RegisterMember /></PrivateRoute>} />
+          <Route path="/admin/logs" element={<PrivateRoute><AdminLogs /></PrivateRoute>} />
           <Route path="/member" element={<MemberPortal />} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>

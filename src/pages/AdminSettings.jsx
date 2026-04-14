@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { Save, Upload, X, Settings } from 'lucide-react';
+import { Save, Upload, X, Settings, Send } from 'lucide-react';
 import { useGym } from '../context/GymContext';
 import Navbar from '../components/Navbar';
 import toast from 'react-hot-toast';
@@ -23,6 +23,7 @@ export default function AdminSettings() {
     priceQuarterly: '',
     priceSemiAnnual: '',
     priceAnnual: '',
+    telegramChatId: '',
   });
   const [saving, setSaving] = useState(false);
   const fileRef = useRef();
@@ -33,10 +34,11 @@ export default function AdminSettings() {
       gcashNumber:    settings.gcashNumber,
       gcashName:      settings.gcashName,
       gcashQrUrl:     settings.gcashQrUrl,
-      priceMonthly:   settings.priceMonthly   || '',
-      priceQuarterly: settings.priceQuarterly  || '',
-      priceSemiAnnual:settings.priceSemiAnnual || '',
-      priceAnnual:    settings.priceAnnual     || '',
+      priceMonthly:    settings.priceMonthly    || '',
+      priceQuarterly:  settings.priceQuarterly  || '',
+      priceSemiAnnual: settings.priceSemiAnnual || '',
+      priceAnnual:     settings.priceAnnual     || '',
+      telegramChatId:  settings.telegramChatId  || '',
     }));
   }, [settings]);
 
@@ -180,6 +182,37 @@ export default function AdminSettings() {
                 </div>
               ))}
             </div>
+          </div>
+
+          {/* Telegram Notifications */}
+          <div className="bg-slate-800 rounded-2xl border border-slate-700/50 p-5 space-y-4">
+            <div className="flex items-center gap-2">
+              <Send size={16} className="text-sky-400" />
+              <h2 className="text-white font-semibold text-base">Telegram Notifications</h2>
+            </div>
+            <p className="text-slate-500 text-xs -mt-2">
+              Get notified via Telegram when a member submits a payment request.
+            </p>
+            <div>
+              <label className="block text-slate-300 text-sm font-medium mb-1.5">Telegram Chat ID</label>
+              <input
+                type="text"
+                value={form.telegramChatId}
+                onChange={(e) => set('telegramChatId', e.target.value)}
+                placeholder="e.g. 123456789"
+                className="w-full bg-slate-700 border border-slate-600 focus:border-sky-500 text-white rounded-xl px-4 py-3 outline-none transition-colors placeholder:text-slate-500 text-sm font-mono"
+              />
+              <p className="text-slate-500 text-xs mt-1.5">
+                Get your Chat ID: message your bot on Telegram, then open{' '}
+                <span className="text-sky-400 font-mono">api.telegram.org/bot&#123;TOKEN&#125;/getUpdates</span>
+              </p>
+            </div>
+            {form.telegramChatId && (
+              <div className="flex items-center gap-2 bg-sky-500/10 border border-sky-500/30 rounded-xl px-3 py-2">
+                <div className="w-2 h-2 bg-sky-400 rounded-full animate-pulse" />
+                <p className="text-sky-300 text-xs">Notifications will be sent to Chat ID: <span className="font-mono font-bold">{form.telegramChatId}</span></p>
+              </div>
+            )}
           </div>
 
           <button

@@ -37,6 +37,7 @@ const toSettings = (row) => ({
   priceQuarterly: Number(row.price_quarterly) || 0,
   priceSemiAnnual: Number(row.price_semi_annual) || 0,
   priceAnnual: Number(row.price_annual) || 0,
+  telegramChatId: row.telegram_chat_id || '',
 });
 
 const isBase64 = (str) => typeof str === 'string' && str.startsWith('data:');
@@ -70,6 +71,7 @@ export function GymProvider({ children }) {
     priceQuarterly: 0,
     priceSemiAnnual: 0,
     priceAnnual: 0,
+    telegramChatId: '',
   });
   const [renewalRequests, setRenewalRequests] = useState([]);
 
@@ -161,6 +163,7 @@ export function GymProvider({ children }) {
       price_quarterly: Number(formData.priceQuarterly) || 0,
       price_semi_annual: Number(formData.priceSemiAnnual) || 0,
       price_annual: Number(formData.priceAnnual) || 0,
+      telegram_chat_id: formData.telegramChatId || '',
       updated_at: new Date().toISOString(),
     });
     if (error) throw error;

@@ -1,5 +1,5 @@
 import { useNavigate } from 'react-router-dom';
-import { ShieldCheck, User } from 'lucide-react';
+import { ShieldCheck, User, MapPin } from 'lucide-react';
 import { useGym } from '../context/GymContext';
 import GymLogo from '../components/GymLogo';
 
@@ -20,7 +20,13 @@ export default function Home() {
         <h1 className="text-4xl sm:text-5xl font-black text-white mb-2 tracking-tight">
           POWER <span className="text-orange-500">FITNESS</span> GYM
         </h1>
-        <div className="w-12 h-1 bg-orange-500 rounded-full mx-auto mb-10" />
+        <div className="w-12 h-1 bg-orange-500 rounded-full mx-auto mb-4" />
+
+        {/* Address */}
+        <div className="flex items-center justify-center gap-1.5 text-slate-400 text-sm mb-10">
+          <MapPin size={14} className="text-orange-500 shrink-0" />
+          <span>2nd Floor Fernandez Bldg, Saavedra St, Toril, Davao City</span>
+        </div>
 
         {/* Portal Cards */}
         <div className="w-full max-w-sm space-y-4">
@@ -63,9 +69,14 @@ export default function Home() {
       </div>
 
       {/* Footer */}
-      <p className="text-center text-slate-600 text-xs pb-6">
-        © {new Date().getFullYear()} Power Fitness Gym · All rights reserved
-      </p>
+      <div className="text-center pb-6 space-y-1">
+        <p className="text-slate-600 text-xs">
+          © {new Date().getFullYear()} Power Fitness Gym · All rights reserved
+        </p>
+        <p className="text-slate-700 text-xs">
+          2nd Floor Fernandez Bldg, Saavedra St, Toril, Davao City, Davao del Sur
+        </p>
+      </div>
     </div>
   );
 }

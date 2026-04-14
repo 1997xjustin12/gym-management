@@ -1,5 +1,6 @@
 import * as XLSX from 'xlsx';
 import { format, parseISO } from 'date-fns';
+import { setLastBackupDate } from './backup';
 
 const formatDate = (dateStr) => {
   try { return format(parseISO(dateStr), 'MMM dd, yyyy'); } catch { return dateStr; }
@@ -78,4 +79,5 @@ export const exportMembersToExcel = (members, filenamePrefix = 'PowerFitnessGym_
 
   const filename = `${filenamePrefix}_${format(new Date(), 'yyyy-MM-dd')}.xlsx`;
   XLSX.writeFile(workbook, filename);
+  setLastBackupDate();
 };

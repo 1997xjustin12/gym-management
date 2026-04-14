@@ -1,20 +1,26 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Users, UserCheck, AlertTriangle, UserX, UserPlus, MessageSquare, ChevronRight, Send, Download } from 'lucide-react';
+import { Users, UserCheck, AlertTriangle, UserX, UserPlus, MessageSquare, ChevronRight, Send, Download, RefreshCw, ShieldAlert } from 'lucide-react';
 import { useGym } from '../context/GymContext';
 import { exportMembersToExcel } from '../utils/exportExcel';
+import { exportJSON, getDaysSinceBackup } from '../utils/backup';
 import toast from 'react-hot-toast';
 import Navbar from '../components/Navbar';
 import StatusBadge from '../components/StatusBadge';
 import SMSModal from '../components/SMSModal';
 import BulkSMSModal from '../components/BulkSMSModal';
+import RestoreModal from '../components/RestoreModal';
 import { formatDate, formatPhoneDisplay } from '../utils/helpers';
 
 export default function AdminDashboard() {
-  const { members, getMemberStatus, getExpiringMembers } = useGym();
+  const { members, getMemberStatus, getExpiringMembers, refreshMembers } = useGym();
   const navigate = useNavigate();
   const [smsTarget, setSmsTarget] = useState(null);
   const [showBulkSMS, setShowBulkSMS] = useState(false);
+  const [showRestore, setShowRestore] = useState(false);
+
+  const daysSinceBackup = getDaysSinceBackup();
+  const backupWarning = daysSinceBackup === null || daysSinceBackup >= 7;
 
   const expiring = getExpiringMembers();
   const active = members.filter((m) => getMemberStatus(m).status === 'active');
@@ -37,6 +43,29 @@ export default function AdminDashboard() {
           <h1 className="text-2xl font-bold text-white">Dashboard</h1>
           <p className="text-slate-400 text-sm">Overview of your gym memberships</p>
         </div>
+
+        {/* Backup Reminder */}
+        {backupWarning && (
+          <div className="flex items-start gap-3 bg-yellow-500/10 border border-yellow-500/40 rounded-2xl p-4">
+            <div className="w-9 h-9 bg-yellow-500/20 rounded-xl flex items-center justify-center shrink-0">
+              <ShieldAlert size={18} className="text-yellow-400" />
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="text-yellow-300 font-semibold text-sm">
+                {daysSinceBackup === null ? 'No backup found!' : `Last backup was ${daysSinceBackup} days ago`}
+              </p>
+              <p className="text-yellow-400/70 text-xs mt-0.5">
+                Protect your data — download a backup regularly in case of data loss.
+              </p>
+            </div>
+            <button
+              onClick={() => { exportJSON(members); toast.success('Backup downloaded!'); }}
+              className="shrink-0 flex items-center gap-1.5 bg-yellow-500 hover:bg-yellow-600 text-slate-900 font-bold text-xs px-3 py-2 rounded-xl transition-colors"
+            >
+              <Download size={13} /> Backup Now
+            </button>
+          </div>
+        )}
 
         {/* Stats */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
@@ -140,16 +169,42 @@ export default function AdminDashboard() {
               <ChevronRight size={18} className="ml-auto text-slate-600" />
             </button>
 
+            <div className="bg-slate-800 border border-slate-700 hover:border-green-500/50 rounded-2xl p-4 transition-all">
+              <div className="flex items-center gap-3 mb-3">
+                <div className="w-11 h-11 bg-green-500/20 rounded-xl flex items-center justify-center">
+                  <Download size={22} className="text-green-400" />
+                </div>
+                <div>
+                  <p className="text-white font-semibold">Export / Backup</p>
+                  <p className="text-slate-400 text-xs">Download your member data</p>
+                </div>
+              </div>
+              <div className="flex gap-2">
+                <button
+                  onClick={() => { exportMembersToExcel(members); toast.success('Excel downloaded!'); }}
+                  className="flex-1 flex items-center justify-center gap-1.5 bg-green-600 hover:bg-green-700 text-white text-xs font-semibold py-2 rounded-xl transition-colors"
+                >
+                  <Download size={13} /> Excel
+                </button>
+                <button
+                  onClick={() => { exportJSON(members); toast.success('Backup downloaded!'); }}
+                  className="flex-1 flex items-center justify-center gap-1.5 bg-sky-600 hover:bg-sky-700 text-white text-xs font-semibold py-2 rounded-xl transition-colors"
+                >
+                  <Download size={13} /> JSON Backup
+                </button>
+              </div>
+            </div>
+
             <button
-              onClick={() => { exportMembersToExcel(members); toast.success('Excel file downloaded!'); }}
-              className="flex items-center gap-4 bg-slate-800 hover:bg-slate-750 border border-slate-700 hover:border-green-500/50 rounded-2xl p-4 text-left transition-all"
+              onClick={() => setShowRestore(true)}
+              className="flex items-center gap-4 bg-slate-800 hover:bg-slate-750 border border-slate-700 hover:border-sky-500/50 rounded-2xl p-4 text-left transition-all"
             >
-              <div className="w-11 h-11 bg-green-500/20 rounded-xl flex items-center justify-center">
-                <Download size={22} className="text-green-400" />
+              <div className="w-11 h-11 bg-sky-500/20 rounded-xl flex items-center justify-center">
+                <RefreshCw size={22} className="text-sky-400" />
               </div>
               <div>
-                <p className="text-white font-semibold">Export Members</p>
-                <p className="text-slate-400 text-xs">Download Excel report</p>
+                <p className="text-white font-semibold">Restore Backup</p>
+                <p className="text-slate-400 text-xs">Import from backup file</p>
               </div>
               <ChevronRight size={18} className="ml-auto text-slate-600" />
             </button>
@@ -222,6 +277,14 @@ export default function AdminDashboard() {
       {/* Bulk SMS Modal */}
       {showBulkSMS && (
         <BulkSMSModal onClose={() => setShowBulkSMS(false)} />
+      )}
+
+      {/* Restore Modal */}
+      {showRestore && (
+        <RestoreModal
+          onClose={() => setShowRestore(false)}
+          onRestored={() => { refreshMembers(); setShowRestore(false); }}
+        />
       )}
     </div>
   );

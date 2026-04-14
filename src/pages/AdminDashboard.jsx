@@ -1,16 +1,18 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Users, UserCheck, AlertTriangle, UserX, UserPlus, MessageSquare, ChevronRight } from 'lucide-react';
+import { Users, UserCheck, AlertTriangle, UserX, UserPlus, MessageSquare, ChevronRight, Send } from 'lucide-react';
 import { useGym } from '../context/GymContext';
 import Navbar from '../components/Navbar';
 import StatusBadge from '../components/StatusBadge';
 import SMSModal from '../components/SMSModal';
+import BulkSMSModal from '../components/BulkSMSModal';
 import { formatDate, formatPhoneDisplay } from '../utils/helpers';
 
 export default function AdminDashboard() {
   const { members, getMemberStatus, getExpiringMembers } = useGym();
   const navigate = useNavigate();
   const [smsTarget, setSmsTarget] = useState(null);
+  const [showBulkSMS, setShowBulkSMS] = useState(false);
 
   const expiring = getExpiringMembers();
   const active = members.filter((m) => getMemberStatus(m).status === 'active');
@@ -67,10 +69,10 @@ export default function AdminDashboard() {
                 <p className="text-orange-400/70 text-xs">These members need renewal within 5 days</p>
               </div>
               <button
-                onClick={() => navigate('/admin/members?filter=expiring')}
-                className="text-orange-400 hover:text-orange-300 text-sm font-medium shrink-0"
+                onClick={() => setShowBulkSMS(true)}
+                className="flex items-center gap-1.5 bg-orange-500 hover:bg-orange-600 text-white text-xs font-semibold px-3 py-1.5 rounded-lg transition-colors shrink-0"
               >
-                View All
+                <Send size={12} /> Send to All
               </button>
             </div>
 
@@ -192,13 +194,18 @@ export default function AdminDashboard() {
         )}
       </div>
 
-      {/* SMS Modal */}
+      {/* Individual SMS Modal */}
       {smsTarget && (
         <SMSModal
           member={smsTarget.member}
           daysLeft={smsTarget.daysLeft}
           onClose={() => setSmsTarget(null)}
         />
+      )}
+
+      {/* Bulk SMS Modal */}
+      {showBulkSMS && (
+        <BulkSMSModal onClose={() => setShowBulkSMS(false)} />
       )}
     </div>
   );

@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Search, Dumbbell, ArrowLeft, User, Phone, Calendar, CheckCircle, AlertTriangle, XCircle, Clock } from 'lucide-react';
+import { Search, Dumbbell, ArrowLeft, User, Phone, Calendar, CheckCircle, AlertTriangle, XCircle, Clock, MapPin } from 'lucide-react';
 import { useGym } from '../context/GymContext';
 import { formatDate, formatPhoneDisplay } from '../utils/helpers';
 
@@ -198,17 +198,29 @@ export default function MemberPortal() {
 
                       {/* Expiry message */}
                       {status === 'expiring' && (
-                        <div className="bg-orange-500/10 border border-orange-500/30 rounded-xl p-3 text-center">
-                          <p className="text-orange-300 text-sm font-medium">
+                        <div className="bg-orange-500/10 border border-orange-500/30 rounded-xl p-3 space-y-1.5">
+                          <p className="text-orange-300 text-sm font-medium text-center">
                             Please visit the gym to renew your membership!
                           </p>
+                          <div className="flex items-start gap-1.5 justify-center">
+                            <MapPin size={13} className="text-orange-400 shrink-0 mt-0.5" />
+                            <p className="text-orange-400/80 text-xs">
+                              2nd Floor Fernandez Bldg, Saavedra St, Toril, Davao City, Davao del Sur
+                            </p>
+                          </div>
                         </div>
                       )}
                       {status === 'expired' && (
-                        <div className="bg-red-500/10 border border-red-500/30 rounded-xl p-3 text-center">
-                          <p className="text-red-300 text-sm font-medium">
+                        <div className="bg-red-500/10 border border-red-500/30 rounded-xl p-3 space-y-1.5">
+                          <p className="text-red-300 text-sm font-medium text-center">
                             Your membership has expired. Visit the gym to re-enroll.
                           </p>
+                          <div className="flex items-start gap-1.5 justify-center">
+                            <MapPin size={13} className="text-red-400 shrink-0 mt-0.5" />
+                            <p className="text-red-400/80 text-xs">
+                              2nd Floor Fernandez Bldg, Saavedra St, Toril, Davao City, Davao del Sur
+                            </p>
+                          </div>
                         </div>
                       )}
                     </div>

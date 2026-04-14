@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { CheckCircle, XCircle, CreditCard, Clock, AlertTriangle } from 'lucide-react';
+import { CheckCircle, XCircle, CreditCard, AlertTriangle, ImageIcon } from 'lucide-react';
 import { useGym } from '../context/GymContext';
 import Navbar from '../components/Navbar';
 import toast from 'react-hot-toast';
@@ -150,16 +150,41 @@ export default function RenewalRequests() {
                   </div>
 
                   {/* Details */}
-                  <div className="px-5 py-4 grid grid-cols-2 sm:grid-cols-3 gap-3">
-                    <InfoBox label="Plan"       value={PLAN_LABELS[req.membership_type] || req.membership_type} />
-                    <InfoBox label="Amount"     value={`₱${Number(req.amount).toLocaleString()}`} highlight />
-                    <InfoBox label="GCash Ref #" value={req.gcash_reference} mono />
-                    <InfoBox label="Submitted"  value={fmtDate(req.created_at)} />
-                    {req.status !== 'pending' && (
-                      <InfoBox label="Resolved"  value={fmtDate(req.updated_at)} />
+                  <div className="px-5 py-4 space-y-3">
+                    <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                      <InfoBox label="Plan"      value={PLAN_LABELS[req.membership_type] || req.membership_type} />
+                      <InfoBox label="Amount"    value={`₱${Number(req.amount).toLocaleString()}`} highlight />
+                      {req.gcash_reference && (
+                        <InfoBox label="GCash Ref #" value={req.gcash_reference} mono />
+                      )}
+                      <InfoBox label="Submitted" value={fmtDate(req.created_at)} />
+                      {req.status !== 'pending' && (
+                        <InfoBox label="Resolved" value={fmtDate(req.updated_at)} />
+                      )}
+                      {req.admin_notes && (
+                        <InfoBox label="Notes" value={req.admin_notes} className="col-span-2 sm:col-span-3" />
+                      )}
+                    </div>
+
+                    {/* Receipt image */}
+                    {req.receipt_url && (
+                      <div>
+                        <p className="text-slate-500 text-xs mb-2 flex items-center gap-1.5">
+                          <ImageIcon size={12} /> Payment Screenshot
+                        </p>
+                        <a href={req.receipt_url} target="_blank" rel="noopener noreferrer">
+                          <img
+                            src={req.receipt_url}
+                            alt="Payment receipt"
+                            className="w-full max-h-64 object-contain bg-slate-700 rounded-xl hover:opacity-90 transition-opacity cursor-zoom-in"
+                          />
+                          <p className="text-sky-400 text-xs mt-1 text-center">Tap to open full size</p>
+                        </a>
+                      </div>
                     )}
-                    {req.admin_notes && (
-                      <InfoBox label="Notes" value={req.admin_notes} className="col-span-2 sm:col-span-3" />
+
+                    {!req.gcash_reference && !req.receipt_url && (
+                      <p className="text-slate-600 text-xs italic">No proof submitted</p>
                     )}
                   </div>
 

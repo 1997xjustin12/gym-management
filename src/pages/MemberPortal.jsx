@@ -1,9 +1,9 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import {
   Search, Dumbbell, ArrowLeft, User, Phone, Calendar,
   CheckCircle, AlertTriangle, XCircle, Clock, MapPin,
-  CreditCard, Copy, ChevronRight, X,
+  CreditCard, Copy, ChevronRight, X, Upload, ImageIcon,
 } from 'lucide-react';
 import { useGym } from '../context/GymContext';
 import { formatDate, formatPhoneDisplay } from '../utils/helpers';
@@ -248,14 +248,31 @@ export default function MemberPortal() {
 
 /* ── Renewal Modal ──────────────────────────────────────────── */
 function RenewalModal({ member, settings, MEMBERSHIP_OPTIONS, submitRenewalRequest, onClose }) {
-  const [step, setStep]         = useState('plan');   // plan | pay | done
-  const [plan, setPlan]         = useState(MEMBERSHIP_OPTIONS[0].value);
+  const [step, setStep]           = useState('plan');   // plan | pay | done
+  const [plan, setPlan]           = useState(MEMBERSHIP_OPTIONS[0].value);
   const [reference, setReference] = useState('');
+  const [receiptFile, setReceiptFile] = useState(null);
+  const [receiptPreview, setReceiptPreview] = useState(null);
   const [submitting, setSubmitting] = useState(false);
-  const [copied, setCopied]     = useState(false);
+  const [copied, setCopied]       = useState(false);
+  const receiptInputRef           = useRef(null);
 
   const price = settings[PLAN_PRICE_KEY[plan]] || 0;
   const planLabel = MEMBERSHIP_OPTIONS.find((o) => o.value === plan)?.label || plan;
+
+  const canSubmit = reference.trim() || receiptFile;
+
+  const handleReceiptFile = (file) => {
+    if (!file) return;
+    setReceiptFile(file);
+    setReceiptPreview(URL.createObjectURL(file));
+  };
+
+  const removeReceipt = () => {
+    setReceiptFile(null);
+    setReceiptPreview(null);
+    if (receiptInputRef.current) receiptInputRef.current.value = '';
+  };
 
   const copyNumber = () => {
     navigator.clipboard.writeText(settings.gcashNumber).then(() => {
@@ -265,7 +282,7 @@ function RenewalModal({ member, settings, MEMBERSHIP_OPTIONS, submitRenewalReque
   };
 
   const handleSubmit = async () => {
-    if (!reference.trim()) return;
+    if (!canSubmit) return;
     setSubmitting(true);
     try {
       await submitRenewalRequest({
@@ -275,6 +292,7 @@ function RenewalModal({ member, settings, MEMBERSHIP_OPTIONS, submitRenewalReque
         membershipType: plan,
         amount:         price,
         gcashReference: reference.trim(),
+        receiptFile:    receiptFile,
       });
       setStep('done');
     } catch (err) {
@@ -393,7 +411,7 @@ function RenewalModal({ member, settings, MEMBERSHIP_OPTIONS, submitRenewalReque
                 )}
               </div>
 
-              {/* Reference input */}
+              {/* Reference number */}
               <div>
                 <label className="block text-slate-300 text-sm font-medium mb-1.5">
                   GCash Reference / Transaction ID
@@ -405,8 +423,62 @@ function RenewalModal({ member, settings, MEMBERSHIP_OPTIONS, submitRenewalReque
                   placeholder="e.g. 1234567890"
                   className="w-full bg-slate-700 border border-slate-600 focus:border-green-500 text-white rounded-xl px-4 py-3 outline-none transition-colors placeholder:text-slate-500 font-mono text-sm"
                 />
-                <p className="text-slate-500 text-xs mt-1">Found in your GCash app under Transaction History</p>
+                <p className="text-slate-500 text-xs mt-1">Found in GCash app → Transaction History</p>
               </div>
+
+              {/* Divider */}
+              <div className="flex items-center gap-3">
+                <div className="flex-1 h-px bg-slate-700" />
+                <span className="text-slate-500 text-xs font-medium">OR</span>
+                <div className="flex-1 h-px bg-slate-700" />
+              </div>
+
+              {/* Receipt upload */}
+              <div>
+                <label className="block text-slate-300 text-sm font-medium mb-1.5">
+                  Upload Payment Screenshot
+                </label>
+                {receiptPreview ? (
+                  <div className="relative">
+                    <img
+                      src={receiptPreview}
+                      alt="Receipt"
+                      className="w-full max-h-48 object-contain bg-slate-700 rounded-xl"
+                    />
+                    <button
+                      type="button"
+                      onClick={removeReceipt}
+                      className="absolute top-2 right-2 w-7 h-7 bg-red-500 hover:bg-red-600 rounded-full flex items-center justify-center transition-colors"
+                    >
+                      <X size={14} className="text-white" />
+                    </button>
+                  </div>
+                ) : (
+                  <div
+                    onClick={() => receiptInputRef.current?.click()}
+                    className="border-2 border-dashed border-slate-600 hover:border-green-500 rounded-xl p-5 text-center cursor-pointer transition-colors group"
+                  >
+                    <ImageIcon size={28} className="mx-auto text-slate-500 group-hover:text-green-400 mb-2 transition-colors" />
+                    <p className="text-slate-400 text-sm">Tap to upload your GCash receipt</p>
+                    <p className="text-slate-600 text-xs mt-0.5">JPG, PNG supported</p>
+                  </div>
+                )}
+                <input
+                  ref={receiptInputRef}
+                  type="file"
+                  accept="image/*"
+                  capture="environment"
+                  className="hidden"
+                  onChange={(e) => handleReceiptFile(e.target.files[0])}
+                />
+                <p className="text-slate-500 text-xs mt-1">Take a photo or upload a screenshot of your payment</p>
+              </div>
+
+              {!canSubmit && (
+                <p className="text-orange-400 text-xs text-center">
+                  Please enter a reference number or upload a receipt screenshot
+                </p>
+              )}
 
               <div className="flex gap-3">
                 <button
@@ -417,7 +489,7 @@ function RenewalModal({ member, settings, MEMBERSHIP_OPTIONS, submitRenewalReque
                 </button>
                 <button
                   onClick={handleSubmit}
-                  disabled={!reference.trim() || submitting}
+                  disabled={!canSubmit || submitting}
                   className="flex-1 flex items-center justify-center gap-2 bg-green-500 hover:bg-green-600 disabled:opacity-40 text-white font-bold py-3 rounded-xl transition-colors text-sm"
                 >
                   {submitting

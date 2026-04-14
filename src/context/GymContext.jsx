@@ -175,13 +175,28 @@ export function GymProvider({ children }) {
   }, [isAdminLoggedIn, loadRenewalRequests]);
 
   const submitRenewalRequest = async (payload) => {
+    let receiptUrl = null;
+
+    if (payload.receiptFile) {
+      const file = payload.receiptFile;
+      const ext = file.name.split('.').pop() || 'jpg';
+      const path = `receipts/${Date.now()}-${payload.memberId}.${ext}`;
+      const { error: upErr } = await supabase.storage
+        .from('member-photos')
+        .upload(path, file, { contentType: file.type, upsert: false });
+      if (upErr) throw upErr;
+      const { data } = supabase.storage.from('member-photos').getPublicUrl(path);
+      receiptUrl = data.publicUrl;
+    }
+
     const { error } = await supabase.from('renewal_requests').insert([{
       member_id: payload.memberId,
       member_name: payload.memberName,
       contact_number: payload.contactNumber,
       membership_type: payload.membershipType,
       amount: payload.amount,
-      gcash_reference: payload.gcashReference,
+      gcash_reference: payload.gcashReference || '',
+      receipt_url: receiptUrl,
       status: 'pending',
     }]);
     if (error) throw error;

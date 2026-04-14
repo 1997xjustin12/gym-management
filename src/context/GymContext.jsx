@@ -203,24 +203,31 @@ export function GymProvider({ children }) {
   };
 
   const approveRenewalRequest = async (request) => {
-    const member = members.find((m) => m.id === request.member_id);
-    if (!member) throw new Error('Member not found. They may have been deleted.');
-
     const today = new Date().toISOString().split('T')[0];
-    await updateMember(request.member_id, {
-      name: member.name,
-      contactNumber: member.contactNumber,
-      photo: member.photo,
-      membershipType: request.membership_type,
-      membershipStartDate: today,
-      notes: member.notes,
-    });
+    const days = MEMBERSHIP_DAYS[request.membership_type] || 30;
+    const endDate = addDays(new Date(today), days).toISOString().split('T')[0];
 
-    const { error } = await supabase
+    // Directly update membership dates — skip name duplicate check
+    const { data, error: memberErr } = await supabase
+      .from('members')
+      .update({
+        membership_type: request.membership_type,
+        membership_start_date: today,
+        membership_end_date: endDate,
+        updated_at: new Date().toISOString(),
+      })
+      .eq('id', request.member_id)
+      .select()
+      .single();
+    if (memberErr) throw memberErr;
+
+    setMembers((prev) => prev.map((m) => (m.id === request.member_id ? toMember(data) : m)));
+
+    const { error: reqErr } = await supabase
       .from('renewal_requests')
       .update({ status: 'approved', updated_at: new Date().toISOString() })
       .eq('id', request.id);
-    if (error) throw error;
+    if (reqErr) throw reqErr;
 
     await logAction(
       'PAYMENT_APPROVED',

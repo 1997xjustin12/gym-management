@@ -109,6 +109,17 @@ export function GymProvider({ children }) {
     loadMembers();
   }, [loadMembers]);
 
+  // ── Real-time: members ────────────────────────────────────────
+  useEffect(() => {
+    const channel = supabase
+      .channel('members_realtime')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'members' }, () => {
+        loadMembers();
+      })
+      .subscribe();
+    return () => supabase.removeChannel(channel);
+  }, [loadMembers]);
+
   // ── Load settings ─────────────────────────────────────────────
   const loadSettings = useCallback(async () => {
     try {
@@ -173,6 +184,17 @@ export function GymProvider({ children }) {
   useEffect(() => {
     if (isAdminLoggedIn) loadRenewalRequests();
   }, [isAdminLoggedIn, loadRenewalRequests]);
+
+  // ── Real-time: renewal requests ───────────────────────────────
+  useEffect(() => {
+    const channel = supabase
+      .channel('renewal_requests_realtime')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'renewal_requests' }, () => {
+        loadRenewalRequests();
+      })
+      .subscribe();
+    return () => supabase.removeChannel(channel);
+  }, [loadRenewalRequests]);
 
   const submitRenewalRequest = async (payload) => {
     let receiptUrl = null;

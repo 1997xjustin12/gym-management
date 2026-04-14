@@ -29,6 +29,16 @@ const toMember = (row) => ({
   updatedAt: row.updated_at,
 });
 
+const toSettings = (row) => ({
+  gcashNumber: row.gcash_number || '',
+  gcashName: row.gcash_name || '',
+  gcashQrUrl: row.gcash_qr_url || null,
+  priceMonthly: Number(row.price_monthly) || 0,
+  priceQuarterly: Number(row.price_quarterly) || 0,
+  priceSemiAnnual: Number(row.price_semi_annual) || 0,
+  priceAnnual: Number(row.price_annual) || 0,
+});
+
 const isBase64 = (str) => typeof str === 'string' && str.startsWith('data:');
 
 const uploadPhoto = async (base64DataUrl, memberId) => {
@@ -52,8 +62,18 @@ export function GymProvider({ children }) {
   const [loading, setLoading] = useState(true);
   const [authLoading, setAuthLoading] = useState(true);
   const [isAdminLoggedIn, setIsAdminLoggedIn] = useState(false);
+  const [settings, setSettings] = useState({
+    gcashNumber: '',
+    gcashName: '',
+    gcashQrUrl: null,
+    priceMonthly: 0,
+    priceQuarterly: 0,
+    priceSemiAnnual: 0,
+    priceAnnual: 0,
+  });
+  const [renewalRequests, setRenewalRequests] = useState([]);
 
-  // ── Auth: check session on mount and listen to changes ──────
+  // ── Auth ─────────────────────────────────────────────────────
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
       setIsAdminLoggedIn(!!session);
@@ -89,12 +109,136 @@ export function GymProvider({ children }) {
     loadMembers();
   }, [loadMembers]);
 
+  // ── Load settings ─────────────────────────────────────────────
+  const loadSettings = useCallback(async () => {
+    try {
+      const { data, error } = await supabase
+        .from('gym_settings')
+        .select('*')
+        .eq('id', 'default')
+        .single();
+      if (error && error.code !== 'PGRST116') throw error;
+      if (data) setSettings(toSettings(data));
+    } catch (err) {
+      console.error('Failed to load settings:', err);
+    }
+  }, []);
+
+  useEffect(() => {
+    loadSettings();
+  }, [loadSettings]);
+
+  const saveSettings = async (formData) => {
+    let gcashQrUrl = formData.gcashQrUrl;
+
+    if (formData.gcashQrFile) {
+      const file = formData.gcashQrFile;
+      const { error: upErr } = await supabase.storage
+        .from('member-photos')
+        .upload('settings/gcash-qr.png', file, { contentType: file.type, upsert: true });
+      if (upErr) throw upErr;
+      const { data } = supabase.storage.from('member-photos').getPublicUrl('settings/gcash-qr.png');
+      gcashQrUrl = `${data.publicUrl}?v=${Date.now()}`;
+    }
+
+    const { error } = await supabase.from('gym_settings').upsert({
+      id: 'default',
+      gcash_number: formData.gcashNumber,
+      gcash_name: formData.gcashName,
+      gcash_qr_url: gcashQrUrl,
+      price_monthly: Number(formData.priceMonthly) || 0,
+      price_quarterly: Number(formData.priceQuarterly) || 0,
+      price_semi_annual: Number(formData.priceSemiAnnual) || 0,
+      price_annual: Number(formData.priceAnnual) || 0,
+      updated_at: new Date().toISOString(),
+    });
+    if (error) throw error;
+    await loadSettings();
+  };
+
+  // ── Load renewal requests ─────────────────────────────────────
+  const loadRenewalRequests = useCallback(async () => {
+    try {
+      const { data, error } = await supabase
+        .from('renewal_requests')
+        .select('*')
+        .order('created_at', { ascending: false });
+      if (error) throw error;
+      setRenewalRequests(data || []);
+    } catch (err) {
+      console.error('Failed to load renewal requests:', err);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (isAdminLoggedIn) loadRenewalRequests();
+  }, [isAdminLoggedIn, loadRenewalRequests]);
+
+  const submitRenewalRequest = async (payload) => {
+    const { error } = await supabase.from('renewal_requests').insert([{
+      member_id: payload.memberId,
+      member_name: payload.memberName,
+      contact_number: payload.contactNumber,
+      membership_type: payload.membershipType,
+      amount: payload.amount,
+      gcash_reference: payload.gcashReference,
+      status: 'pending',
+    }]);
+    if (error) throw error;
+  };
+
+  const approveRenewalRequest = async (request) => {
+    const member = members.find((m) => m.id === request.member_id);
+    if (!member) throw new Error('Member not found. They may have been deleted.');
+
+    const today = new Date().toISOString().split('T')[0];
+    await updateMember(request.member_id, {
+      name: member.name,
+      contactNumber: member.contactNumber,
+      photo: member.photo,
+      membershipType: request.membership_type,
+      membershipStartDate: today,
+      notes: member.notes,
+    });
+
+    const { error } = await supabase
+      .from('renewal_requests')
+      .update({ status: 'approved', updated_at: new Date().toISOString() })
+      .eq('id', request.id);
+    if (error) throw error;
+
+    await logAction(
+      'PAYMENT_APPROVED',
+      `Approved GCash payment ₱${request.amount} — renewed ${request.membership_type} for: ${request.member_name}`,
+      request.member_name,
+      request.member_id,
+    );
+    await loadRenewalRequests();
+  };
+
+  const rejectRenewalRequest = async (id, notes = '') => {
+    const request = renewalRequests.find((r) => r.id === id);
+    const { error } = await supabase
+      .from('renewal_requests')
+      .update({ status: 'rejected', admin_notes: notes, updated_at: new Date().toISOString() })
+      .eq('id', id);
+    if (error) throw error;
+
+    await logAction(
+      'PAYMENT_REJECTED',
+      `Rejected GCash payment for: ${request?.member_name}`,
+      request?.member_name,
+      request?.member_id,
+    );
+    await loadRenewalRequests();
+  };
+
+  // ── Helpers ───────────────────────────────────────────────────
   const calculateEndDate = (startDate, membershipType) => {
     const days = MEMBERSHIP_DAYS[membershipType] || 30;
     return addDays(new Date(startDate), days).toISOString().split('T')[0];
   };
 
-  // ── Activity logging ─────────────────────────────────────────
   const logAction = async (action, description, memberName = null, memberId = null) => {
     try {
       await supabase.from('activity_logs').insert([{
@@ -108,7 +252,6 @@ export function GymProvider({ children }) {
     }
   };
 
-  // ── Duplicate name check ─────────────────────────────────────
   const isNameTaken = (name, excludeId = null) => {
     const normalized = name.trim().toLowerCase();
     return members.some(
@@ -233,7 +376,6 @@ export function GymProvider({ children }) {
   const getExpiringMembers = () =>
     members.filter((m) => getMemberStatus(m).status === 'expiring');
 
-  // ── Auth ─────────────────────────────────────────────────────
   const adminLogin = async (email, password) => {
     const { error } = await supabase.auth.signInWithPassword({ email, password });
     if (error) throw error;
@@ -242,6 +384,8 @@ export function GymProvider({ children }) {
   const adminLogout = async () => {
     await supabase.auth.signOut();
   };
+
+  const pendingRenewals = renewalRequests.filter((r) => r.status === 'pending');
 
   return (
     <GymContext.Provider
@@ -262,6 +406,16 @@ export function GymProvider({ children }) {
         logAction,
         MEMBERSHIP_OPTIONS,
         refreshMembers: loadMembers,
+        // Settings
+        settings,
+        saveSettings,
+        // Renewal requests
+        renewalRequests,
+        pendingRenewals,
+        loadRenewalRequests,
+        submitRenewalRequest,
+        approveRenewalRequest,
+        rejectRenewalRequest,
       }}
     >
       {children}

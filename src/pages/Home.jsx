@@ -19,9 +19,8 @@ export default function Home() {
         </div>
 
         <h1 className="text-4xl sm:text-5xl font-black text-white mb-2 tracking-tight">
-          POWER<span className="text-orange-500"> FITNESS</span>
+          POWER <span className="text-orange-500">FITNESS</span> GYM
         </h1>
-        <p className="text-slate-400 text-lg mb-2">Gym Management System</p>
         <div className="w-12 h-1 bg-orange-500 rounded-full mx-auto mb-10" />
 
         {/* Portal Cards */}

@@ -304,10 +304,10 @@ function RenewalModal({ member, settings, MEMBERSHIP_OPTIONS, submitRenewalReque
 
   return (
     <div className="fixed inset-0 bg-black/80 z-50 flex items-end sm:items-center justify-center p-4">
-      <div className="bg-slate-800 rounded-2xl w-full max-w-md shadow-2xl border border-slate-700">
+      <div className="bg-slate-800 rounded-2xl w-full max-w-md shadow-2xl border border-slate-700 flex flex-col max-h-[90vh]">
 
         {/* Header */}
-        <div className="flex items-center justify-between px-5 py-4 border-b border-slate-700">
+        <div className="flex items-center justify-between px-5 py-4 border-b border-slate-700 shrink-0">
           <div className="flex items-center gap-2">
             <CreditCard size={18} className="text-green-400" />
             <h3 className="text-white font-semibold">Pay via GCash</h3>
@@ -317,7 +317,7 @@ function RenewalModal({ member, settings, MEMBERSHIP_OPTIONS, submitRenewalReque
           </button>
         </div>
 
-        <div className="p-5">
+        <div className="p-5 overflow-y-auto">
 
           {/* ── Step 1: Select Plan ── */}
           {step === 'plan' && (

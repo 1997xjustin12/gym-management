@@ -43,9 +43,9 @@ export default function MemberPortal() {
             <AlertTriangle size={24} className="text-orange-400" />
           </div>
           <div>
-            <p className="text-orange-400 font-bold text-lg">Expiring Soon!</p>
+            <p className="text-orange-400 font-bold text-lg">Active</p>
             <p className="text-slate-400 text-sm">
-              Only <strong className="text-orange-300">{daysLeft} day{daysLeft !== 1 ? 's' : ''}</strong> left — please renew!
+              Expires in <strong className="text-orange-300">{daysLeft} day{daysLeft !== 1 ? 's' : ''}</strong> — please renew soon!
             </p>
           </div>
         </div>

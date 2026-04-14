@@ -9,6 +9,7 @@ import { formatDate, formatPhoneDisplay } from '../utils/helpers';
 import toast from 'react-hot-toast';
 
 const FILTERS = ['all', 'active', 'expiring', 'expired'];
+// 'active' filter includes expiring members since they are still active
 
 export default function MembersList() {
   const { members, getMemberStatus, deleteMember } = useGym();
@@ -23,7 +24,10 @@ export default function MembersList() {
   const filtered = useMemo(() => {
     return members.filter((m) => {
       const { status } = getMemberStatus(m);
-      const matchesFilter = filter === 'all' || status === filter;
+      const matchesFilter =
+        filter === 'all' ||
+        (filter === 'active' && (status === 'active' || status === 'expiring')) ||
+        (filter !== 'active' && status === filter);
       const q = query.toLowerCase().trim();
       const matchesQuery =
         !q || m.name.toLowerCase().includes(q) || m.contactNumber.includes(q);
@@ -85,7 +89,12 @@ export default function MembersList() {
         {/* Filter tabs */}
         <div className="flex gap-2 overflow-x-auto scrollbar-hide pb-1">
           {FILTERS.map((f) => {
-            const count = members.filter((m) => f === 'all' || getMemberStatus(m).status === f).length;
+            const count = members.filter((m) => {
+              const s = getMemberStatus(m).status;
+              if (f === 'all') return true;
+              if (f === 'active') return s === 'active' || s === 'expiring';
+              return s === f;
+            }).length;
             return (
               <button
                 key={f}

@@ -189,7 +189,7 @@ export function GymProvider({ children }) {
     end.setHours(0, 0, 0, 0);
     const daysLeft = differenceInDays(end, today);
     if (daysLeft < 0) return { status: 'expired', daysLeft, label: 'Expired', color: 'red' };
-    if (daysLeft <= 5) return { status: 'expiring', daysLeft, label: `${daysLeft}d left`, color: 'orange' };
+    if (daysLeft <= 5) return { status: 'expiring', daysLeft, label: 'Active', color: 'orange' };
     return { status: 'active', daysLeft, label: 'Active', color: 'green' };
   };
 

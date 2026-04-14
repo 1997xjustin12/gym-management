@@ -25,6 +25,7 @@ export default function AdminSettings() {
     priceAnnual: '',
     telegramChatId: '',
     telegramBotToken: '',
+    siteUrl: '',
   });
   const [saving, setSaving] = useState(false);
   const fileRef = useRef();
@@ -41,6 +42,7 @@ export default function AdminSettings() {
       priceAnnual:     settings.priceAnnual     || '',
       telegramChatId:   settings.telegramChatId   || '',
       telegramBotToken: settings.telegramBotToken || '',
+      siteUrl:          settings.siteUrl          || '',
     }));
   }, [settings]);
 
@@ -219,6 +221,17 @@ export default function AdminSettings() {
                 Message your bot, then open{' '}
                 <span className="text-sky-400 font-mono">api.telegram.org/bot&#123;TOKEN&#125;/getUpdates</span>
               </p>
+            </div>
+            <div>
+              <label className="block text-slate-300 text-sm font-medium mb-1.5">Admin Panel URL</label>
+              <input
+                type="text"
+                value={form.siteUrl}
+                onChange={(e) => set('siteUrl', e.target.value)}
+                placeholder="e.g. https://your-site.vercel.app"
+                className="w-full bg-slate-700 border border-slate-600 focus:border-sky-500 text-white rounded-xl px-4 py-3 outline-none transition-colors placeholder:text-slate-500 text-sm"
+              />
+              <p className="text-slate-500 text-xs mt-1.5">Used to generate the link in Telegram notifications</p>
             </div>
             {form.telegramBotToken && form.telegramChatId && (
               <div className="flex items-center gap-2 bg-sky-500/10 border border-sky-500/30 rounded-xl px-3 py-2">

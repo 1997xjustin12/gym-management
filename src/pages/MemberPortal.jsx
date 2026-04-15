@@ -405,12 +405,21 @@ function RenewalModal({ member, settings, MEMBERSHIP_OPTIONS, submitRenewalReque
                 </div>
 
                 {settings.gcashQrUrl && (
-                  <div className="flex justify-center pt-1">
+                  <div className="flex flex-col items-center gap-2 pt-1">
                     <img
                       src={settings.gcashQrUrl}
                       alt="GCash QR Code"
                       className="w-40 h-40 object-contain bg-white rounded-xl p-2"
                     />
+                    <a
+                      href={settings.gcashQrUrl}
+                      download="GCash-QR.png"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-xl bg-slate-600 hover:bg-slate-500 text-slate-300 hover:text-white transition-colors"
+                    >
+                      <Upload size={12} className="rotate-180" /> Save QR Code
+                    </a>
                   </div>
                 )}
               </div>

@@ -128,6 +128,14 @@ export default function MemberPortal() {
           </button>
         </form>
 
+        {/* Gym address */}
+        <div className="flex items-center justify-center gap-2 py-1">
+          <MapPin size={13} className="text-slate-600 shrink-0" />
+          <p className="text-slate-600 text-xs text-center">
+            2nd Floor Fernandez Bldg, Saavedra St, Toril, Davao City
+          </p>
+        </div>
+
         {/* Results */}
         {searched && results !== null && (
           <div className="space-y-4">
@@ -198,56 +206,15 @@ export default function MemberPortal() {
 
                       {/* Renewal notice */}
                       {needsRenewal && (
-                        <div className={`rounded-xl p-3 space-y-2 ${
-                          status === 'expiring'
-                            ? 'bg-orange-500/10 border border-orange-500/30'
-                            : 'bg-red-500/10 border border-red-500/30'
-                        }`}>
-                          <p className={`text-sm font-medium text-center ${status === 'expiring' ? 'text-orange-300' : 'text-red-300'}`}>
-                            {status === 'expiring'
-                              ? 'Please renew your membership before it expires!'
-                              : 'Your membership has expired. Please re-enroll.'}
-                          </p>
-                          <div className="flex items-start gap-1.5 justify-center">
-                            <MapPin size={12} className={`shrink-0 mt-0.5 ${status === 'expiring' ? 'text-orange-400' : 'text-red-400'}`} />
-                            <p className={`text-xs ${status === 'expiring' ? 'text-orange-400/80' : 'text-red-400/80'}`}>
-                              2nd Floor Fernandez Bldg, Saavedra St, Toril, Davao City
-                            </p>
-                          </div>
-                        </div>
+                        <p className={`text-xs text-center font-medium ${status === 'expiring' ? 'text-orange-400' : 'text-red-400'}`}>
+                          {status === 'expiring'
+                            ? 'Please renew your membership before it expires!'
+                            : 'Your membership has expired. Please re-enroll.'}
+                        </p>
                       )}
 
                       {/* Latest renewal request status */}
-                      {latestRequest && (
-                        <div className={`rounded-xl p-4 space-y-1 border ${
-                          latestRequest.status === 'pending'
-                            ? 'bg-orange-500/10 border-orange-500/30'
-                            : latestRequest.status === 'rejected'
-                            ? 'bg-red-500/10 border-red-500/30'
-                            : 'bg-green-500/10 border-green-500/30'
-                        }`}>
-                          <div className="flex items-center gap-2">
-                            {latestRequest.status === 'pending' && <Clock size={14} className="text-orange-400" />}
-                            {latestRequest.status === 'rejected' && <XCircle size={14} className="text-red-400" />}
-                            {latestRequest.status === 'approved' && <CheckCircle size={14} className="text-green-400" />}
-                            <p className={`text-sm font-semibold ${
-                              latestRequest.status === 'pending' ? 'text-orange-300'
-                              : latestRequest.status === 'rejected' ? 'text-red-300'
-                              : 'text-green-300'
-                            }`}>
-                              Payment {latestRequest.status === 'pending' ? 'Pending Review'
-                                : latestRequest.status === 'rejected' ? 'Rejected'
-                                : 'Approved'}
-                            </p>
-                          </div>
-                          {latestRequest.status === 'rejected' && latestRequest.admin_notes && (
-                            <p className="text-red-400/80 text-xs pl-5">Reason: {latestRequest.admin_notes}</p>
-                          )}
-                          {latestRequest.status === 'pending' && (
-                            <p className="text-orange-400/70 text-xs pl-5">Your payment is being reviewed by the admin.</p>
-                          )}
-                        </div>
-                      )}
+                      {latestRequest && <PaymentStatus request={latestRequest} />}
 
                       {/* Pay via GCash button */}
                       {needsRenewal && settings.gcashNumber && latestRequest?.status !== 'pending' && (
@@ -560,6 +527,47 @@ function RenewalModal({ member, settings, MEMBERSHIP_OPTIONS, submitRenewalReque
                 Done
               </button>
             </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function PaymentStatus({ request }) {
+  const isPending  = request.status === 'pending';
+  const isRejected = request.status === 'rejected';
+  const isApproved = request.status === 'approved';
+
+  const cfg = isPending
+    ? { bg: 'bg-orange-500/10', border: 'border-orange-500/30', iconBg: 'bg-orange-500/20', icon: <Clock size={20} className="text-orange-400" />, title: 'Payment Under Review', titleColor: 'text-orange-300', dot: 'bg-orange-400 animate-pulse' }
+    : isRejected
+    ? { bg: 'bg-red-500/10', border: 'border-red-500/30', iconBg: 'bg-red-500/20', icon: <XCircle size={20} className="text-red-400" />, title: 'Payment Rejected', titleColor: 'text-red-300', dot: 'bg-red-400' }
+    : { bg: 'bg-green-500/10', border: 'border-green-500/30', iconBg: 'bg-green-500/20', icon: <CheckCircle size={20} className="text-green-400" />, title: 'Payment Approved', titleColor: 'text-green-300', dot: 'bg-green-400' };
+
+  return (
+    <div className={`rounded-2xl border ${cfg.bg} ${cfg.border} p-4`}>
+      <div className="flex items-center gap-3">
+        <div className={`w-10 h-10 ${cfg.iconBg} rounded-xl flex items-center justify-center shrink-0`}>
+          {cfg.icon}
+        </div>
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center gap-2">
+            <div className={`w-2 h-2 rounded-full shrink-0 ${cfg.dot}`} />
+            <p className={`font-bold text-sm ${cfg.titleColor}`}>{cfg.title}</p>
+          </div>
+          {isPending && (
+            <p className="text-slate-400 text-xs mt-0.5">Your GCash payment is being verified by the admin.</p>
+          )}
+          {isApproved && (
+            <p className="text-slate-400 text-xs mt-0.5">Your membership has been renewed successfully.</p>
+          )}
+          {isRejected && (
+            <p className="text-slate-400 text-xs mt-0.5">
+              {request.admin_notes
+                ? <>Reason: <span className="text-red-400">{request.admin_notes}</span></>
+                : 'Please contact the gym for details.'}
+            </p>
           )}
         </div>
       </div>

@@ -161,13 +161,9 @@ export default function MemberPortal() {
                   .filter((r) => r.member_id === member.id)
                   .sort((a, b) => new Date(b.created_at) - new Date(a.created_at))[0];
 
-                // Hide "Payment Approved" after 3 days — member's active status card already shows this
-                const approvedDaysAgo = latestRequest?.status === 'approved'
-                  ? (Date.now() - new Date(latestRequest.updated_at)) / (1000 * 60 * 60 * 24)
-                  : null;
-                const showPaymentStatus = latestRequest && (
-                  latestRequest.status !== 'approved' || approvedDaysAgo <= 3
-                );
+                // Only show payment status for pending/rejected — once approved, the Active
+                // status card already communicates the result, so no need to show it again.
+                const showPaymentStatus = latestRequest && latestRequest.status !== 'approved';
                 return (
                   <div
                     key={member.id}

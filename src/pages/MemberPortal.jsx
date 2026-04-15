@@ -469,7 +469,6 @@ function RenewalModal({ member, settings, MEMBERSHIP_OPTIONS, submitRenewalReque
                   ref={receiptInputRef}
                   type="file"
                   accept="image/*"
-                  capture="environment"
                   className="hidden"
                   onChange={(e) => handleReceiptFile(e.target.files[0])}
                 />

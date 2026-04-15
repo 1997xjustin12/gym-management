@@ -18,10 +18,11 @@ const PLAN_PRICE_KEY = {
 export default function MemberPortal() {
   const { members, getMemberStatus, MEMBERSHIP_OPTIONS, settings, submitRenewalRequest, renewalRequests } = useGym();
 
-  // view: 'home' | 'lookup' | 'result'
-  const [view, setView]       = useState('home');
-  const [phone, setPhone]     = useState('');
-  const [member, setMember]   = useState(null);
+  // view: 'home' | 'lookup' | 'pick' | 'result'
+  const [view, setView]         = useState('home');
+  const [phone, setPhone]       = useState('');
+  const [matches, setMatches]   = useState([]);
+  const [member, setMember]     = useState(null);
   const [notFound, setNotFound] = useState(false);
   const [renewTarget, setRenewTarget] = useState(null);
 
@@ -30,18 +31,22 @@ export default function MemberPortal() {
     const digits = phone.replace(/\D/g, '');
     if (!digits) return;
 
-    // Match by stripping non-digits from stored number and comparing
-    const found = members.find((m) =>
+    const found = members.filter((m) =>
       m.contactNumber.replace(/\D/g, '').endsWith(digits) ||
       digits.endsWith(m.contactNumber.replace(/\D/g, ''))
     );
 
-    if (found) {
-      setMember(found);
+    if (found.length === 0) {
+      setNotFound(true);
+    } else if (found.length === 1) {
+      setMember(found[0]);
       setNotFound(false);
       setView('result');
     } else {
-      setNotFound(true);
+      // Multiple members share this number — let them pick
+      setMatches(found);
+      setNotFound(false);
+      setView('pick');
     }
   };
 
@@ -49,6 +54,7 @@ export default function MemberPortal() {
     setView('home');
     setPhone('');
     setMember(null);
+    setMatches([]);
     setNotFound(false);
   };
 
@@ -180,6 +186,80 @@ export default function MemberPortal() {
               ← Back
             </button>
           </div>
+        </div>
+      </div>
+    );
+  }
+
+  // ── Pick View (multiple members, same number) ──────────────────
+  if (view === 'pick') {
+    return (
+      <div className="min-h-screen bg-slate-900 flex flex-col">
+        {/* Header */}
+        <div className="sticky top-0 z-40 bg-slate-900/95 backdrop-blur border-b border-slate-800">
+          <div className="max-w-lg mx-auto px-4 h-14 flex items-center gap-3">
+            <button onClick={() => setView('lookup')} className="text-slate-400 hover:text-white p-1 transition-colors">
+              <ArrowLeft size={20} />
+            </button>
+            <div className="flex items-center gap-2">
+              <div className="w-8 h-8 bg-sky-500 rounded-lg flex items-center justify-center">
+                <Dumbbell size={16} className="text-white" />
+              </div>
+              <span className="font-bold text-white">Member Portal</span>
+            </div>
+          </div>
+        </div>
+
+        <div className="max-w-lg mx-auto w-full px-4 py-8 space-y-6">
+          <div className="text-center">
+            <div className="w-14 h-14 bg-sky-500/20 rounded-2xl flex items-center justify-center mx-auto mb-4">
+              <User size={28} className="text-sky-400" />
+            </div>
+            <h2 className="text-xl font-bold text-white mb-1">Who are you?</h2>
+            <p className="text-slate-400 text-sm">Multiple members are registered under this number.<br />Please select your name.</p>
+          </div>
+
+          <div className="space-y-2">
+            {matches.map((m) => {
+              const { status } = getMemberStatus(m);
+              return (
+                <button
+                  key={m.id}
+                  onClick={() => { setMember(m); setView('result'); }}
+                  className="w-full flex items-center gap-4 bg-slate-800 hover:bg-slate-700 border border-slate-700 hover:border-sky-500/50 rounded-2xl p-4 text-left transition-all"
+                >
+                  <div className="w-12 h-12 rounded-xl overflow-hidden bg-slate-700 shrink-0">
+                    {m.photo ? (
+                      <img src={m.photo} alt={m.name} className="w-full h-full object-cover" />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center text-sky-400 font-black text-xl">
+                        {m.name.charAt(0).toUpperCase()}
+                      </div>
+                    )}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-white font-bold truncate">{m.name}</p>
+                    <p className="text-slate-400 text-xs mt-0.5 capitalize">{getMembershipLabel(m.membershipType)}</p>
+                  </div>
+                  <span className={`shrink-0 text-xs font-semibold px-2.5 py-1 rounded-full ${
+                    status === 'expired'  ? 'bg-red-500/10 text-red-400 border border-red-500/30' :
+                    status === 'expiring' ? 'bg-orange-500/10 text-orange-400 border border-orange-500/30' :
+                                            'bg-green-500/10 text-green-400 border border-green-500/30'
+                  }`}>
+                    {status === 'expired' ? 'Expired' : status === 'expiring' ? 'Expiring' : 'Active'}
+                  </span>
+                  <ChevronRight size={16} className="text-slate-500 shrink-0" />
+                </button>
+              );
+            })}
+          </div>
+
+          <button
+            onClick={goHome}
+            className="w-full text-slate-500 hover:text-slate-300 text-sm font-medium py-2 transition-colors"
+          >
+            ← Back
+          </button>
         </div>
       </div>
     );

@@ -1,4 +1,4 @@
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Navigate } from 'react-router-dom';
 import { ShieldCheck, User } from 'lucide-react';
 import { useGym } from '../context/GymContext';
 import GymLogo from '../components/GymLogo';
@@ -6,6 +6,8 @@ import GymLogo from '../components/GymLogo';
 export default function Home() {
   const navigate = useNavigate();
   const { isAdminLoggedIn } = useGym();
+
+  if (isAdminLoggedIn) return <Navigate to="/admin" replace />;
 
   return (
     <div className="min-h-screen bg-slate-900 flex flex-col">

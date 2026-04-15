@@ -24,7 +24,6 @@ export default function AdminSettings() {
     priceSemiAnnual: '',
     priceAnnual: '',
     priceStudent: '',
-    studentDurationDays: '30',
     telegramChatId: '',
     telegramBotToken: '',
     siteUrl: '',
@@ -46,7 +45,6 @@ export default function AdminSettings() {
       priceSemiAnnual:    settings.priceSemiAnnual    || '',
       priceAnnual:        settings.priceAnnual        || '',
       priceStudent:       settings.priceStudent       || '',
-      studentDurationDays: settings.studentDurationDays || '30',
       telegramChatId:   settings.telegramChatId   || '',
       telegramBotToken: settings.telegramBotToken || '',
       siteUrl:          settings.siteUrl          || '',
@@ -226,35 +224,19 @@ export default function AdminSettings() {
                 <p className="text-slate-300 text-sm font-semibold">Student Membership</p>
                 <span className="text-slate-500 text-xs">— always available</span>
               </div>
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="block text-slate-400 text-xs font-medium mb-1.5">Price</label>
-                  <div className="relative">
-                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-sm font-medium">₱</span>
-                    <input
-                      type="number"
-                      min="0"
-                      value={form.priceStudent}
-                      onChange={(e) => set('priceStudent', e.target.value)}
-                      placeholder="0"
-                      className="w-full bg-slate-700 border border-slate-600 focus:border-sky-500 text-white rounded-xl pl-7 pr-4 py-3 outline-none transition-colors text-sm"
-                    />
-                  </div>
-                </div>
-                <div>
-                  <label className="block text-slate-400 text-xs font-medium mb-1.5">Duration (days)</label>
-                  <input
-                    type="number"
-                    min="1"
-                    value={form.studentDurationDays}
-                    onChange={(e) => set('studentDurationDays', e.target.value)}
-                    placeholder="30"
-                    className="w-full bg-slate-700 border border-slate-600 focus:border-sky-500 text-white rounded-xl px-4 py-3 outline-none transition-colors text-sm"
-                  />
-                </div>
+              <div className="relative max-w-xs">
+                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-sm font-medium">₱</span>
+                <input
+                  type="number"
+                  min="0"
+                  value={form.priceStudent}
+                  onChange={(e) => set('priceStudent', e.target.value)}
+                  placeholder="0"
+                  className="w-full bg-slate-700 border border-slate-600 focus:border-sky-500 text-white rounded-xl pl-7 pr-4 py-3 outline-none transition-colors text-sm"
+                />
               </div>
               <p className="text-slate-600 text-xs">
-                Shown as a permanent plan option. Members must present a valid student ID.
+                Monthly (30 days). Members must present a valid student ID.
               </p>
             </div>
           </div>

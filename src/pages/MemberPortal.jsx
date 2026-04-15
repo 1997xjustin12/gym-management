@@ -279,7 +279,7 @@ function RenewalModal({ member, settings, MEMBERSHIP_OPTIONS, submitRenewalReque
     ? plan
     : (MEMBERSHIP_OPTIONS.find((o) => o.value === plan)?.label || plan);
   const selectedDurationDays = isStudent
-    ? settings.studentDurationDays
+    ? 30
     : selectedPromo?.duration_days || null;
 
   const canSubmit = reference.trim() || receiptFile;
@@ -404,7 +404,7 @@ function RenewalModal({ member, settings, MEMBERSHIP_OPTIONS, submitRenewalReque
                           <span className={`font-medium ${plan === 'student' ? 'text-sky-300' : 'text-white'}`}>
                             Student
                           </span>
-                          <span className="text-slate-500 text-xs ml-2">{settings.studentDurationDays} days</span>
+                          <span className="text-slate-500 text-xs ml-2">30 days</span>
                         </div>
                       </div>
                       <span className={`font-bold ${plan === 'student' ? 'text-sky-300' : 'text-slate-300'}`}>

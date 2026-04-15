@@ -170,9 +170,7 @@ export default function RegisterMember() {
                 </optgroup>
                 {settings.priceStudent > 0 && (
                   <optgroup label="Student">
-                    <option value="student">
-                      Student ({settings.studentDurationDays} days)
-                    </option>
+                    <option value="student">Student (30 days)</option>
                   </optgroup>
                 )}
                 {activePromos.length > 0 && (

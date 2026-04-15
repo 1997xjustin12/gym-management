@@ -310,7 +310,7 @@ function QuickRenewModal({ member, settings, promos, renewMember, onClose }) {
     ? selectedPromo.price
     : (settings[PLAN_PRICE_KEY[plan]] || 0);
   const customDays = isStudent
-    ? settings.studentDurationDays
+    ? 30
     : selectedPromo?.duration_days || null;
 
   const handleRenew = async () => {
@@ -407,7 +407,7 @@ function QuickRenewModal({ member, settings, promos, renewMember, onClose }) {
                         <span className={`font-medium text-sm ${plan === 'student' ? 'text-sky-300' : 'text-white'}`}>
                           Student
                         </span>
-                        <span className="text-slate-500 text-xs ml-2">{settings.studentDurationDays} days</span>
+                        <span className="text-slate-500 text-xs ml-2">30 days</span>
                       </div>
                     </div>
                     <span className={`font-bold text-sm ${plan === 'student' ? 'text-sky-300' : 'text-slate-300'}`}>

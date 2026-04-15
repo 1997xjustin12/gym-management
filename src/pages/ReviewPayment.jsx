@@ -208,6 +208,16 @@ export default function ReviewPayment() {
           )}
         </div>
 
+        {/* Student ID reminder */}
+        {request.membership_type === 'student' && !done && (request.status === 'pending' || request.status === 'rejected') && (
+          <div className="flex items-start gap-2.5 bg-sky-500/10 border border-sky-500/30 rounded-2xl px-4 py-3">
+            <span className="text-sky-400 text-base shrink-0">🎓</span>
+            <p className="text-sky-300 text-xs leading-relaxed">
+              Student membership — remind member to present a valid school ID before approving.
+            </p>
+          </div>
+        )}
+
         {/* Action buttons — only for pending */}
         {request.status === 'pending' && !done && (
           <div className="space-y-3">

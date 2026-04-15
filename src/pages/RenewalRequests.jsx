@@ -227,6 +227,16 @@ export default function RenewalRequests() {
                         )}
                       </div>
 
+                      {/* Student ID reminder */}
+                      {req.membership_type === 'student' && (req.status === 'pending' || req.status === 'rejected') && (
+                        <div className="flex items-start gap-2.5 mx-5 mb-3 bg-sky-500/10 border border-sky-500/30 rounded-xl px-4 py-3">
+                          <span className="text-sky-400 text-base shrink-0">🎓</span>
+                          <p className="text-sky-300 text-xs leading-relaxed">
+                            Remind member to present a valid school ID before approving.
+                          </p>
+                        </div>
+                      )}
+
                       {/* Actions */}
                       {(req.status === 'pending' || req.status === 'rejected') && (
                         <div className="flex gap-2 px-5 pb-4">

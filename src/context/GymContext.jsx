@@ -404,6 +404,35 @@ export function GymProvider({ children }) {
     return updated;
   };
 
+  const renewMember = async (id, membershipType, paymentMethod) => {
+    const today = new Date().toISOString().split('T')[0];
+    const days = MEMBERSHIP_DAYS[membershipType] || 30;
+    const endDate = addDays(new Date(today), days).toISOString().split('T')[0];
+
+    const { data, error } = await supabase
+      .from('members')
+      .update({
+        membership_type: membershipType,
+        membership_start_date: today,
+        membership_end_date: endDate,
+        updated_at: new Date().toISOString(),
+      })
+      .eq('id', id)
+      .select()
+      .single();
+    if (error) throw error;
+
+    const updated = toMember(data);
+    setMembers((prev) => prev.map((m) => (m.id === id ? updated : m)));
+    await logAction(
+      'MEMBERSHIP_RENEWED',
+      `Admin accepted ${paymentMethod} payment — renewed ${membershipType} for: ${updated.name}`,
+      updated.name,
+      id,
+    );
+    return updated;
+  };
+
   const deleteMember = async (id) => {
     const member = members.find((m) => m.id === id);
     await removePhoto(id);
@@ -466,6 +495,7 @@ export function GymProvider({ children }) {
         adminLogout,
         logAction,
         MEMBERSHIP_OPTIONS,
+        renewMember,
         refreshMembers: loadMembers,
         // Settings
         settings,

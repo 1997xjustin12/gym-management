@@ -1,10 +1,11 @@
 import { useState, useMemo } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { Search, UserPlus, Pencil, MessageSquare, Trash2, X, Download } from 'lucide-react';
+import { Search, UserPlus, Pencil, MessageSquare, Trash2, X, Download, RefreshCw, CheckCircle, Banknote, CreditCard } from 'lucide-react';
 import { useGym } from '../context/GymContext';
 import Navbar from '../components/Navbar';
 import StatusBadge from '../components/StatusBadge';
 import SMSModal from '../components/SMSModal';
+import { MEMBERSHIP_OPTIONS } from '../context/GymContext';
 import { formatDate, formatPhoneDisplay } from '../utils/helpers';
 import { exportMembersToExcel } from '../utils/exportExcel';
 import toast from 'react-hot-toast';
@@ -13,7 +14,7 @@ const FILTERS = ['all', 'active', 'expiring', 'expired'];
 // 'active' filter includes expiring members since they are still active
 
 export default function MembersList() {
-  const { members, getMemberStatus, deleteMember } = useGym();
+  const { members, getMemberStatus, deleteMember, renewMember, settings } = useGym();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
 
@@ -21,6 +22,7 @@ export default function MembersList() {
   const [filter, setFilter] = useState(searchParams.get('filter') || 'all');
   const [smsTarget, setSmsTarget] = useState(null);
   const [confirmDelete, setConfirmDelete] = useState(null);
+  const [renewTarget, setRenewTarget] = useState(null);
 
   const filtered = useMemo(() => {
     return members.filter((m) => {
@@ -185,6 +187,13 @@ export default function MembersList() {
                         </button>
                       )}
                       <button
+                        onClick={() => setRenewTarget(member)}
+                        className="w-8 h-8 bg-green-500/20 hover:bg-green-500/40 text-green-400 rounded-lg flex items-center justify-center transition-colors"
+                        title="Accept Payment & Renew"
+                      >
+                        <RefreshCw size={14} />
+                      </button>
+                      <button
                         onClick={() => navigate(`/admin/members/${member.id}/edit`)}
                         className="w-8 h-8 bg-slate-700 hover:bg-slate-600 text-slate-300 rounded-lg flex items-center justify-center transition-colors"
                         title="Edit"
@@ -222,6 +231,16 @@ export default function MembersList() {
         )}
       </div>
 
+      {/* Quick Renew Modal */}
+      {renewTarget && (
+        <QuickRenewModal
+          member={renewTarget}
+          settings={settings}
+          renewMember={renewMember}
+          onClose={() => setRenewTarget(null)}
+        />
+      )}
+
       {/* SMS Modal */}
       {smsTarget && (
         <SMSModal
@@ -232,6 +251,7 @@ export default function MembersList() {
       )}
 
       {/* Delete Confirm */}
+
       {confirmDelete && (
         <div className="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-6">
           <div className="bg-slate-800 rounded-2xl w-full max-w-sm p-6 border border-slate-700">
@@ -258,6 +278,152 @@ export default function MembersList() {
           </div>
         </div>
       )}
+    </div>
+  );
+}
+
+const PLAN_PRICE_KEY = {
+  monthly:       'priceMonthly',
+  quarterly:     'priceQuarterly',
+  'semi-annual': 'priceSemiAnnual',
+  annual:        'priceAnnual',
+};
+
+function QuickRenewModal({ member, settings, renewMember, onClose }) {
+  const [plan, setPlan]               = useState('monthly');
+  const [paymentMethod, setPayment]   = useState('cash');
+  const [saving, setSaving]           = useState(false);
+
+  const price = settings[PLAN_PRICE_KEY[plan]] || 0;
+
+  const handleRenew = async () => {
+    setSaving(true);
+    try {
+      await renewMember(member.id, plan, paymentMethod);
+      toast.success(`✅ Membership renewed for ${member.name}!`);
+      onClose();
+    } catch (err) {
+      toast.error(err.message || 'Failed to renew membership.');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  return (
+    <div className="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4">
+      <div className="bg-slate-800 rounded-2xl w-full max-w-sm border border-slate-700 shadow-2xl">
+
+        {/* Header */}
+        <div className="flex items-center justify-between px-5 py-4 border-b border-slate-700">
+          <div className="flex items-center gap-3">
+            <div className="w-9 h-9 bg-green-500/20 rounded-xl flex items-center justify-center">
+              <RefreshCw size={16} className="text-green-400" />
+            </div>
+            <div>
+              <h3 className="text-white font-bold text-sm">Accept Payment &amp; Renew</h3>
+              <p className="text-slate-400 text-xs">{member.name}</p>
+            </div>
+          </div>
+          <button onClick={onClose} className="text-slate-400 hover:text-white p-1">
+            <X size={18} />
+          </button>
+        </div>
+
+        <div className="p-5 space-y-5">
+
+          {/* Plan selection */}
+          <div>
+            <p className="text-slate-400 text-xs font-medium uppercase tracking-wider mb-2">Membership Plan</p>
+            <div className="space-y-2">
+              {MEMBERSHIP_OPTIONS.map((opt) => {
+                const optPrice = settings[PLAN_PRICE_KEY[opt.value]] || 0;
+                return (
+                  <label
+                    key={opt.value}
+                    className={`flex items-center justify-between p-3 rounded-xl border cursor-pointer transition-all ${
+                      plan === opt.value
+                        ? 'border-green-500 bg-green-500/10'
+                        : 'border-slate-600 bg-slate-700/40 hover:border-slate-500'
+                    }`}
+                  >
+                    <div className="flex items-center gap-3">
+                      <input
+                        type="radio"
+                        name="plan"
+                        value={opt.value}
+                        checked={plan === opt.value}
+                        onChange={() => setPlan(opt.value)}
+                        className="accent-green-500"
+                      />
+                      <span className={`font-medium text-sm ${plan === opt.value ? 'text-green-400' : 'text-white'}`}>
+                        {opt.label}
+                      </span>
+                    </div>
+                    <span className={`font-bold text-sm ${plan === opt.value ? 'text-green-400' : 'text-slate-300'}`}>
+                      {optPrice > 0 ? `₱${optPrice.toLocaleString()}` : '—'}
+                    </span>
+                  </label>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* Payment method */}
+          <div>
+            <p className="text-slate-400 text-xs font-medium uppercase tracking-wider mb-2">Payment Method</p>
+            <div className="grid grid-cols-2 gap-2">
+              <button
+                onClick={() => setPayment('cash')}
+                className={`flex items-center justify-center gap-2 py-3 rounded-xl border font-semibold text-sm transition-all ${
+                  paymentMethod === 'cash'
+                    ? 'border-orange-500 bg-orange-500/10 text-orange-400'
+                    : 'border-slate-600 bg-slate-700/40 text-slate-400 hover:border-slate-500'
+                }`}
+              >
+                <Banknote size={16} /> Cash
+              </button>
+              <button
+                onClick={() => setPayment('gcash')}
+                className={`flex items-center justify-center gap-2 py-3 rounded-xl border font-semibold text-sm transition-all ${
+                  paymentMethod === 'gcash'
+                    ? 'border-blue-500 bg-blue-500/10 text-blue-400'
+                    : 'border-slate-600 bg-slate-700/40 text-slate-400 hover:border-slate-500'
+                }`}
+              >
+                <CreditCard size={16} /> GCash
+              </button>
+            </div>
+          </div>
+
+          {/* Summary */}
+          {price > 0 && (
+            <div className="bg-slate-700/50 rounded-xl p-3 flex items-center justify-between">
+              <p className="text-slate-400 text-sm">Total Amount</p>
+              <p className="text-green-400 font-black text-lg">₱{price.toLocaleString()}</p>
+            </div>
+          )}
+
+          {/* Actions */}
+          <div className="flex gap-3">
+            <button
+              onClick={onClose}
+              className="flex-1 bg-slate-700 hover:bg-slate-600 text-white py-3 rounded-xl font-medium text-sm transition-colors"
+            >
+              Cancel
+            </button>
+            <button
+              onClick={handleRenew}
+              disabled={saving}
+              className="flex-1 flex items-center justify-center gap-2 bg-green-500 hover:bg-green-600 disabled:opacity-50 text-white py-3 rounded-xl font-bold text-sm transition-colors"
+            >
+              {saving
+                ? <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                : <><CheckCircle size={15} /> Confirm &amp; Renew</>
+              }
+            </button>
+          </div>
+        </div>
+      </div>
     </div>
   );
 }

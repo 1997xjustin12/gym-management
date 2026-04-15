@@ -236,6 +236,7 @@ export default function MembersList() {
         <QuickRenewModal
           member={renewTarget}
           settings={settings}
+          promos={settings.promos?.filter((p) => p.active) || []}
           renewMember={renewMember}
           onClose={() => setRenewTarget(null)}
         />
@@ -289,17 +290,18 @@ const PLAN_PRICE_KEY = {
   annual:        'priceAnnual',
 };
 
-function QuickRenewModal({ member, settings, renewMember, onClose }) {
+function QuickRenewModal({ member, settings, promos, renewMember, onClose }) {
   const [plan, setPlan]               = useState('monthly');
   const [paymentMethod, setPayment]   = useState('cash');
   const [saving, setSaving]           = useState(false);
 
-  const price = settings[PLAN_PRICE_KEY[plan]] || 0;
+  const selectedPromo = promos.find((p) => p.name === plan);
+  const price = selectedPromo ? selectedPromo.price : (settings[PLAN_PRICE_KEY[plan]] || 0);
 
   const handleRenew = async () => {
     setSaving(true);
     try {
-      await renewMember(member.id, plan, paymentMethod);
+      await renewMember(member.id, plan, paymentMethod, selectedPromo?.duration_days || null);
       toast.success(`✅ Membership renewed for ${member.name}!`);
       onClose();
     } catch (err) {
@@ -365,6 +367,43 @@ function QuickRenewModal({ member, settings, renewMember, onClose }) {
                   </label>
                 );
               })}
+
+              {/* Special promos */}
+              {promos.length > 0 && (
+                <>
+                  <p className="text-purple-400 text-xs font-medium uppercase tracking-wider pt-1">Special Promos</p>
+                  {promos.map((promo) => (
+                    <label
+                      key={promo.id}
+                      className={`flex items-center justify-between p-3 rounded-xl border cursor-pointer transition-all ${
+                        plan === promo.name
+                          ? 'border-purple-500 bg-purple-500/10'
+                          : 'border-slate-600 bg-slate-700/40 hover:border-slate-500'
+                      }`}
+                    >
+                      <div className="flex items-center gap-3">
+                        <input
+                          type="radio"
+                          name="plan"
+                          value={promo.name}
+                          checked={plan === promo.name}
+                          onChange={() => setPlan(promo.name)}
+                          className="accent-purple-500"
+                        />
+                        <div>
+                          <span className={`font-medium text-sm ${plan === promo.name ? 'text-purple-300' : 'text-white'}`}>
+                            {promo.name}
+                          </span>
+                          <span className="text-slate-500 text-xs ml-2">{promo.duration_days} days</span>
+                        </div>
+                      </div>
+                      <span className={`font-bold text-sm ${plan === promo.name ? 'text-purple-300' : 'text-slate-300'}`}>
+                        ₱{Number(promo.price).toLocaleString()}
+                      </span>
+                    </label>
+                  ))}
+                </>
+              )}
             </div>
           </div>
 

@@ -50,7 +50,7 @@ export default function ReviewPayment() {
     setProcessing('approve');
     try {
       const today   = new Date().toISOString().split('T')[0];
-      const days    = MEMBERSHIP_DAYS[request.membership_type] || 30;
+      const days    = request.duration_days || MEMBERSHIP_DAYS[request.membership_type] || 30;
       const endDate = addDays(new Date(today), days).toISOString().split('T')[0];
 
       const { error: memberErr } = await supabase

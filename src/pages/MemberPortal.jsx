@@ -250,6 +250,8 @@ export default function MemberPortal() {
 
 /* ── Renewal Modal ──────────────────────────────────────────── */
 function RenewalModal({ member, settings, MEMBERSHIP_OPTIONS, submitRenewalRequest, onClose }) {
+  const activePromos = settings.promos?.filter((p) => p.active) || [];
+
   const [step, setStep]           = useState('plan');   // plan | pay | done
   const [plan, setPlan]           = useState(MEMBERSHIP_OPTIONS[0].value);
   const [reference, setReference] = useState('');
@@ -260,8 +262,9 @@ function RenewalModal({ member, settings, MEMBERSHIP_OPTIONS, submitRenewalReque
   const receiptInputRef           = useRef(null);
   const cameraInputRef            = useRef(null);
 
-  const price = settings[PLAN_PRICE_KEY[plan]] || 0;
-  const planLabel = MEMBERSHIP_OPTIONS.find((o) => o.value === plan)?.label || plan;
+  const selectedPromo = activePromos.find((p) => p.name === plan);
+  const price = selectedPromo ? selectedPromo.price : (settings[PLAN_PRICE_KEY[plan]] || 0);
+  const planLabel = selectedPromo ? plan : (MEMBERSHIP_OPTIONS.find((o) => o.value === plan)?.label || plan);
 
   const canSubmit = reference.trim() || receiptFile;
 
@@ -297,6 +300,7 @@ function RenewalModal({ member, settings, MEMBERSHIP_OPTIONS, submitRenewalReque
         amount:         price,
         gcashReference: reference.trim(),
         receiptFile:    receiptFile,
+        durationDays:   selectedPromo?.duration_days || null,
       });
       setStep('done');
     } catch (err) {
@@ -359,6 +363,43 @@ function RenewalModal({ member, settings, MEMBERSHIP_OPTIONS, submitRenewalReque
                     </label>
                   );
                 })}
+
+                {/* Special promos */}
+                {activePromos.length > 0 && (
+                  <>
+                    <p className="text-purple-400 text-xs font-medium uppercase tracking-wider pt-1">Special Promos</p>
+                    {activePromos.map((promo) => (
+                      <label
+                        key={promo.id}
+                        className={`flex items-center justify-between p-4 rounded-xl border cursor-pointer transition-all ${
+                          plan === promo.name
+                            ? 'border-purple-500 bg-purple-500/10'
+                            : 'border-slate-600 bg-slate-700/40 hover:border-slate-500'
+                        }`}
+                      >
+                        <div className="flex items-center gap-3">
+                          <input
+                            type="radio"
+                            name="plan"
+                            value={promo.name}
+                            checked={plan === promo.name}
+                            onChange={() => setPlan(promo.name)}
+                            className="accent-purple-500"
+                          />
+                          <div>
+                            <span className={`font-medium ${plan === promo.name ? 'text-purple-300' : 'text-white'}`}>
+                              {promo.name}
+                            </span>
+                            <span className="text-slate-500 text-xs ml-2">{promo.duration_days} days</span>
+                          </div>
+                        </div>
+                        <span className={`font-bold ${plan === promo.name ? 'text-purple-300' : 'text-slate-300'}`}>
+                          ₱{Number(promo.price).toLocaleString()}
+                        </span>
+                      </label>
+                    ))}
+                  </>
+                )}
               </div>
 
               {price === 0 && (

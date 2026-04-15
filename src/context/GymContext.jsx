@@ -41,6 +41,7 @@ const toSettings = (row) => ({
   telegramBotToken: row.telegram_bot_token || '',
   siteUrl: row.site_url || '',
   lastBackupAt: row.last_backup_at || null,
+  promos: Array.isArray(row.promos) ? row.promos : [],
 });
 
 const isBase64 = (str) => typeof str === 'string' && str.startsWith('data:');
@@ -75,9 +76,10 @@ export function GymProvider({ children }) {
     priceSemiAnnual: 0,
     priceAnnual: 0,
     telegramChatId: '',
-  telegramBotToken: '',
-  siteUrl: '',
-  lastBackupAt: null,
+    telegramBotToken: '',
+    siteUrl: '',
+    lastBackupAt: null,
+    promos: [],
   });
   const [renewalRequests, setRenewalRequests] = useState([]);
 
@@ -172,6 +174,7 @@ export function GymProvider({ children }) {
       telegram_chat_id: formData.telegramChatId || '',
       telegram_bot_token: formData.telegramBotToken || '',
       site_url: formData.siteUrl || '',
+      promos: formData.promos || [],
       updated_at: new Date().toISOString(),
     });
     if (error) throw error;
@@ -236,6 +239,7 @@ export function GymProvider({ children }) {
       amount: payload.amount,
       gcash_reference: payload.gcashReference || '',
       receipt_url: receiptUrl,
+      duration_days: payload.durationDays || null,
       status: 'pending',
     }]);
     if (error) throw error;
@@ -243,7 +247,7 @@ export function GymProvider({ children }) {
 
   const approveRenewalRequest = async (request) => {
     const today = new Date().toISOString().split('T')[0];
-    const days = MEMBERSHIP_DAYS[request.membership_type] || 30;
+    const days = request.duration_days || getTypeDays(request.membership_type);
     const endDate = addDays(new Date(today), days).toISOString().split('T')[0];
 
     // Directly update membership dates — skip name duplicate check
@@ -295,8 +299,13 @@ export function GymProvider({ children }) {
   };
 
   // ── Helpers ───────────────────────────────────────────────────
+  const getTypeDays = (membershipType) =>
+    MEMBERSHIP_DAYS[membershipType]
+    || settings.promos.find((p) => p.name === membershipType)?.duration_days
+    || 30;
+
   const calculateEndDate = (startDate, membershipType) => {
-    const days = MEMBERSHIP_DAYS[membershipType] || 30;
+    const days = getTypeDays(membershipType);
     return addDays(new Date(startDate), days).toISOString().split('T')[0];
   };
 
@@ -404,9 +413,9 @@ export function GymProvider({ children }) {
     return updated;
   };
 
-  const renewMember = async (id, membershipType, paymentMethod) => {
+  const renewMember = async (id, membershipType, paymentMethod, durationDays) => {
     const today = new Date().toISOString().split('T')[0];
-    const days = MEMBERSHIP_DAYS[membershipType] || 30;
+    const days = durationDays || getTypeDays(membershipType);
     const endDate = addDays(new Date(today), days).toISOString().split('T')[0];
 
     const { data, error } = await supabase

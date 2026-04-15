@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { Save, Upload, X, Settings, Send } from 'lucide-react';
+import { Save, Upload, X, Settings, Send, Plus, Trash2, Tag, ToggleLeft, ToggleRight } from 'lucide-react';
 import { useGym } from '../context/GymContext';
 import Navbar from '../components/Navbar';
 import toast from 'react-hot-toast';
@@ -26,8 +26,11 @@ export default function AdminSettings() {
     telegramChatId: '',
     telegramBotToken: '',
     siteUrl: '',
+    promos: [],
   });
   const [saving, setSaving] = useState(false);
+  const [newPromo, setNewPromo] = useState({ name: '', price: '', duration_days: '' });
+  const [addingPromo, setAddingPromo] = useState(false);
   const fileRef = useRef();
 
   useEffect(() => {
@@ -43,8 +46,31 @@ export default function AdminSettings() {
       telegramChatId:   settings.telegramChatId   || '',
       telegramBotToken: settings.telegramBotToken || '',
       siteUrl:          settings.siteUrl          || '',
+      promos:           settings.promos           || [],
     }));
   }, [settings]);
+
+  const addPromo = () => {
+    const name = newPromo.name.trim();
+    const price = Number(newPromo.price);
+    const duration_days = Number(newPromo.duration_days);
+    if (!name || !price || !duration_days) return;
+    const promo = { id: crypto.randomUUID(), name, price, duration_days, active: true };
+    setForm((f) => ({ ...f, promos: [...f.promos, promo] }));
+    setNewPromo({ name: '', price: '', duration_days: '' });
+    setAddingPromo(false);
+  };
+
+  const togglePromo = (id) => {
+    setForm((f) => ({
+      ...f,
+      promos: f.promos.map((p) => p.id === id ? { ...p, active: !p.active } : p),
+    }));
+  };
+
+  const deletePromo = (id) => {
+    setForm((f) => ({ ...f, promos: f.promos.filter((p) => p.id !== id) }));
+  };
 
   const set = (key, val) => setForm((f) => ({ ...f, [key]: val }));
 
@@ -237,6 +263,115 @@ export default function AdminSettings() {
               <div className="flex items-center gap-2 bg-sky-500/10 border border-sky-500/30 rounded-xl px-3 py-2">
                 <div className="w-2 h-2 bg-sky-400 rounded-full animate-pulse" />
                 <p className="text-sky-300 text-xs">Notifications active → Chat ID: <span className="font-mono font-bold">{form.telegramChatId}</span></p>
+              </div>
+            )}
+          </div>
+
+          {/* Special Promos */}
+          <div className="bg-slate-800 rounded-2xl border border-slate-700/50 p-5 space-y-4">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <Tag size={16} className="text-purple-400" />
+                <h2 className="text-white font-semibold text-base">Special Promos</h2>
+              </div>
+              <button
+                type="button"
+                onClick={() => setAddingPromo((v) => !v)}
+                className="flex items-center gap-1.5 bg-purple-500/20 hover:bg-purple-500/30 text-purple-300 text-xs font-semibold px-3 py-1.5 rounded-xl transition-colors"
+              >
+                <Plus size={13} /> Add Promo
+              </button>
+            </div>
+            <p className="text-slate-500 text-xs -mt-2">
+              Student discounts, anniversary promos, etc. Appear alongside standard plans.
+            </p>
+
+            {/* Add promo form */}
+            {addingPromo && (
+              <div className="bg-slate-700/50 rounded-xl p-4 space-y-3 border border-slate-600">
+                <p className="text-slate-300 text-sm font-medium">New Promo</p>
+                <input
+                  type="text"
+                  value={newPromo.name}
+                  onChange={(e) => setNewPromo((p) => ({ ...p, name: e.target.value }))}
+                  placeholder="Promo name (e.g. Student Promo)"
+                  className="w-full bg-slate-700 border border-slate-600 focus:border-purple-500 text-white rounded-xl px-4 py-2.5 outline-none transition-colors placeholder:text-slate-500 text-sm"
+                />
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="relative">
+                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-sm">₱</span>
+                    <input
+                      type="number"
+                      min="0"
+                      value={newPromo.price}
+                      onChange={(e) => setNewPromo((p) => ({ ...p, price: e.target.value }))}
+                      placeholder="Price"
+                      className="w-full bg-slate-700 border border-slate-600 focus:border-purple-500 text-white rounded-xl pl-7 pr-4 py-2.5 outline-none transition-colors text-sm"
+                    />
+                  </div>
+                  <div className="relative">
+                    <input
+                      type="number"
+                      min="1"
+                      value={newPromo.duration_days}
+                      onChange={(e) => setNewPromo((p) => ({ ...p, duration_days: e.target.value }))}
+                      placeholder="Duration (days)"
+                      className="w-full bg-slate-700 border border-slate-600 focus:border-purple-500 text-white rounded-xl px-4 py-2.5 outline-none transition-colors text-sm"
+                    />
+                  </div>
+                </div>
+                <div className="flex gap-2">
+                  <button
+                    type="button"
+                    onClick={() => { setAddingPromo(false); setNewPromo({ name: '', price: '', duration_days: '' }); }}
+                    className="flex-1 bg-slate-600 hover:bg-slate-500 text-white py-2 rounded-xl text-sm font-medium transition-colors"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="button"
+                    onClick={addPromo}
+                    disabled={!newPromo.name.trim() || !newPromo.price || !newPromo.duration_days}
+                    className="flex-1 bg-purple-500 hover:bg-purple-600 disabled:opacity-40 text-white py-2 rounded-xl text-sm font-bold transition-colors"
+                  >
+                    Add
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {/* Promo list */}
+            {form.promos.length === 0 ? (
+              <p className="text-slate-600 text-sm text-center py-2">No promos yet</p>
+            ) : (
+              <div className="space-y-2">
+                {form.promos.map((promo) => (
+                  <div key={promo.id} className={`flex items-center gap-3 p-3 rounded-xl border transition-colors ${promo.active ? 'border-purple-500/30 bg-purple-500/5' : 'border-slate-600 bg-slate-700/30 opacity-60'}`}>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-white text-sm font-semibold">{promo.name}</p>
+                      <p className="text-slate-400 text-xs">₱{Number(promo.price).toLocaleString()} · {promo.duration_days} days</p>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => togglePromo(promo.id)}
+                      className="text-slate-400 hover:text-purple-300 transition-colors"
+                      title={promo.active ? 'Disable promo' : 'Enable promo'}
+                    >
+                      {promo.active
+                        ? <ToggleRight size={22} className="text-purple-400" />
+                        : <ToggleLeft size={22} />
+                      }
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => deletePromo(promo.id)}
+                      className="text-slate-500 hover:text-red-400 transition-colors"
+                      title="Delete promo"
+                    >
+                      <Trash2 size={15} />
+                    </button>
+                  </div>
+                ))}
               </div>
             )}
           </div>

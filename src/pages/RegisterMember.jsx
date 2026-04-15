@@ -22,7 +22,8 @@ export default function RegisterMember() {
   const { id } = useParams();
   const isEdit = Boolean(id);
   const navigate = useNavigate();
-  const { addMember, updateMember, deleteMember, getMemberById } = useGym();
+  const { addMember, updateMember, deleteMember, getMemberById, settings } = useGym();
+  const activePromos = settings.promos?.filter((p) => p.active) || [];
 
   const [form, setForm] = useState(EMPTY_FORM);
   const [showCamera, setShowCamera] = useState(false);
@@ -160,11 +161,22 @@ export default function RegisterMember() {
                 onChange={(e) => set('membershipType', e.target.value)}
                 className="input-field"
               >
-                {MEMBERSHIP_OPTIONS.map((opt) => (
-                  <option key={opt.value} value={opt.value}>
-                    {opt.label} ({opt.days} days)
-                  </option>
-                ))}
+                <optgroup label="Standard Plans">
+                  {MEMBERSHIP_OPTIONS.map((opt) => (
+                    <option key={opt.value} value={opt.value}>
+                      {opt.label} ({opt.days} days)
+                    </option>
+                  ))}
+                </optgroup>
+                {activePromos.length > 0 && (
+                  <optgroup label="Special Promos">
+                    {activePromos.map((promo) => (
+                      <option key={promo.id} value={promo.name}>
+                        {promo.name} ({promo.duration_days} days)
+                      </option>
+                    ))}
+                  </optgroup>
+                )}
               </select>
             </FormField>
 

@@ -1,7 +1,6 @@
 import { useNavigate, Navigate } from 'react-router-dom';
-import { ShieldCheck, User, ChevronRight } from 'lucide-react';
+import { ShieldCheck, User, ChevronRight, Dumbbell } from 'lucide-react';
 import { useGym } from '../context/GymContext';
-import GymLogo from '../components/GymLogo';
 
 export default function Home() {
   const navigate = useNavigate();
@@ -25,16 +24,17 @@ export default function Home() {
         {/* Logo — fade + scale in */}
         <div className="mb-6 relative animate-fade-in-down">
           <div className="absolute -inset-6 bg-orange-500/10 rounded-full blur-3xl animate-pulse-slow" />
-          <GymLogo size={150} className="relative drop-shadow-2xl" />
+          <div className="relative w-28 h-28 bg-gradient-to-br from-orange-500 to-orange-600 rounded-3xl flex items-center justify-center shadow-2xl shadow-orange-500/30">
+            <Dumbbell size={56} className="text-white" />
+          </div>
         </div>
 
         {/* Title */}
         <div className="animate-fade-in-up animation-delay-200">
-          <h1 className="text-4xl sm:text-5xl font-black text-white mb-2 tracking-tight">
-            POWER <span className="text-orange-500">FITNESS</span> GYM
+          <h1 className="text-4xl sm:text-5xl font-black text-white mb-1 tracking-tight">
+            Gym<span className="text-orange-500">Hub</span>
           </h1>
-          <div className="w-12 h-1 bg-orange-500 rounded-full mx-auto mb-2" />
-          <p className="text-slate-500 text-sm mb-10">Toril, Davao City</p>
+          <p className="text-slate-500 text-sm mb-10">Gym Management System</p>
         </div>
 
         {/* Portal Cards */}
@@ -83,12 +83,9 @@ export default function Home() {
       </div>
 
       {/* Footer */}
-      <div className="text-center pb-6 space-y-1 animate-fade-in-up animation-delay-800">
+      <div className="text-center pb-6 animate-fade-in-up animation-delay-800">
         <p className="text-slate-600 text-xs">
-          © {new Date().getFullYear()} Power Fitness Gym · All rights reserved
-        </p>
-        <p className="text-slate-700 text-xs">
-          2nd Floor Fernandez Bldg, Saavedra St, Toril, Davao City, Davao del Sur
+          © {new Date().getFullYear()} GymHub · All rights reserved
         </p>
       </div>
 

@@ -100,7 +100,6 @@ export default function CheckIn() {
               onChange={(e) => setQuery(e.target.value)}
               placeholder="Name or phone number..."
               className="w-full bg-slate-800 border border-slate-700 focus:border-orange-500/60 text-white rounded-2xl pl-12 pr-4 py-4 outline-none transition-colors placeholder:text-slate-600 text-base"
-              autoFocus
             />
           </div>
           <button

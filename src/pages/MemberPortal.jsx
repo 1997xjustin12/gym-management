@@ -124,7 +124,6 @@ export default function MemberPortal() {
               onChange={(e) => setQuery(e.target.value)}
               placeholder="Name or phone number..."
               className="w-full bg-slate-800 border border-slate-700 focus:border-sky-500/60 text-white rounded-2xl pl-12 pr-4 py-4 outline-none transition-colors placeholder:text-slate-600 text-base"
-              autoFocus
             />
           </div>
           <button
@@ -330,8 +329,8 @@ function RenewalModal({ member, settings, MEMBERSHIP_OPTIONS, submitRenewalReque
   };
 
   return (
-    <div className="fixed inset-0 bg-black/80 z-50 flex items-end sm:items-center justify-center p-4">
-      <div className="bg-slate-800 rounded-2xl w-full max-w-md shadow-2xl border border-slate-700 flex flex-col max-h-[90vh]">
+    <div className="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4">
+      <div className="bg-slate-800 rounded-2xl w-full max-w-md shadow-2xl border border-slate-700 flex flex-col max-h-[85vh]">
 
         {/* Header */}
         <div className="flex items-center justify-between px-5 py-4 border-b border-slate-700 shrink-0">

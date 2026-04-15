@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { Camera, User, Phone, Calendar, Tag, FileText, RefreshCw, Save, Trash2, AlertTriangle } from 'lucide-react';
+import { Camera, User, Phone, Calendar, Tag, FileText, RefreshCw, Save, Trash2, AlertTriangle, History } from 'lucide-react';
 import { useGym } from '../context/GymContext';
 import Navbar from '../components/Navbar';
 import CameraCapture from '../components/CameraCapture';
@@ -240,15 +240,24 @@ export default function RegisterMember() {
             )}
           </button>
 
-          {/* Delete button (edit mode only) */}
+          {/* Edit-mode actions */}
           {isEdit && (
-            <button
-              type="button"
-              onClick={() => setShowDeleteConfirm(true)}
-              className="w-full flex items-center justify-center gap-2 bg-red-500/10 hover:bg-red-500/20 border border-red-500/30 text-red-400 font-bold py-3.5 rounded-2xl transition-colors text-sm"
-            >
-              <Trash2 size={16} /> Delete Member
-            </button>
+            <div className="flex gap-3">
+              <button
+                type="button"
+                onClick={() => navigate(`/admin/members/${id}/history`)}
+                className="flex-1 flex items-center justify-center gap-2 bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-300 font-semibold py-3.5 rounded-2xl transition-colors text-sm"
+              >
+                <History size={16} /> View History
+              </button>
+              <button
+                type="button"
+                onClick={() => setShowDeleteConfirm(true)}
+                className="flex-1 flex items-center justify-center gap-2 bg-red-500/10 hover:bg-red-500/20 border border-red-500/30 text-red-400 font-bold py-3.5 rounded-2xl transition-colors text-sm"
+              >
+                <Trash2 size={16} /> Delete
+              </button>
+            </div>
           )}
         </form>
       </div>

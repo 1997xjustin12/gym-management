@@ -1,6 +1,6 @@
 import { useState, useMemo } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { Search, UserPlus, Pencil, MessageSquare, Trash2, X, Download, RefreshCw, CheckCircle, Banknote, CreditCard } from 'lucide-react';
+import { Search, UserPlus, Pencil, MessageSquare, Trash2, X, Download, RefreshCw, CheckCircle, Banknote, CreditCard, History } from 'lucide-react';
 import { useGym } from '../context/GymContext';
 import Navbar from '../components/Navbar';
 import StatusBadge from '../components/StatusBadge';
@@ -192,6 +192,13 @@ export default function MembersList() {
                         title="Accept Payment & Renew"
                       >
                         <RefreshCw size={14} />
+                      </button>
+                      <button
+                        onClick={() => navigate(`/admin/members/${member.id}/history`)}
+                        className="w-8 h-8 bg-slate-700 hover:bg-slate-600 text-slate-300 rounded-lg flex items-center justify-center transition-colors"
+                        title="View History"
+                      >
+                        <History size={14} />
                       </button>
                       <button
                         onClick={() => navigate(`/admin/members/${member.id}/edit`)}

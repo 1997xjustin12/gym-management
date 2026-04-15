@@ -1,6 +1,7 @@
 import { useState } from 'react';
-import { CheckCircle, XCircle, CreditCard, AlertTriangle, ImageIcon, ChevronDown } from 'lucide-react';
+import { CheckCircle, XCircle, CreditCard, AlertTriangle, ImageIcon, ChevronDown, Trash2 } from 'lucide-react';
 import { useGym } from '../context/GymContext';
+import { supabase } from '../lib/supabase';
 import Navbar from '../components/Navbar';
 import toast from 'react-hot-toast';
 
@@ -30,6 +31,8 @@ export default function RenewalRequests() {
   const [expandedId, setExpandedId]     = useState(null);
   const [rejectTarget, setRejectTarget] = useState(null);
   const [rejectNotes, setRejectNotes]   = useState('');
+  const [deleteTarget, setDeleteTarget] = useState(null);
+  const [deleting, setDeleting]         = useState(false);
 
   const filtered = filter === 'all'
     ? renewalRequests
@@ -67,6 +70,25 @@ export default function RenewalRequests() {
       toast.error(err.message);
     } finally {
       setProcessing(null);
+    }
+  };
+
+  const handleDelete = async () => {
+    if (!deleteTarget) return;
+    setDeleting(true);
+    try {
+      const { error } = await supabase
+        .from('renewal_requests')
+        .delete()
+        .eq('id', deleteTarget.id);
+      if (error) throw error;
+      toast.success('Record deleted.');
+      setDeleteTarget(null);
+      setExpandedId(null);
+    } catch (err) {
+      toast.error('Failed to delete: ' + err.message);
+    } finally {
+      setDeleting(false);
     }
   };
 
@@ -239,29 +261,40 @@ export default function RenewalRequests() {
                       )}
 
                       {/* Actions */}
-                      {(req.status === 'pending' || req.status === 'rejected') && (
-                        <div className="flex gap-2 px-5 pb-4">
-                          <button
-                            onClick={() => handleApprove(req)}
-                            disabled={busy}
-                            className="flex-1 flex items-center justify-center gap-2 bg-green-500 hover:bg-green-600 disabled:opacity-50 text-white font-bold py-2.5 rounded-xl transition-colors text-sm"
-                          >
-                            {busy
-                              ? <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                              : <><CheckCircle size={16} /> Approve &amp; Renew</>
-                            }
-                          </button>
-                          {req.status === 'pending' && (
+                      <div className="flex gap-2 px-5 pb-4">
+                        {(req.status === 'pending' || req.status === 'rejected') && (
+                          <>
                             <button
-                              onClick={() => openReject(req)}
+                              onClick={() => handleApprove(req)}
                               disabled={busy}
-                              className="flex-1 flex items-center justify-center gap-2 bg-red-500/10 hover:bg-red-500/20 border border-red-500/30 text-red-400 font-bold py-2.5 rounded-xl transition-colors text-sm"
+                              className="flex-1 flex items-center justify-center gap-2 bg-green-500 hover:bg-green-600 disabled:opacity-50 text-white font-bold py-2.5 rounded-xl transition-colors text-sm"
                             >
-                              <XCircle size={16} /> Reject
+                              {busy
+                                ? <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                                : <><CheckCircle size={16} /> Approve &amp; Renew</>
+                              }
                             </button>
-                          )}
-                        </div>
-                      )}
+                            {req.status === 'pending' && (
+                              <button
+                                onClick={() => openReject(req)}
+                                disabled={busy}
+                                className="flex-1 flex items-center justify-center gap-2 bg-red-500/10 hover:bg-red-500/20 border border-red-500/30 text-red-400 font-bold py-2.5 rounded-xl transition-colors text-sm"
+                              >
+                                <XCircle size={16} /> Reject
+                              </button>
+                            )}
+                          </>
+                        )}
+                        {(req.status === 'approved' || req.status === 'rejected') && (
+                          <button
+                            onClick={() => setDeleteTarget({ id: req.id, name: req.member_name, status: req.status })}
+                            disabled={busy}
+                            className="flex items-center justify-center gap-2 bg-slate-700 hover:bg-red-500/20 hover:border-red-500/40 border border-slate-600 text-slate-400 hover:text-red-400 font-medium py-2.5 px-4 rounded-xl transition-colors text-sm"
+                          >
+                            <Trash2 size={15} /> Delete Record
+                          </button>
+                        )}
+                      </div>
                     </div>
                   )}
                 </div>
@@ -299,6 +332,45 @@ export default function RenewalRequests() {
                   className="flex-1 bg-red-500 hover:bg-red-600 disabled:opacity-50 text-white py-3 rounded-xl font-bold text-sm transition-colors"
                 >
                   {processing === rejectTarget.id ? '...' : 'Reject'}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+      {/* Delete confirm modal */}
+      {deleteTarget && (
+        <div className="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4">
+          <div className="bg-slate-800 rounded-2xl w-full max-w-sm border border-slate-700 shadow-2xl">
+            <div className="px-5 py-4 border-b border-slate-700">
+              <h3 className="text-white font-bold">Delete Record?</h3>
+              <p className="text-slate-400 text-sm mt-0.5">For {deleteTarget.name}</p>
+            </div>
+            <div className="p-5 space-y-4">
+              <div className="flex items-start gap-3 bg-slate-700/40 rounded-xl p-3">
+                <AlertTriangle size={16} className="text-yellow-400 shrink-0 mt-0.5" />
+                <p className="text-slate-300 text-sm leading-relaxed">
+                  This removes the payment record only.{' '}
+                  {deleteTarget.status === 'approved'
+                    ? "The member's renewed membership is not affected."
+                    : 'This rejected request will be permanently removed.'}
+                </p>
+              </div>
+              <div className="flex gap-3">
+                <button
+                  onClick={() => setDeleteTarget(null)}
+                  className="flex-1 bg-slate-700 hover:bg-slate-600 text-white py-3 rounded-xl font-medium text-sm transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={handleDelete}
+                  disabled={deleting}
+                  className="flex-1 flex items-center justify-center gap-2 bg-red-500 hover:bg-red-600 disabled:opacity-50 text-white py-3 rounded-xl font-bold text-sm transition-colors"
+                >
+                  {deleting
+                    ? <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                    : <><Trash2 size={15} /> Delete</>}
                 </button>
               </div>
             </div>

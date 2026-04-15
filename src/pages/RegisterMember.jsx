@@ -164,7 +164,7 @@ export default function RegisterMember() {
                 <optgroup label="Standard Plans">
                   {MEMBERSHIP_OPTIONS.map((opt) => (
                     <option key={opt.value} value={opt.value}>
-                      {opt.label} ({opt.days} days)
+                      {opt.label}
                     </option>
                   ))}
                 </optgroup>

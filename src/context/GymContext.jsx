@@ -1,20 +1,25 @@
 import { createContext, useContext, useState, useEffect, useCallback } from 'react';
-import { differenceInDays, addDays } from 'date-fns';
+import { differenceInDays, addDays, addMonths } from 'date-fns';
 import { supabase } from '../lib/supabase';
 import toast from 'react-hot-toast';
 
 const GymContext = createContext();
 
 export const MEMBERSHIP_OPTIONS = [
-  { value: 'monthly', label: '1 Month', days: 30 },
-  { value: 'quarterly', label: '3 Months', days: 90 },
-  { value: 'semi-annual', label: '6 Months', days: 180 },
-  { value: 'annual', label: '1 Year', days: 365 },
+  { value: 'monthly',     label: '1 Month',  months: 1  },
+  { value: 'quarterly',   label: '3 Months', months: 3  },
+  { value: 'semi-annual', label: '6 Months', months: 6  },
+  { value: 'annual',      label: '1 Year',   months: 12 },
 ];
 
-const MEMBERSHIP_DAYS = Object.fromEntries(
-  MEMBERSHIP_OPTIONS.map((o) => [o.value, o.days])
-);
+// Month-based plans (uses calendar months, not fixed days)
+const MEMBERSHIP_MONTHS = {
+  monthly:       1,
+  quarterly:     3,
+  'semi-annual': 6,
+  annual:        12,
+  student:       1,
+};
 
 const toMember = (row) => ({
   id: row.id,
@@ -250,8 +255,7 @@ export function GymProvider({ children }) {
 
   const approveRenewalRequest = async (request) => {
     const today = new Date().toISOString().split('T')[0];
-    const days = request.duration_days || getTypeDays(request.membership_type);
-    const endDate = addDays(new Date(today), days).toISOString().split('T')[0];
+    const endDate = calculateEndDate(today, request.membership_type, request.duration_days);
 
     // Directly update membership dates — skip name duplicate check
     const { data, error: memberErr } = await supabase
@@ -302,15 +306,15 @@ export function GymProvider({ children }) {
   };
 
   // ── Helpers ───────────────────────────────────────────────────
-  const getTypeDays = (membershipType) =>
-    MEMBERSHIP_DAYS[membershipType]
-    || (membershipType === 'student' ? 30 : null)
-    || settings.promos.find((p) => p.name === membershipType)?.duration_days
-    || 30;
-
-  const calculateEndDate = (startDate, membershipType) => {
-    const days = getTypeDays(membershipType);
-    return addDays(new Date(startDate), days).toISOString().split('T')[0];
+  const calculateEndDate = (startDate, membershipType, durationDays = null) => {
+    const start = new Date(startDate);
+    const months = MEMBERSHIP_MONTHS[membershipType];
+    if (months) return addMonths(start, months).toISOString().split('T')[0];
+    // Promo — use custom days
+    const days = durationDays
+      || settings.promos.find((p) => p.name === membershipType)?.duration_days
+      || 30;
+    return addDays(start, days).toISOString().split('T')[0];
   };
 
   const logAction = async (action, description, memberName = null, memberId = null) => {
@@ -419,8 +423,7 @@ export function GymProvider({ children }) {
 
   const renewMember = async (id, membershipType, paymentMethod, durationDays) => {
     const today = new Date().toISOString().split('T')[0];
-    const days = durationDays || getTypeDays(membershipType);
-    const endDate = addDays(new Date(today), days).toISOString().split('T')[0];
+    const endDate = calculateEndDate(today, membershipType, durationDays);
 
     const { data, error } = await supabase
       .from('members')

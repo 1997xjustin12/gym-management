@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { CheckCircle, XCircle, ImageIcon, Clock, AlertTriangle } from 'lucide-react';
 import { supabase } from '../lib/supabase';
-import { addDays } from 'date-fns';
+import { addDays, addMonths } from 'date-fns';
 import toast, { Toaster } from 'react-hot-toast';
 import GymLogo from '../components/GymLogo';
 
@@ -11,10 +11,18 @@ const PLAN_LABELS = {
   quarterly:     '3 Months',
   'semi-annual': '6 Months',
   annual:        '1 Year',
+  student:       'Student',
 };
 
-const MEMBERSHIP_DAYS = {
-  monthly: 30, quarterly: 90, 'semi-annual': 180, annual: 365,
+const MEMBERSHIP_MONTHS = {
+  monthly: 1, quarterly: 3, 'semi-annual': 6, annual: 12, student: 1,
+};
+
+const getEndDate = (startDate, membershipType, durationDays) => {
+  const start = new Date(startDate);
+  const months = MEMBERSHIP_MONTHS[membershipType];
+  if (months) return addMonths(start, months).toISOString().split('T')[0];
+  return addDays(start, durationDays || 30).toISOString().split('T')[0];
 };
 
 function fmtDate(str) {
@@ -50,8 +58,7 @@ export default function ReviewPayment() {
     setProcessing('approve');
     try {
       const today   = new Date().toISOString().split('T')[0];
-      const days    = request.duration_days || MEMBERSHIP_DAYS[request.membership_type] || 30;
-      const endDate = addDays(new Date(today), days).toISOString().split('T')[0];
+      const endDate = getEndDate(today, request.membership_type, request.duration_days);
 
       const { error: memberErr } = await supabase
         .from('members')

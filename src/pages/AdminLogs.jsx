@@ -166,6 +166,9 @@ export default function AdminLogs() {
                     <p className="text-slate-200 text-sm mt-1">{log.description}</p>
                     <p className="text-slate-500 text-xs mt-0.5">
                       {formatDistanceToNow(parseISO(log.performed_at), { addSuffix: true })}
+                      {log.performed_by && (
+                        <span className="ml-2 text-slate-600">· {log.performed_by}</span>
+                      )}
                     </p>
                   </div>
                 </div>

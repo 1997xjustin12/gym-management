@@ -30,6 +30,7 @@ const toMember = (row) => ({
   membershipStartDate: row.membership_start_date,
   membershipEndDate: row.membership_end_date,
   notes: row.notes || '',
+  instructorId: row.instructor_id || null,
   createdAt: row.created_at,
   updatedAt: row.updated_at,
 });
@@ -73,6 +74,7 @@ export function GymProvider({ children }) {
   const [loading, setLoading] = useState(true);
   const [authLoading, setAuthLoading] = useState(true);
   const [isAdminLoggedIn, setIsAdminLoggedIn] = useState(false);
+  const [adminEmail, setAdminEmail] = useState(null);
   const [settings, setSettings] = useState({
     gcashNumber: '',
     gcashName: '',
@@ -89,16 +91,19 @@ export function GymProvider({ children }) {
     promos: [],
   });
   const [renewalRequests, setRenewalRequests] = useState([]);
+  const [instructors, setInstructors] = useState([]);
 
   // ── Auth ─────────────────────────────────────────────────────
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
       setIsAdminLoggedIn(!!session);
+      setAdminEmail(session?.user?.email || null);
       setAuthLoading(false);
     });
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       setIsAdminLoggedIn(!!session);
+      setAdminEmail(session?.user?.email || null);
     });
 
     return () => subscription.unsubscribe();
@@ -224,6 +229,47 @@ export function GymProvider({ children }) {
     return () => supabase.removeChannel(channel);
   }, [loadRenewalRequests]);
 
+  // ── Instructors ───────────────────────────────────────────────
+  const loadInstructors = useCallback(async () => {
+    try {
+      const { data, error } = await supabase
+        .from('instructors')
+        .select('*')
+        .order('name', { ascending: true });
+      if (error) throw error;
+      setInstructors(data || []);
+    } catch (err) {
+      console.error('Failed to load instructors:', err);
+    }
+  }, []);
+
+  useEffect(() => { loadInstructors(); }, [loadInstructors]);
+
+  const addInstructor = async ({ name, specialty, contactNumber }) => {
+    const { data, error } = await supabase
+      .from('instructors')
+      .insert([{ name: name.trim(), specialty: specialty.trim(), contact_number: contactNumber.trim() }])
+      .select()
+      .single();
+    if (error) throw error;
+    setInstructors((prev) => [...prev, data].sort((a, b) => a.name.localeCompare(b.name)));
+  };
+
+  const deleteInstructor = async (id) => {
+    const { error } = await supabase.from('instructors').delete().eq('id', id);
+    if (error) throw error;
+    setInstructors((prev) => prev.filter((i) => i.id !== id));
+  };
+
+  const toggleInstructor = async (id, isActive) => {
+    const { error } = await supabase
+      .from('instructors')
+      .update({ is_active: !isActive })
+      .eq('id', id);
+    if (error) throw error;
+    setInstructors((prev) => prev.map((i) => i.id === id ? { ...i, is_active: !isActive } : i));
+  };
+
   const submitRenewalRequest = async (payload) => {
     let receiptUrl = null;
 
@@ -239,6 +285,9 @@ export function GymProvider({ children }) {
       receiptUrl = data.publicUrl;
     }
 
+    const viewToken = crypto.randomUUID();
+    const viewTokenExpiresAt = new Date(Date.now() + 5 * 60 * 1000).toISOString();
+
     const { error } = await supabase.from('renewal_requests').insert([{
       member_id: payload.memberId,
       member_name: payload.memberName,
@@ -249,8 +298,38 @@ export function GymProvider({ children }) {
       receipt_url: receiptUrl,
       duration_days: payload.durationDays || null,
       status: 'pending',
+      view_token: viewToken,
+      view_token_expires_at: viewTokenExpiresAt,
     }]);
     if (error) throw error;
+
+    // Send Telegram notification
+    const { telegramBotToken, telegramChatId, siteUrl } = settings;
+    if (telegramBotToken && telegramChatId && siteUrl) {
+      const reviewLink = `${siteUrl.replace(/\/$/, '')}/review/${viewToken}`;
+      const planLabel = payload.membershipType.charAt(0).toUpperCase() + payload.membershipType.slice(1);
+      const message = [
+        '💳 <b>New Payment Request</b>',
+        '',
+        `👤 <b>Member:</b> ${payload.memberName}`,
+        `📋 <b>Plan:</b> ${planLabel}`,
+        `💰 <b>Amount:</b> ₱${Number(payload.amount).toLocaleString()}`,
+        payload.gcashReference ? `🔖 <b>GCash Ref:</b> ${payload.gcashReference}` : '',
+        '',
+        `🔗 <a href="${reviewLink}">Review &amp; Approve / Reject</a>`,
+      ].filter(Boolean).join('\n');
+
+      await fetch(`https://api.telegram.org/bot${telegramBotToken}/sendMessage`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          chat_id: telegramChatId,
+          text: message,
+          parse_mode: 'HTML',
+          disable_web_page_preview: true,
+        }),
+      }).catch(() => {}); // non-blocking — don't fail if Telegram is down
+    }
   };
 
   const approveRenewalRequest = async (request) => {
@@ -324,6 +403,7 @@ export function GymProvider({ children }) {
         description,
         member_name: memberName,
         member_id: memberId,
+        performed_by: adminEmail || 'Admin',
       }]);
     } catch (err) {
       console.error('Log failed:', err);
@@ -353,6 +433,7 @@ export function GymProvider({ children }) {
         membership_start_date: formData.membershipStartDate,
         membership_end_date: endDate,
         notes: formData.notes || '',
+        instructor_id: formData.instructorId || null,
       }])
       .select()
       .single();
@@ -403,6 +484,7 @@ export function GymProvider({ children }) {
         membership_start_date: startDate,
         membership_end_date: endDate,
         notes: formData.notes || '',
+        instructor_id: formData.instructorId || null,
         updated_at: new Date().toISOString(),
       })
       .eq('id', id)
@@ -524,6 +606,11 @@ export function GymProvider({ children }) {
         submitRenewalRequest,
         approveRenewalRequest,
         rejectRenewalRequest,
+        // Instructors
+        instructors,
+        addInstructor,
+        deleteInstructor,
+        toggleInstructor,
       }}
     >
       {children}

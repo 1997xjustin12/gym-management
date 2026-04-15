@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { Save, Upload, X, Settings, Send, Plus, Trash2, Tag, ToggleLeft, ToggleRight } from 'lucide-react';
+import { Save, Upload, X, Settings, Send, Plus, Trash2, Tag, ToggleLeft, ToggleRight, UserCheck, Phone, Dumbbell } from 'lucide-react';
 import { useGym } from '../context/GymContext';
 import Navbar from '../components/Navbar';
 import toast from 'react-hot-toast';
@@ -12,7 +12,7 @@ const PRICE_FIELDS = [
 ];
 
 export default function AdminSettings() {
-  const { settings, saveSettings } = useGym();
+  const { settings, saveSettings, instructors, addInstructor, deleteInstructor, toggleInstructor } = useGym();
   const [form, setForm] = useState({
     gcashNumber: '',
     gcashName: '',
@@ -32,6 +32,9 @@ export default function AdminSettings() {
   const [saving, setSaving] = useState(false);
   const [newPromo, setNewPromo] = useState({ name: '', price: '', duration_days: '' });
   const [addingPromo, setAddingPromo] = useState(false);
+  const [newInstructor, setNewInstructor] = useState({ name: '', specialty: '', contactNumber: '' });
+  const [addingInstructor, setAddingInstructor] = useState(false);
+  const [savingInstructor, setSavingInstructor] = useState(false);
   const fileRef = useRef();
 
   useEffect(() => {
@@ -86,6 +89,30 @@ export default function AdminSettings() {
     set('gcashQrFile', null);
     set('gcashQrPreview', null);
     set('gcashQrUrl', null);
+  };
+
+  const handleAddInstructor = async () => {
+    if (!newInstructor.name.trim()) return;
+    setSavingInstructor(true);
+    try {
+      await addInstructor(newInstructor);
+      setNewInstructor({ name: '', specialty: '', contactNumber: '' });
+      setAddingInstructor(false);
+      toast.success('Instructor added!');
+    } catch (err) {
+      toast.error('Failed to add instructor: ' + err.message);
+    } finally {
+      setSavingInstructor(false);
+    }
+  };
+
+  const handleDeleteInstructor = async (id, name) => {
+    try {
+      await deleteInstructor(id);
+      toast.success(`${name} removed`);
+    } catch (err) {
+      toast.error('Failed to remove instructor');
+    }
   };
 
   const handleSubmit = async (e) => {
@@ -394,6 +421,114 @@ export default function AdminSettings() {
                       onClick={() => deletePromo(promo.id)}
                       className="text-slate-500 hover:text-red-400 transition-colors"
                       title="Delete promo"
+                    >
+                      <Trash2 size={15} />
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {/* Instructors */}
+          <div className="bg-slate-800 rounded-2xl border border-slate-700/50 p-5 space-y-4">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <Dumbbell size={16} className="text-yellow-400" />
+                <h2 className="text-white font-semibold text-base">Gym Instructors</h2>
+              </div>
+              <button
+                type="button"
+                onClick={() => setAddingInstructor((v) => !v)}
+                className="flex items-center gap-1.5 bg-yellow-500/20 hover:bg-yellow-500/30 text-yellow-300 text-xs font-semibold px-3 py-1.5 rounded-xl transition-colors"
+              >
+                <Plus size={13} /> Add Instructor
+              </button>
+            </div>
+            <p className="text-slate-500 text-xs -mt-2">
+              Coaches available for members who subscribe to personal training.
+            </p>
+
+            {addingInstructor && (
+              <div className="bg-slate-700/50 rounded-xl p-4 space-y-3 border border-slate-600">
+                <p className="text-slate-300 text-sm font-medium">New Instructor</p>
+                <input
+                  type="text"
+                  value={newInstructor.name}
+                  onChange={(e) => setNewInstructor((p) => ({ ...p, name: e.target.value }))}
+                  placeholder="Full name"
+                  className="w-full bg-slate-700 border border-slate-600 focus:border-yellow-500 text-white rounded-xl px-4 py-2.5 outline-none transition-colors placeholder:text-slate-500 text-sm"
+                />
+                <input
+                  type="text"
+                  value={newInstructor.specialty}
+                  onChange={(e) => setNewInstructor((p) => ({ ...p, specialty: e.target.value }))}
+                  placeholder="Specialty (e.g. Strength & Conditioning)"
+                  className="w-full bg-slate-700 border border-slate-600 focus:border-yellow-500 text-white rounded-xl px-4 py-2.5 outline-none transition-colors placeholder:text-slate-500 text-sm"
+                />
+                <input
+                  type="tel"
+                  value={newInstructor.contactNumber}
+                  onChange={(e) => setNewInstructor((p) => ({ ...p, contactNumber: e.target.value }))}
+                  placeholder="Contact number (optional)"
+                  className="w-full bg-slate-700 border border-slate-600 focus:border-yellow-500 text-white rounded-xl px-4 py-2.5 outline-none transition-colors placeholder:text-slate-500 text-sm"
+                />
+                <div className="flex gap-2">
+                  <button
+                    type="button"
+                    onClick={() => { setAddingInstructor(false); setNewInstructor({ name: '', specialty: '', contactNumber: '' }); }}
+                    className="flex-1 bg-slate-600 hover:bg-slate-500 text-white py-2 rounded-xl text-sm font-medium transition-colors"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="button"
+                    onClick={handleAddInstructor}
+                    disabled={!newInstructor.name.trim() || savingInstructor}
+                    className="flex-1 bg-yellow-500 hover:bg-yellow-600 disabled:opacity-40 text-white py-2 rounded-xl text-sm font-bold transition-colors"
+                  >
+                    {savingInstructor ? '...' : 'Add'}
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {instructors.length === 0 ? (
+              <p className="text-slate-600 text-sm text-center py-2">No instructors yet</p>
+            ) : (
+              <div className="space-y-2">
+                {instructors.map((inst) => (
+                  <div key={inst.id} className={`flex items-center gap-3 p-3 rounded-xl border transition-colors ${inst.is_active ? 'border-yellow-500/30 bg-yellow-500/5' : 'border-slate-600 bg-slate-700/30 opacity-60'}`}>
+                    <div className="w-9 h-9 rounded-xl bg-yellow-500/20 flex items-center justify-center shrink-0">
+                      <UserCheck size={16} className="text-yellow-400" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-white text-sm font-semibold">{inst.name}</p>
+                      <div className="flex items-center gap-2 flex-wrap">
+                        {inst.specialty && <p className="text-slate-400 text-xs">{inst.specialty}</p>}
+                        {inst.contact_number && (
+                          <span className="flex items-center gap-1 text-slate-500 text-xs">
+                            <Phone size={10} /> {inst.contact_number}
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => toggleInstructor(inst.id, inst.is_active)}
+                      className="text-slate-400 hover:text-yellow-300 transition-colors"
+                      title={inst.is_active ? 'Deactivate' : 'Activate'}
+                    >
+                      {inst.is_active
+                        ? <ToggleRight size={22} className="text-yellow-400" />
+                        : <ToggleLeft size={22} />
+                      }
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => handleDeleteInstructor(inst.id, inst.name)}
+                      className="text-slate-500 hover:text-red-400 transition-colors"
+                      title="Remove instructor"
                     >
                       <Trash2 size={15} />
                     </button>

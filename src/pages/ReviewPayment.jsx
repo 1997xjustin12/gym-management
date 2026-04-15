@@ -35,6 +35,7 @@ export default function ReviewPayment() {
   const [request, setRequest]     = useState(null);
   const [loading, setLoading]     = useState(true);
   const [notFound, setNotFound]   = useState(false);
+  const [expired, setExpired]     = useState(false);
   const [processing, setProcessing] = useState(null); // 'approve' | 'reject'
   const [done, setDone]           = useState(null);   // 'approved' | 'rejected'
   const [showReject, setShowReject] = useState(false);
@@ -48,6 +49,9 @@ export default function ReviewPayment() {
         .eq('view_token', token)
         .single();
       if (error || !data) { setNotFound(true); }
+      else if (data.view_token_expires_at && new Date() > new Date(data.view_token_expires_at)) {
+        setExpired(true);
+      }
       else { setRequest(data); }
       setLoading(false);
     };
@@ -78,14 +82,12 @@ export default function ReviewPayment() {
       if (reqErr) throw reqErr;
 
       await supabase.from('activity_logs').insert([{
-        action:      'PAYMENT_APPROVED',
-        description: `Approved GCash payment ₱${request.amount} — renewed ${request.membership_type} for: ${request.member_name}`,
-        member_name: request.member_name,
-        member_id:   request.member_id,
+        action:        'PAYMENT_APPROVED',
+        description:   `Approved GCash payment ₱${request.amount} — renewed ${request.membership_type} for: ${request.member_name}`,
+        member_name:   request.member_name,
+        member_id:     request.member_id,
+        performed_by:  'Admin (via Telegram)',
       }]);
-
-      // Invalidate token — one-time use
-      await supabase.from('renewal_requests').update({ view_token: null }).eq('id', request.id);
 
       setDone('approved');
       toast.success('Membership renewed!');
@@ -106,14 +108,12 @@ export default function ReviewPayment() {
       if (error) throw error;
 
       await supabase.from('activity_logs').insert([{
-        action:      'PAYMENT_REJECTED',
-        description: `Rejected GCash payment for: ${request.member_name}`,
-        member_name: request.member_name,
-        member_id:   request.member_id,
+        action:       'PAYMENT_REJECTED',
+        description:  `Rejected GCash payment for: ${request.member_name}`,
+        member_name:  request.member_name,
+        member_id:    request.member_id,
+        performed_by: 'Admin (via Telegram)',
       }]);
-
-      // Invalidate token — one-time use
-      await supabase.from('renewal_requests').update({ view_token: null }).eq('id', request.id);
 
       setDone('rejected');
       setShowReject(false);
@@ -134,8 +134,16 @@ export default function ReviewPayment() {
   if (notFound) return (
     <div className="min-h-screen bg-slate-900 flex flex-col items-center justify-center gap-4 px-4 text-center">
       <AlertTriangle size={40} className="text-orange-400" />
-      <p className="text-white font-bold text-lg">Link already used or invalid</p>
-      <p className="text-slate-400 text-sm">This link has expired after being used once.<br />Check the admin panel for the request status.</p>
+      <p className="text-white font-bold text-lg">Invalid link</p>
+      <p className="text-slate-400 text-sm">This link is invalid or the request no longer exists.</p>
+    </div>
+  );
+
+  if (expired) return (
+    <div className="min-h-screen bg-slate-900 flex flex-col items-center justify-center gap-4 px-4 text-center">
+      <AlertTriangle size={40} className="text-orange-400" />
+      <p className="text-white font-bold text-lg">Link expired</p>
+      <p className="text-slate-400 text-sm">This review link was only valid for 5 minutes.<br />The member will need to resubmit their payment.</p>
     </div>
   );
 

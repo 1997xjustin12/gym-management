@@ -16,7 +16,7 @@ const PAGE_SIZE = 15;
 // 'active' filter includes expiring members since they are still active
 
 export default function MembersList() {
-  const { members, getMemberStatus, deleteMember, renewMember, settings } = useGym();
+  const { members, getMemberStatus, deleteMember, renewMember, settings, instructors } = useGym();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
 
@@ -182,10 +182,18 @@ export default function MembersList() {
                         <StatusBadge status={statusInfo.status} label={statusInfo.label} />
                       </div>
                       <p className="text-slate-400 text-xs">{formatPhoneDisplay(member.contactNumber)}</p>
-                      <div className="flex items-center gap-2 mt-0.5">
+                      <div className="flex items-center gap-2 mt-0.5 flex-wrap">
                         <span className="text-[11px] font-medium bg-slate-700 text-slate-300 px-2 py-0.5 rounded-md capitalize">
                           {member.membershipType}
                         </span>
+                        {member.instructorId && (() => {
+                          const inst = instructors.find((i) => i.id === member.instructorId);
+                          return inst ? (
+                            <span className="text-[11px] font-medium bg-yellow-500/15 text-yellow-400 px-2 py-0.5 rounded-md">
+                              🏋️ {inst.name}
+                            </span>
+                          ) : null;
+                        })()}
                         <span className="text-slate-600 text-xs">·</span>
                         <p className="text-slate-500 text-xs">Ends {formatDate(member.membershipEndDate)}</p>
                       </div>

@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { Camera, User, Phone, Calendar, Tag, FileText, RefreshCw, Save, Trash2, AlertTriangle, History } from 'lucide-react';
+import { Camera, User, Phone, Calendar, Tag, FileText, RefreshCw, Save, Trash2, AlertTriangle, History, Dumbbell } from 'lucide-react';
 import { useGym } from '../context/GymContext';
 import Navbar from '../components/Navbar';
 import CameraCapture from '../components/CameraCapture';
@@ -16,13 +16,15 @@ const EMPTY_FORM = {
   membershipStartDate: today(),
   notes: '',
   photo: null,
+  instructorId: '',
 };
 
 export default function RegisterMember() {
   const { id } = useParams();
   const isEdit = Boolean(id);
   const navigate = useNavigate();
-  const { addMember, updateMember, deleteMember, getMemberById, settings } = useGym();
+  const { addMember, updateMember, deleteMember, getMemberById, settings, instructors } = useGym();
+  const activeInstructors = instructors.filter((i) => i.is_active);
   const activePromos = settings.promos?.filter((p) => p.active) || [];
 
   const [form, setForm] = useState(EMPTY_FORM);
@@ -42,6 +44,7 @@ export default function RegisterMember() {
           membershipStartDate: member.membershipStartDate,
           notes: member.notes || '',
           photo: member.photo || null,
+          instructorId: member.instructorId || '',
         });
       } else {
         toast.error('Member not found');
@@ -231,6 +234,27 @@ export default function RegisterMember() {
                 className="input-field resize-none"
               />
             </FormField>
+
+            {/* Coach / Instructor */}
+            {activeInstructors.length > 0 && (
+              <FormField label="Gym Coach (optional)" icon={<Dumbbell size={15} />}>
+                <select
+                  value={form.instructorId}
+                  onChange={(e) => set('instructorId', e.target.value)}
+                  className="input-field"
+                >
+                  <option value="">— No coach assigned —</option>
+                  {activeInstructors.map((inst) => (
+                    <option key={inst.id} value={inst.id}>
+                      {inst.name}{inst.specialty ? ` · ${inst.specialty}` : ''}
+                    </option>
+                  ))}
+                </select>
+                <p className="text-slate-500 text-xs mt-1.5">
+                  Assign a personal trainer for this member
+                </p>
+              </FormField>
+            )}
           </div>
 
           {/* Submit */}

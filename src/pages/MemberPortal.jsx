@@ -4,7 +4,7 @@ import {
   Dumbbell, ArrowLeft, User, Phone, Calendar,
   CheckCircle, AlertTriangle, XCircle, Clock, MapPin,
   CreditCard, Copy, ChevronRight, X, Upload, ImageIcon, Camera,
-  FileText, UtensilsCrossed,
+  FileText, UtensilsCrossed, ChevronDown,
 } from 'lucide-react';
 import { useGym } from '../context/GymContext';
 import { supabase } from '../lib/supabase';
@@ -33,9 +33,10 @@ export default function MemberPortal() {
   const [member, setMember]     = useState(null);
   const [notFound, setNotFound] = useState(false);
   const [renewTarget, setRenewTarget] = useState(null);
-  const [coachEntries, setCoachEntries] = useState([]);
-  const [coachInfo, setCoachInfo]       = useState(null);
-  const [coachTab, setCoachTab]         = useState('note');
+  const [coachEntries, setCoachEntries]     = useState([]);
+  const [coachInfo, setCoachInfo]           = useState(null);
+  const [coachTab, setCoachTab]             = useState('note');
+  const [expandedEntryId, setExpandedEntryId] = useState(null);
 
   useEffect(() => {
     if (!member?.instructorId) {
@@ -301,6 +302,131 @@ export default function MemberPortal() {
     );
   }
 
+  // ── Coach View ─────────────────────────────────────────────────
+  if (view === 'coach' && coachInfo) {
+    const tab = COACH_TABS.find((t) => t.key === coachTab);
+    const tabEntries = coachEntries.filter((e) => e.type === coachTab);
+
+    return (
+      <div className="min-h-screen bg-slate-900 flex flex-col">
+        {/* Header */}
+        <div className="sticky top-0 z-40 bg-slate-900/95 backdrop-blur border-b border-slate-800">
+          <div className="max-w-lg mx-auto px-4 h-14 flex items-center gap-3">
+            <button onClick={() => setView('result')} className="text-slate-400 hover:text-white p-1 transition-colors">
+              <ArrowLeft size={20} />
+            </button>
+            <div className="w-8 h-8 rounded-lg overflow-hidden bg-slate-700 shrink-0">
+              {coachInfo.photo_url ? (
+                <img src={coachInfo.photo_url} alt={coachInfo.name} className="w-full h-full object-cover" />
+              ) : (
+                <div className="w-full h-full flex items-center justify-center text-yellow-400 font-bold text-sm">
+                  {coachInfo.name.charAt(0)}
+                </div>
+              )}
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="text-white font-bold text-sm leading-tight truncate">{coachInfo.name}</p>
+              {coachInfo.specialty && <p className="text-yellow-400 text-xs truncate">{coachInfo.specialty}</p>}
+            </div>
+          </div>
+
+          {/* Tab bar */}
+          <div className="max-w-lg mx-auto px-4 pb-3 flex gap-2">
+            {COACH_TABS.map(({ key, label, Icon, color, bg, border }) => {
+              const count = coachEntries.filter((e) => e.type === key).length;
+              const isActive = coachTab === key;
+              return (
+                <button
+                  key={key}
+                  onClick={() => { setCoachTab(key); setExpandedEntryId(null); }}
+                  className={`flex-1 flex items-center justify-center gap-1.5 py-2 rounded-xl text-xs font-semibold transition-colors border ${
+                    isActive ? `${bg} ${color} ${border}` : 'bg-slate-800 text-slate-500 border-slate-700/50'
+                  }`}
+                >
+                  <Icon size={13} />
+                  <span>{label.split(' ')[0]}</span>
+                  {count > 0 && (
+                    <span className={`text-[10px] px-1.5 py-0.5 rounded-full leading-none ${isActive ? 'bg-white/10' : 'bg-slate-700 text-slate-500'}`}>
+                      {count}
+                    </span>
+                  )}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* Entries */}
+        <div className="max-w-lg mx-auto w-full px-4 py-4 flex-1">
+          {tabEntries.length === 0 ? (
+            <div className="flex flex-col items-center justify-center py-20 text-center">
+              <div className={`w-16 h-16 rounded-2xl flex items-center justify-center mb-4 ${tab.bg}`}>
+                <tab.Icon size={28} className={tab.color} />
+              </div>
+              <p className="text-slate-400 font-semibold">No {tab.label.toLowerCase()} yet</p>
+              <p className="text-slate-600 text-sm mt-1">Your coach hasn't added anything here yet.</p>
+            </div>
+          ) : (
+            <div className="space-y-2">
+              {tabEntries.map((entry, idx) => {
+                const isExpanded = expandedEntryId === entry.id;
+                const isFirst = idx === 0;
+                return (
+                  <button
+                    key={entry.id}
+                    onClick={() => setExpandedEntryId(isExpanded ? null : entry.id)}
+                    className={`w-full text-left rounded-2xl border transition-all overflow-hidden ${
+                      isExpanded
+                        ? `${tab.bg} ${tab.border}`
+                        : 'bg-slate-800 border-slate-700/50 hover:border-slate-600'
+                    }`}
+                  >
+                    {/* Row header */}
+                    <div className="flex items-center gap-3 px-4 py-3.5">
+                      <div className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 transition-colors ${
+                        isExpanded ? 'bg-white/10' : 'bg-slate-700'
+                      }`}>
+                        <tab.Icon size={15} className={isExpanded ? tab.color : 'text-slate-400'} />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        {entry.title ? (
+                          <p className={`font-semibold text-sm truncate ${isExpanded ? 'text-white' : 'text-slate-200'}`}>
+                            {entry.title}
+                          </p>
+                        ) : (
+                          <p className={`text-sm truncate ${isExpanded ? 'text-slate-200' : 'text-slate-400'}`}>
+                            {entry.content.split('\n')[0].slice(0, 60)}{entry.content.length > 60 ? '…' : ''}
+                          </p>
+                        )}
+                        <p className="text-slate-600 text-xs mt-0.5">
+                          {new Date(entry.created_at).toLocaleDateString('en-PH', { month: 'short', day: 'numeric', year: 'numeric' })}
+                          {isFirst && <span className="ml-1.5 text-yellow-500/80 font-semibold">· Latest</span>}
+                        </p>
+                      </div>
+                      <ChevronDown
+                        size={15}
+                        className={`text-slate-500 shrink-0 transition-transform duration-200 ${isExpanded ? 'rotate-180' : ''}`}
+                      />
+                    </div>
+
+                    {/* Expanded content */}
+                    {isExpanded && (
+                      <div className="px-4 pb-4 pt-1 border-t border-white/10">
+                        <p className="text-slate-200 text-sm whitespace-pre-wrap leading-relaxed">
+                          {entry.content}
+                        </p>
+                      </div>
+                    )}
+                  </button>
+                );
+              })}
+            </div>
+          )}
+        </div>
+      </div>
+    );
+  }
+
   // ── Result View ────────────────────────────────────────────────
   if (view === 'result' && member) {
     const { status, daysLeft } = getMemberStatus(member);
@@ -429,82 +555,42 @@ export default function MemberPortal() {
             </div>
           </div>
 
-          {/* Coach section */}
+          {/* Coach card — tap to open coach view */}
           {coachInfo && (
-            <div className="space-y-3">
-              {/* Coach card */}
-              <div className="bg-slate-800 rounded-2xl border border-yellow-500/20 p-4 flex items-center gap-3">
-                <div className="w-12 h-12 rounded-xl overflow-hidden bg-slate-700 shrink-0">
-                  {coachInfo.photo_url ? (
-                    <img src={coachInfo.photo_url} alt={coachInfo.name} className="w-full h-full object-cover" />
-                  ) : (
-                    <div className="w-full h-full flex items-center justify-center text-yellow-400 font-bold text-lg">
-                      {coachInfo.name.charAt(0).toUpperCase()}
-                    </div>
+            <button
+              onClick={() => { setCoachTab('note'); setExpandedEntryId(null); setView('coach'); }}
+              className="w-full bg-slate-800 hover:bg-slate-750 active:bg-slate-700 border border-yellow-500/25 rounded-2xl p-4 flex items-center gap-3 text-left transition-colors"
+            >
+              <div className="w-12 h-12 rounded-xl overflow-hidden bg-slate-700 shrink-0">
+                {coachInfo.photo_url ? (
+                  <img src={coachInfo.photo_url} alt={coachInfo.name} className="w-full h-full object-cover" />
+                ) : (
+                  <div className="w-full h-full flex items-center justify-center text-yellow-400 font-bold text-lg">
+                    {coachInfo.name.charAt(0).toUpperCase()}
+                  </div>
+                )}
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-[11px] text-yellow-500/80 uppercase tracking-widest font-bold mb-0.5">Your Coach</p>
+                <p className="text-white font-bold leading-tight">{coachInfo.name}</p>
+                {coachInfo.specialty && <p className="text-slate-400 text-xs mt-0.5">{coachInfo.specialty}</p>}
+                <div className="flex gap-2 mt-2 flex-wrap">
+                  {COACH_TABS.map(({ key, label, Icon, color, bg }) => {
+                    const count = coachEntries.filter((e) => e.type === key).length;
+                    if (!count) return null;
+                    return (
+                      <span key={key} className={`inline-flex items-center gap-1 text-[11px] font-semibold px-2 py-0.5 rounded-full ${bg} ${color}`}>
+                        <Icon size={10} /> {count} {label.split(' ')[0]}
+                      </span>
+                    );
+                  })}
+                  {coachEntries.length === 0 && (
+                    <span className="text-slate-600 text-xs">No entries yet</span>
                   )}
                 </div>
-                <div>
-                  <p className="text-xs text-slate-500 uppercase tracking-wide font-semibold">Your Coach</p>
-                  <p className="text-white font-bold">{coachInfo.name}</p>
-                  {coachInfo.specialty && <p className="text-yellow-400 text-xs">{coachInfo.specialty}</p>}
-                </div>
               </div>
-
-              {/* Tabs */}
-              <div className="flex gap-2">
-                {COACH_TABS.map(({ key, label, Icon, color, bg, border }) => {
-                  const count = coachEntries.filter((e) => e.type === key).length;
-                  const isActive = coachTab === key;
-                  return (
-                    <button
-                      key={key}
-                      onClick={() => setCoachTab(key)}
-                      className={`flex-1 flex flex-col items-center gap-1.5 py-3 rounded-xl text-xs font-semibold transition-colors border ${
-                        isActive ? `${bg} ${color} ${border}` : 'bg-slate-800 text-slate-400 border-slate-700/50'
-                      }`}
-                    >
-                      <Icon size={16} />
-                      <span className="hidden sm:block leading-tight text-center">{label}</span>
-                      <span className="sm:hidden">{label.split(' ')[0]}</span>
-                      {count > 0 && (
-                        <span className={`text-[10px] px-1.5 py-0.5 rounded-full leading-none ${isActive ? bg : 'bg-slate-700 text-slate-400'}`}>
-                          {count}
-                        </span>
-                      )}
-                    </button>
-                  );
-                })}
-              </div>
-
-              {/* Entries */}
-              {(() => {
-                const tab = COACH_TABS.find((t) => t.key === coachTab);
-                const tabEntries = coachEntries.filter((e) => e.type === coachTab);
-                return tabEntries.length === 0 ? (
-                  <div className="text-center py-8 bg-slate-800/40 rounded-2xl border border-slate-700/30">
-                    <tab.Icon size={24} className="mx-auto text-slate-600 mb-2" />
-                    <p className="text-slate-500 text-sm">No {tab.label.toLowerCase()} from your coach yet</p>
-                  </div>
-                ) : (
-                  <div className="space-y-3">
-                    {tabEntries.map((entry) => {
-                      const tab = COACH_TABS.find((t) => t.key === entry.type);
-                      return (
-                        <div key={entry.id} className={`bg-slate-800 rounded-2xl border ${tab.border} p-4`}>
-                          {entry.title && (
-                            <p className="text-white font-semibold text-sm mb-1.5">{entry.title}</p>
-                          )}
-                          <p className="text-slate-300 text-sm whitespace-pre-wrap leading-relaxed">{entry.content}</p>
-                          <p className="text-slate-600 text-xs mt-2">
-                            {new Date(entry.created_at).toLocaleDateString('en-PH', { month: 'short', day: 'numeric', year: 'numeric' })}
-                          </p>
-                        </div>
-                      );
-                    })}
-                  </div>
-                );
-              })()}
-            </div>
+              <ChevronRight size={16} className="text-yellow-500/60 shrink-0" />
+            </button>
           )}
 
           {/* Back button */}

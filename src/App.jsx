@@ -77,6 +77,8 @@ export default function App() {
           <Route path="/member" element={<MemberPortal />} />
           <Route path="/coach/:token" element={<CoachPortal />} />
           <Route path="/coach/:token/member/:memberId" element={<CoachMemberDetail />} />
+          <Route path="/admin/coach/:token" element={<CoachPortal />} />
+          <Route path="/admin/coach/:token/member/:memberId" element={<CoachMemberDetail />} />
           <Route path="/checkin" element={<CheckIn />} />
           <Route path="/review/:token" element={<ReviewPayment />} />
           <Route path="*" element={<Navigate to="/" replace />} />

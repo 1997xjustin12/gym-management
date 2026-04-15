@@ -79,7 +79,7 @@ export default function AdminInstructors() {
   const handleCopyLink = (inst) => {
     const base = settings.siteUrl?.replace(/\/$/, '');
     if (!base) return toast.error('Set your Site URL in Settings first');
-    navigator.clipboard.writeText(`${base}/coach/${inst.portal_token}`);
+    navigator.clipboard.writeText(`${base}/admin/coach/${inst.portal_token}`);
     toast.success('Portal link copied!');
   };
 

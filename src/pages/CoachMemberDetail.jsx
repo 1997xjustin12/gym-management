@@ -181,7 +181,7 @@ export default function CoachMemberDetail() {
       {/* Header */}
       <div className="bg-slate-900/95 border-b border-slate-800 sticky top-0 z-10">
         <div className="max-w-lg mx-auto px-4 h-14 flex items-center gap-3">
-          <button onClick={() => navigate(`/coach/${token}`)} className="text-slate-400 hover:text-white p-1">
+          <button onClick={() => navigate(-1)} className="text-slate-400 hover:text-white p-1">
             <ArrowLeft size={20} />
           </button>
           <span className="font-bold text-white truncate">{member.name}</span>

@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { Users, UserCheck, AlertTriangle, UserX, UserPlus, MessageSquare, ChevronRight, Send, Download, RefreshCw, ShieldAlert } from 'lucide-react';
 import { useGym } from '../context/GymContext';
 import { exportMembersToExcel } from '../utils/exportExcel';
-import { exportJSON, getDaysSinceBackup } from '../utils/backup';
+import { exportJSON } from '../utils/backup';
 import toast from 'react-hot-toast';
 import Navbar from '../components/Navbar';
 import StatusBadge from '../components/StatusBadge';
@@ -13,13 +13,15 @@ import RestoreModal from '../components/RestoreModal';
 import { formatDate, formatPhoneDisplay } from '../utils/helpers';
 
 export default function AdminDashboard() {
-  const { members, getMemberStatus, getExpiringMembers, refreshMembers } = useGym();
+  const { members, getMemberStatus, getExpiringMembers, refreshMembers, settings, recordBackup } = useGym();
   const navigate = useNavigate();
   const [smsTarget, setSmsTarget] = useState(null);
   const [showBulkSMS, setShowBulkSMS] = useState(false);
   const [showRestore, setShowRestore] = useState(false);
 
-  const daysSinceBackup = getDaysSinceBackup();
+  const daysSinceBackup = settings.lastBackupAt
+    ? Math.floor((Date.now() - new Date(settings.lastBackupAt).getTime()) / (1000 * 60 * 60 * 24))
+    : null;
   const backupWarning = daysSinceBackup === null || daysSinceBackup >= 7;
 
   const expiring = getExpiringMembers();
@@ -59,7 +61,7 @@ export default function AdminDashboard() {
               </p>
             </div>
             <button
-              onClick={() => { exportJSON(members); toast.success('Backup downloaded!'); }}
+              onClick={() => { exportJSON(members); recordBackup(); toast.success('Backup downloaded!'); }}
               className="shrink-0 flex items-center gap-1.5 bg-yellow-500 hover:bg-yellow-600 text-slate-900 font-bold text-xs px-3 py-2 rounded-xl transition-colors"
             >
               <Download size={13} /> Backup Now
@@ -187,7 +189,7 @@ export default function AdminDashboard() {
                   <Download size={13} /> Excel
                 </button>
                 <button
-                  onClick={() => { exportJSON(members); toast.success('Backup downloaded!'); }}
+                  onClick={() => { exportJSON(members); recordBackup(); toast.success('Backup downloaded!'); }}
                   className="flex-1 flex items-center justify-center gap-1.5 bg-sky-600 hover:bg-sky-700 text-white text-xs font-semibold py-2 rounded-xl transition-colors"
                 >
                   <Download size={13} /> JSON Backup

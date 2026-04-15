@@ -40,6 +40,7 @@ const toSettings = (row) => ({
   telegramChatId: row.telegram_chat_id || '',
   telegramBotToken: row.telegram_bot_token || '',
   siteUrl: row.site_url || '',
+  lastBackupAt: row.last_backup_at || null,
 });
 
 const isBase64 = (str) => typeof str === 'string' && str.startsWith('data:');
@@ -76,6 +77,7 @@ export function GymProvider({ children }) {
     telegramChatId: '',
   telegramBotToken: '',
   siteUrl: '',
+  lastBackupAt: null,
   });
   const [renewalRequests, setRenewalRequests] = useState([]);
 
@@ -174,6 +176,12 @@ export function GymProvider({ children }) {
     });
     if (error) throw error;
     await loadSettings();
+  };
+
+  const recordBackup = async () => {
+    const now = new Date().toISOString();
+    await supabase.from('gym_settings').upsert({ id: 'default', last_backup_at: now });
+    setSettings((prev) => ({ ...prev, lastBackupAt: now }));
   };
 
   // ── Load renewal requests ─────────────────────────────────────
@@ -462,6 +470,7 @@ export function GymProvider({ children }) {
         // Settings
         settings,
         saveSettings,
+        recordBackup,
         // Renewal requests
         renewalRequests,
         pendingRenewals,

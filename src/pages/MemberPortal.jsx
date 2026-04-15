@@ -452,6 +452,15 @@ function RenewalModal({ member, settings, MEMBERSHIP_OPTIONS, submitRenewalReque
                 )}
               </div>
 
+              {plan === 'student' && (
+                <div className="flex items-start gap-2.5 bg-sky-500/10 border border-sky-500/30 rounded-xl px-4 py-3">
+                  <span className="text-sky-400 text-base shrink-0">🎓</span>
+                  <p className="text-sky-300 text-xs leading-relaxed">
+                    Student membership requires a valid school ID. Please present it upon your visit to the gym.
+                  </p>
+                </div>
+              )}
+
               {price === 0 && (
                 <p className="text-orange-400 text-xs text-center">Price not set for this plan. Please visit the gym.</p>
               )}

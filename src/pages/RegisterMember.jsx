@@ -187,6 +187,16 @@ export default function RegisterMember() {
               </select>
             </FormField>
 
+            {/* Student ID reminder */}
+            {form.membershipType === 'student' && (
+              <div className="flex items-start gap-2.5 bg-sky-500/10 border border-sky-500/30 rounded-xl px-4 py-3">
+                <span className="text-sky-400 text-base shrink-0">🎓</span>
+                <p className="text-sky-300 text-xs leading-relaxed">
+                  Student membership requires a valid school ID. Please verify upon visit.
+                </p>
+              </div>
+            )}
+
             {/* Start Date */}
             <FormField label="Membership Start Date" icon={<Calendar size={15} />}>
               <div className="flex gap-2">

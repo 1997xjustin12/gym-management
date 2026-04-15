@@ -456,6 +456,16 @@ function QuickRenewModal({ member, settings, promos, renewMember, onClose }) {
             </div>
           </div>
 
+          {/* Student ID reminder */}
+          {isStudent && (
+            <div className="flex items-start gap-2.5 bg-sky-500/10 border border-sky-500/30 rounded-xl px-4 py-3">
+              <span className="text-sky-400 text-base shrink-0">🎓</span>
+              <p className="text-sky-300 text-xs leading-relaxed">
+                Remind member to present a valid school ID upon visit.
+              </p>
+            </div>
+          )}
+
           {/* Payment method */}
           <div>
             <p className="text-slate-400 text-xs font-medium uppercase tracking-wider mb-2">Payment Method</p>

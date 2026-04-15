@@ -160,6 +160,14 @@ export default function MemberPortal() {
                 const latestRequest = renewalRequests
                   .filter((r) => r.member_id === member.id)
                   .sort((a, b) => new Date(b.created_at) - new Date(a.created_at))[0];
+
+                // Hide "Payment Approved" after 3 days — member's active status card already shows this
+                const approvedDaysAgo = latestRequest?.status === 'approved'
+                  ? (Date.now() - new Date(latestRequest.updated_at)) / (1000 * 60 * 60 * 24)
+                  : null;
+                const showPaymentStatus = latestRequest && (
+                  latestRequest.status !== 'approved' || approvedDaysAgo <= 3
+                );
                 return (
                   <div
                     key={member.id}
@@ -220,7 +228,7 @@ export default function MemberPortal() {
                       )}
 
                       {/* Latest renewal request status */}
-                      {latestRequest && <PaymentStatus request={latestRequest} />}
+                      {showPaymentStatus && <PaymentStatus request={latestRequest} />}
 
                       {/* Pay via GCash button */}
                       {needsRenewal && settings.gcashNumber && latestRequest?.status !== 'pending' && (

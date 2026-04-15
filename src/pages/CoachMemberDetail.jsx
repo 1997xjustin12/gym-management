@@ -4,7 +4,7 @@ import { supabase } from '../lib/supabase';
 import { differenceInDays } from 'date-fns';
 import {
   ArrowLeft, Plus, Trash2, FileText, Dumbbell,
-  UtensilsCrossed, AlertTriangle, Pencil,
+  UtensilsCrossed, AlertTriangle, Pencil, ChevronDown,
 } from 'lucide-react';
 import toast, { Toaster } from 'react-hot-toast';
 
@@ -47,7 +47,8 @@ export default function CoachMemberDetail() {
 
   // Delete state
   const [deleteTarget, setDeleteTarget] = useState(null);
-  const [deleting, setDeleting]     = useState(false);
+  const [deleting, setDeleting]         = useState(false);
+  const [expandedId, setExpandedId]     = useState(null);
 
   useEffect(() => {
     const load = async () => {
@@ -224,7 +225,7 @@ export default function CoachMemberDetail() {
             return (
               <button
                 key={key}
-                onClick={() => setActiveTab(key)}
+                onClick={() => { setActiveTab(key); setExpandedId(null); }}
                 className={`flex-1 flex flex-col items-center gap-1.5 py-3 rounded-xl text-xs font-semibold transition-colors border ${
                   isActive ? `${bg} ${color} ${border}` : 'bg-slate-800 text-slate-400 border-slate-700/50'
                 }`}
@@ -263,39 +264,70 @@ export default function CoachMemberDetail() {
               <p className="text-slate-600 text-xs mt-1">Tap "Add" to create one</p>
             </div>
           ) : (
-            <div className="space-y-3">
-              {tabEntries.map((entry) => (
-                <div key={entry.id} className={`bg-slate-800 rounded-2xl border ${tab.border} p-4`}>
-                  <div className="flex items-start gap-3">
-                    <div className="flex-1 min-w-0">
-                      {entry.title && (
-                        <p className="text-white font-semibold text-sm mb-1.5">{entry.title}</p>
-                      )}
-                      <p className="text-slate-300 text-sm whitespace-pre-wrap leading-relaxed">
-                        {entry.content}
-                      </p>
-                      <p className="text-slate-600 text-xs mt-2">
-                        {fmtDate(entry.created_at)}
-                        {entry.updated_at && entry.updated_at !== entry.created_at ? ' · edited' : ''}
-                      </p>
-                    </div>
-                    <div className="flex gap-1.5 shrink-0">
-                      <button
-                        onClick={() => openEdit(entry)}
-                        className="p-1.5 bg-slate-700 hover:bg-slate-600 text-slate-400 rounded-lg transition-colors"
-                      >
-                        <Pencil size={13} />
-                      </button>
-                      <button
-                        onClick={() => setDeleteTarget(entry)}
-                        className="p-1.5 bg-red-500/10 hover:bg-red-500/20 text-red-400 rounded-lg transition-colors"
-                      >
-                        <Trash2 size={13} />
-                      </button>
-                    </div>
+            <div className="space-y-2">
+              {tabEntries.map((entry, idx) => {
+                const isExpanded = expandedId === entry.id;
+                return (
+                  <div key={entry.id} className={`rounded-2xl border overflow-hidden transition-all ${
+                    isExpanded ? `${tab.bg} ${tab.border}` : 'bg-slate-800 border-slate-700/50'
+                  }`}>
+                    {/* Row header — tap to expand */}
+                    <button
+                      onClick={() => setExpandedId(isExpanded ? null : entry.id)}
+                      className="w-full flex items-center gap-3 px-4 py-3.5 text-left"
+                    >
+                      <div className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 transition-colors ${
+                        isExpanded ? 'bg-white/10' : 'bg-slate-700'
+                      }`}>
+                        <tab.Icon size={14} className={isExpanded ? tab.color : 'text-slate-400'} />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        {entry.title ? (
+                          <p className={`font-semibold text-sm truncate ${isExpanded ? 'text-white' : 'text-slate-200'}`}>
+                            {entry.title}
+                          </p>
+                        ) : (
+                          <p className={`text-sm truncate ${isExpanded ? 'text-slate-200' : 'text-slate-400'}`}>
+                            {entry.content.split('\n')[0].slice(0, 55)}{entry.content.length > 55 ? '…' : ''}
+                          </p>
+                        )}
+                        <p className="text-slate-600 text-xs mt-0.5">
+                          {fmtDate(entry.created_at)}
+                          {entry.updated_at && entry.updated_at !== entry.created_at ? ' · edited' : ''}
+                          {idx === 0 && <span className={`ml-1.5 font-semibold ${tab.color}`}>· Latest</span>}
+                        </p>
+                      </div>
+                      <ChevronDown
+                        size={14}
+                        className={`text-slate-500 shrink-0 transition-transform duration-200 ${isExpanded ? 'rotate-180' : ''}`}
+                      />
+                    </button>
+
+                    {/* Expanded content + actions */}
+                    {isExpanded && (
+                      <div className="px-4 pb-4 border-t border-white/10">
+                        <p className="text-slate-200 text-sm whitespace-pre-wrap leading-relaxed pt-3">
+                          {entry.content}
+                        </p>
+                        <div className="flex gap-2 mt-3">
+                          <button
+                            onClick={() => openEdit(entry)}
+                            className="flex items-center gap-1.5 px-3 py-1.5 bg-slate-700 hover:bg-slate-600 text-slate-300 rounded-lg text-xs font-medium transition-colors"
+                          >
+                            <Pencil size={12} /> Edit
+                          </button>
+                          <button
+                            onClick={() => setDeleteTarget(entry)}
+                            className="flex items-center gap-1.5 px-3 py-1.5 bg-red-500/10 hover:bg-red-500/20 text-red-400 rounded-lg text-xs font-medium transition-colors"
+                          >
+                            <Trash2 size={12} /> Delete
+                          </button>
+                        </div>
+                      </div>
+                    )}
                   </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           )}
         </div>

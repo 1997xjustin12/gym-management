@@ -77,6 +77,9 @@ export default function ReviewPayment() {
         member_id:   request.member_id,
       }]);
 
+      // Invalidate token — one-time use
+      await supabase.from('renewal_requests').update({ view_token: null }).eq('id', request.id);
+
       setDone('approved');
       toast.success('Membership renewed!');
     } catch (err) {
@@ -102,6 +105,9 @@ export default function ReviewPayment() {
         member_id:   request.member_id,
       }]);
 
+      // Invalidate token — one-time use
+      await supabase.from('renewal_requests').update({ view_token: null }).eq('id', request.id);
+
       setDone('rejected');
       setShowReject(false);
       toast.success('Request rejected.');
@@ -120,9 +126,9 @@ export default function ReviewPayment() {
 
   if (notFound) return (
     <div className="min-h-screen bg-slate-900 flex flex-col items-center justify-center gap-4 px-4 text-center">
-      <AlertTriangle size={40} className="text-red-400" />
-      <p className="text-white font-bold text-lg">Payment request not found</p>
-      <p className="text-slate-400 text-sm">This link may be invalid or expired.</p>
+      <AlertTriangle size={40} className="text-orange-400" />
+      <p className="text-white font-bold text-lg">Link already used or invalid</p>
+      <p className="text-slate-400 text-sm">This link has expired after being used once.<br />Check the admin panel for the request status.</p>
     </div>
   );
 

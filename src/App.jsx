@@ -77,6 +77,7 @@ export default function App() {
           <Route path="/admin/instructors" element={<PrivateRoute><AdminInstructors /></PrivateRoute>} />
           <Route path="/member" element={<MemberPortal />} />
           <Route path="/coach" element={<CoachLogin />} />
+          <Route path="/admin/coach" element={<Navigate to="/coach" replace />} />
           <Route path="/coach/:code" element={<CoachPortal />} />
           <Route path="/coach/:code/member/:memberId" element={<CoachMemberDetail />} />
           <Route path="/checkin" element={<CheckIn />} />

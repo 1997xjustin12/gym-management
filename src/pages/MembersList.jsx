@@ -1,8 +1,9 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Search, UserPlus, Pencil, MessageSquare, Trash2, X, Download, RefreshCw, CheckCircle, Banknote, CreditCard, History } from 'lucide-react';
 import { useGym } from '../context/GymContext';
 import Navbar from '../components/Navbar';
+import Pagination from '../components/Pagination';
 import StatusBadge from '../components/StatusBadge';
 import SMSModal from '../components/SMSModal';
 import { MEMBERSHIP_OPTIONS } from '../context/GymContext';
@@ -10,7 +11,8 @@ import { formatDate, formatPhoneDisplay } from '../utils/helpers';
 import { exportMembersToExcel } from '../utils/exportExcel';
 import toast from 'react-hot-toast';
 
-const FILTERS = ['all', 'active', 'expiring', 'expired'];
+const FILTERS   = ['all', 'active', 'expiring', 'expired'];
+const PAGE_SIZE = 15;
 // 'active' filter includes expiring members since they are still active
 
 export default function MembersList() {
@@ -20,6 +22,7 @@ export default function MembersList() {
 
   const [query, setQuery] = useState('');
   const [filter, setFilter] = useState(searchParams.get('filter') || 'all');
+  const [page, setPage] = useState(1);
   const [smsTarget, setSmsTarget] = useState(null);
   const [confirmDelete, setConfirmDelete] = useState(null);
   const [renewTarget, setRenewTarget] = useState(null);
@@ -37,6 +40,12 @@ export default function MembersList() {
       return matchesFilter && matchesQuery;
     });
   }, [members, filter, query, getMemberStatus]);
+
+  // Reset to page 1 whenever filter or search changes
+  useEffect(() => setPage(1), [filter, query]);
+
+  const totalPages = Math.ceil(filtered.length / PAGE_SIZE);
+  const paginated  = filtered.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
 
   const [deleting, setDeleting] = useState(false);
 
@@ -140,7 +149,7 @@ export default function MembersList() {
           </div>
         ) : (
           <div className="space-y-2">
-            {filtered.map((member) => {
+            {paginated.map((member) => {
               const statusInfo = getMemberStatus(member);
               return (
                 <div
@@ -246,6 +255,15 @@ export default function MembersList() {
             })}
           </div>
         )}
+
+        <Pagination
+          page={page}
+          totalPages={totalPages}
+          total={filtered.length}
+          pageSize={PAGE_SIZE}
+          onPrev={() => setPage((p) => p - 1)}
+          onNext={() => setPage((p) => p + 1)}
+        />
       </div>
 
       {/* Quick Renew Modal */}

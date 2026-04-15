@@ -1,8 +1,9 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { CheckCircle, XCircle, CreditCard, AlertTriangle, ImageIcon, ChevronDown, Trash2 } from 'lucide-react';
 import { useGym } from '../context/GymContext';
 import { supabase } from '../lib/supabase';
 import Navbar from '../components/Navbar';
+import Pagination from '../components/Pagination';
 import toast from 'react-hot-toast';
 
 const PLAN_LABELS = {
@@ -33,10 +34,17 @@ export default function RenewalRequests() {
   const [rejectNotes, setRejectNotes]   = useState('');
   const [deleteTarget, setDeleteTarget] = useState(null);
   const [deleting, setDeleting]         = useState(false);
+  const [page, setPage]                 = useState(1);
+  const PAGE_SIZE                       = 10;
 
-  const filtered = filter === 'all'
+  const filtered    = filter === 'all'
     ? renewalRequests
     : renewalRequests.filter((r) => r.status === filter);
+  const totalPages  = Math.ceil(filtered.length / PAGE_SIZE);
+  const paginated   = filtered.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
+
+  // Reset to page 1 when filter changes
+  useEffect(() => { setPage(1); setExpandedId(null); }, [filter]);
 
   const toggleExpand = (id) => setExpandedId((prev) => (prev === id ? null : id));
 
@@ -161,7 +169,7 @@ export default function RenewalRequests() {
           </div>
         ) : (
           <div className="space-y-2">
-            {filtered.map((req) => {
+            {paginated.map((req) => {
               const cfg      = STATUS_CFG[req.status] || STATUS_CFG.pending;
               const busy     = processing === req.id;
               const expanded = expandedId === req.id;
@@ -302,6 +310,15 @@ export default function RenewalRequests() {
             })}
           </div>
         )}
+
+        <Pagination
+          page={page}
+          totalPages={totalPages}
+          total={filtered.length}
+          pageSize={PAGE_SIZE}
+          onPrev={() => { setPage((p) => p - 1); setExpandedId(null); }}
+          onNext={() => { setPage((p) => p + 1); setExpandedId(null); }}
+        />
       </div>
 
       {/* Reject modal */}

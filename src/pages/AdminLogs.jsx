@@ -3,6 +3,7 @@ import { UserPlus, Pencil, Trash2, MessageSquare, RefreshCw, ClipboardList, Sear
 import { formatDistanceToNow, parseISO } from 'date-fns';
 import { supabase } from '../lib/supabase';
 import Navbar from '../components/Navbar';
+import Pagination from '../components/Pagination';
 import toast from 'react-hot-toast';
 
 const ACTION_CONFIG = {
@@ -14,59 +15,56 @@ const ACTION_CONFIG = {
 };
 
 const FILTERS = [
-  { value: 'all',               label: 'All' },
-  { value: 'MEMBER_ADDED',      label: 'Added' },
-  { value: 'MEMBER_UPDATED',    label: 'Updated' },
-  { value: 'MEMBERSHIP_RENEWED',label: 'Renewed' },
-  { value: 'MEMBER_DELETED',    label: 'Deleted' },
-  { value: 'SMS_SENT',          label: 'SMS' },
+  { value: 'all',                label: 'All' },
+  { value: 'MEMBER_ADDED',       label: 'Added' },
+  { value: 'MEMBER_UPDATED',     label: 'Updated' },
+  { value: 'MEMBERSHIP_RENEWED', label: 'Renewed' },
+  { value: 'MEMBER_DELETED',     label: 'Deleted' },
+  { value: 'SMS_SENT',           label: 'SMS' },
 ];
 
-const PAGE_SIZE = 30;
+const PAGE_SIZE = 20;
 
 export default function AdminLogs() {
-  const [logs, setLogs] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [filter, setFilter] = useState('all');
-  const [query, setQuery] = useState('');
-  const [hasMore, setHasMore] = useState(false);
-  const [offset, setOffset] = useState(0);
+  const [logs, setLogs]             = useState([]);
+  const [loading, setLoading]       = useState(true);
+  const [filter, setFilter]         = useState('all');
+  const [query, setQuery]           = useState('');
+  const [page, setPage]             = useState(1);
+  const [total, setTotal]           = useState(0);
   const [confirmClear, setConfirmClear] = useState(false);
-  const [clearing, setClearing] = useState(false);
+  const [clearing, setClearing]     = useState(false);
 
-  const fetchLogs = useCallback(async (reset = false) => {
+  const totalPages = Math.ceil(total / PAGE_SIZE);
+
+  const fetchLogs = useCallback(async () => {
     setLoading(true);
-    const start = reset ? 0 : offset;
     try {
       let q = supabase
         .from('activity_logs')
-        .select('*')
+        .select('*', { count: 'exact' })
         .order('performed_at', { ascending: false })
-        .range(start, start + PAGE_SIZE - 1);
+        .range((page - 1) * PAGE_SIZE, page * PAGE_SIZE - 1);
 
       if (filter !== 'all') q = q.eq('action', filter);
-      if (query.trim()) q = q.ilike('member_name', `%${query.trim()}%`);
+      if (query.trim())     q = q.ilike('member_name', `%${query.trim()}%`);
 
-      const { data, error } = await q;
+      const { data, count, error } = await q;
       if (error) throw error;
 
-      setLogs(reset ? data : (prev) => [...prev, ...data]);
-      setHasMore(data.length === PAGE_SIZE);
-      setOffset(start + data.length);
+      setLogs(data || []);
+      setTotal(count || 0);
     } catch {
       toast.error('Failed to load logs');
     } finally {
       setLoading(false);
     }
-  }, [filter, query, offset]);
+  }, [filter, query, page]);
 
-  // Reset and refetch when filter/search changes
-  useEffect(() => {
-    setOffset(0);
-    setLogs([]);
-    const timeout = setTimeout(() => fetchLogs(true), 300);
-    return () => clearTimeout(timeout);
-  }, [filter, query]); // eslint-disable-line
+  // Reset to page 1 on filter/search change
+  useEffect(() => { setPage(1); }, [filter, query]);
+
+  useEffect(() => { fetchLogs(); }, [fetchLogs]);
 
   const handleClearAll = async () => {
     setClearing(true);
@@ -74,7 +72,8 @@ export default function AdminLogs() {
       const { error } = await supabase.from('activity_logs').delete().neq('id', '00000000-0000-0000-0000-000000000000');
       if (error) throw error;
       setLogs([]);
-      setHasMore(false);
+      setTotal(0);
+      setPage(1);
       toast.success('All logs cleared');
       setConfirmClear(false);
     } catch {
@@ -137,7 +136,11 @@ export default function AdminLogs() {
         </div>
 
         {/* Logs list */}
-        {logs.length === 0 && !loading ? (
+        {loading ? (
+          <div className="flex justify-center py-16">
+            <div className="w-6 h-6 border-2 border-orange-500 border-t-transparent rounded-full animate-spin" />
+          </div>
+        ) : logs.length === 0 ? (
           <div className="text-center py-16">
             <div className="w-16 h-16 bg-slate-800 rounded-2xl flex items-center justify-center mx-auto mb-4">
               <ClipboardList size={28} className="text-slate-600" />
@@ -151,12 +154,9 @@ export default function AdminLogs() {
               const config = ACTION_CONFIG[log.action] || ACTION_CONFIG.MEMBER_UPDATED;
               return (
                 <div key={log.id} className="flex items-start gap-3 px-4 py-3.5">
-                  {/* Icon */}
                   <div className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 mt-0.5 ${config.bg} ${config.text}`}>
                     {config.icon}
                   </div>
-
-                  {/* Content */}
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 flex-wrap">
                       <span className={`inline-flex items-center gap-1 text-xs font-semibold px-2 py-0.5 rounded-full border ${config.bg} ${config.text} ${config.border}`}>
@@ -171,25 +171,17 @@ export default function AdminLogs() {
                 </div>
               );
             })}
-
-            {/* Loading skeleton */}
-            {loading && (
-              <div className="px-4 py-6 flex items-center justify-center">
-                <div className="w-5 h-5 border-2 border-orange-500 border-t-transparent rounded-full animate-spin" />
-              </div>
-            )}
           </div>
         )}
 
-        {/* Load More */}
-        {hasMore && !loading && (
-          <button
-            onClick={() => fetchLogs(false)}
-            className="w-full bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-300 py-3 rounded-xl text-sm font-medium transition-colors"
-          >
-            Load More
-          </button>
-        )}
+        <Pagination
+          page={page}
+          totalPages={totalPages}
+          total={total}
+          pageSize={PAGE_SIZE}
+          onPrev={() => setPage((p) => p - 1)}
+          onNext={() => setPage((p) => p + 1)}
+        />
       </div>
 
       {/* Confirm Clear Modal */}

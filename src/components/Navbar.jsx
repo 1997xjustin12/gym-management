@@ -1,5 +1,5 @@
 import { Link, useNavigate, useLocation } from 'react-router-dom';
-import { LogOut, Users, LayoutDashboard, UserPlus, ArrowLeft, ClipboardList, CreditCard, Settings } from 'lucide-react';
+import { LogOut, Users, LayoutDashboard, UserPlus, ArrowLeft, ClipboardList, CreditCard, Settings, CalendarCheck } from 'lucide-react';
 import { useGym } from '../context/GymContext';
 import toast from 'react-hot-toast';
 import GymLogo from './GymLogo';
@@ -45,6 +45,7 @@ export default function Navbar({ title, showBack }) {
             <NavLink to="/admin" icon={<LayoutDashboard size={16} />} label="Dashboard" active={location.pathname === '/admin'} />
             <NavLink to="/admin/members" icon={<Users size={16} />} label="Members" active={location.pathname === '/admin/members'} badge={expiring.length} />
             <NavLink to="/admin/register" icon={<UserPlus size={16} />} label="Add" active={location.pathname === '/admin/register'} />
+            <NavLink to="/admin/attendance" icon={<CalendarCheck size={16} />} label="Attendance" active={location.pathname === '/admin/attendance'} />
             <NavLink to="/admin/logs" icon={<ClipboardList size={16} />} label="Logs" active={location.pathname === '/admin/logs'} />
             <NavLink to="/admin/renewals" icon={<CreditCard size={16} />} label="Payments" active={location.pathname === '/admin/renewals'} badge={pendingRenewals?.length} />
             <NavLink to="/admin/settings" icon={<Settings size={16} />} label="Settings" active={location.pathname === '/admin/settings'} />

@@ -1,5 +1,5 @@
 import { useNavigate, Navigate } from 'react-router-dom';
-import { ShieldCheck, User, ChevronRight } from 'lucide-react';
+import { ShieldCheck, User, ChevronRight, CalendarCheck } from 'lucide-react';
 import { useGym } from '../context/GymContext';
 import GymLogo from '../components/GymLogo';
 
@@ -78,11 +78,31 @@ export default function Home() {
               </div>
             </button>
           </div>
+
+          {/* Check-In */}
+          <div className="animate-fade-in-up animation-delay-800">
+            <button
+              onClick={() => navigate('/checkin')}
+              className="w-full group relative overflow-hidden bg-slate-800/80 backdrop-blur border border-slate-700 hover:border-orange-500/60 rounded-2xl p-6 text-left transition-all duration-300 hover:shadow-xl hover:shadow-orange-500/10 hover:-translate-y-0.5"
+            >
+              <div className="absolute inset-0 bg-gradient-to-br from-orange-500/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+              <div className="relative flex items-center gap-4">
+                <div className="w-12 h-12 bg-orange-500/20 rounded-xl flex items-center justify-center group-hover:bg-orange-500/30 transition-all duration-300 group-hover:scale-110">
+                  <CalendarCheck size={24} className="text-orange-400" />
+                </div>
+                <div>
+                  <h2 className="text-white font-bold text-lg leading-tight">Gym Check-In</h2>
+                  <p className="text-slate-400 text-sm">Log your visit for today</p>
+                </div>
+                <ChevronRight size={20} className="ml-auto text-slate-600 group-hover:text-orange-400 group-hover:translate-x-1 transition-all duration-300" />
+              </div>
+            </button>
+          </div>
         </div>
       </div>
 
       {/* Footer */}
-      <div className="text-center pb-6 space-y-1 animate-fade-in-up animation-delay-800">
+      <div className="text-center pb-6 space-y-1 animate-fade-in-up animation-delay-2000">
         <p className="text-slate-600 text-xs">
           © {new Date().getFullYear()} Power Fitness Gym · All rights reserved
         </p>

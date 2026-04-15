@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import {
   Search, Dumbbell, ArrowLeft, User, Phone, Calendar,
@@ -16,17 +16,20 @@ const PLAN_PRICE_KEY = {
 };
 
 export default function MemberPortal() {
-  const { findMembers, getMemberStatus, MEMBERSHIP_OPTIONS, settings, submitRenewalRequest, renewalRequests } = useGym();
-  const [query, setQuery]     = useState('');
-  const [results, setResults] = useState(null);
+  const { findMembers, getMemberStatus, MEMBERSHIP_OPTIONS, settings, submitRenewalRequest, renewalRequests, members } = useGym();
+  const [query, setQuery]       = useState('');
   const [searched, setSearched] = useState(false);
-  const [renewTarget, setRenewTarget] = useState(null); // member object
+  const [renewTarget, setRenewTarget] = useState(null);
+
+  // Derived live from members — auto-updates when members change via real-time
+  const results = useMemo(() => {
+    if (!searched || !query.trim()) return null;
+    return findMembers(query);
+  }, [searched, query, members]); // eslint-disable-line
 
   const handleSearch = (e) => {
     e.preventDefault();
     if (!query.trim()) return;
-    const found = findMembers(query);
-    setResults(found);
     setSearched(true);
   };
 

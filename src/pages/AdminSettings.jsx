@@ -46,6 +46,7 @@ export default function AdminSettings() {
       priceSemiAnnual:    settings.priceSemiAnnual    || '',
       priceAnnual:        settings.priceAnnual        || '',
       priceStudent:       settings.priceStudent       || '',
+      priceCoaching:      settings.priceCoaching      || '',
       telegramChatId:   settings.telegramChatId   || '',
       telegramBotToken: settings.telegramBotToken || '',
       siteUrl:          settings.siteUrl          || '',
@@ -238,6 +239,29 @@ export default function AdminSettings() {
               </div>
               <p className="text-slate-600 text-xs">
                 Monthly (30 days). Members must present a valid student ID.
+              </p>
+            </div>
+
+            {/* Coaching */}
+            <div className="border-t border-slate-700 pt-4 space-y-3">
+              <div className="flex items-center gap-2">
+                <Dumbbell size={15} className="text-yellow-400" />
+                <p className="text-slate-300 text-sm font-semibold">Personal Coaching</p>
+                <span className="text-slate-500 text-xs">— optional add-on</span>
+              </div>
+              <div className="relative max-w-xs">
+                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-sm font-medium">₱</span>
+                <input
+                  type="number"
+                  min="0"
+                  value={form.priceCoaching}
+                  onChange={(e) => set('priceCoaching', e.target.value)}
+                  placeholder="0"
+                  className="w-full bg-slate-700 border border-slate-600 focus:border-yellow-500 text-white rounded-xl pl-7 pr-4 py-3 outline-none transition-colors text-sm"
+                />
+              </div>
+              <p className="text-slate-600 text-xs">
+                Monthly coaching fee. Members can add this when paying via GCash. Set to 0 to hide it.
               </p>
             </div>
           </div>

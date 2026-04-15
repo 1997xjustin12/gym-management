@@ -44,6 +44,7 @@ const toSettings = (row) => ({
   priceSemiAnnual: Number(row.price_semi_annual) || 0,
   priceAnnual: Number(row.price_annual) || 0,
   priceStudent: Number(row.price_student) || 0,
+  priceCoaching: Number(row.price_coaching) || 0,
   telegramChatId: row.telegram_chat_id || '',
   telegramBotToken: row.telegram_bot_token || '',
   siteUrl: row.site_url || '',
@@ -84,6 +85,7 @@ export function GymProvider({ children }) {
     priceSemiAnnual: 0,
     priceAnnual: 0,
     priceStudent: 0,
+    priceCoaching: 0,
     telegramChatId: '',
     telegramBotToken: '',
     siteUrl: '',
@@ -184,6 +186,7 @@ export function GymProvider({ children }) {
       price_semi_annual: Number(formData.priceSemiAnnual) || 0,
       price_annual: Number(formData.priceAnnual) || 0,
       price_student: Number(formData.priceStudent) || 0,
+      price_coaching: Number(formData.priceCoaching) || 0,
       telegram_chat_id: formData.telegramChatId || '',
       telegram_bot_token: formData.telegramBotToken || '',
       site_url: formData.siteUrl || '',
@@ -346,6 +349,8 @@ export function GymProvider({ children }) {
       status: 'pending',
       view_token: viewToken,
       view_token_expires_at: viewTokenExpiresAt,
+      coaching_requested: payload.coachingRequested || false,
+      coaching_price: payload.coachingPrice || 0,
     }]);
     if (error) throw error;
 
@@ -360,6 +365,7 @@ export function GymProvider({ children }) {
         `👤 <b>Member:</b> ${payload.memberName}`,
         `📋 <b>Plan:</b> ${planLabel}`,
         `💰 <b>Amount:</b> ₱${Number(payload.amount).toLocaleString()}`,
+        payload.coachingRequested ? `🏋️ <b>+ Coaching:</b> ₱${Number(payload.coachingPrice).toLocaleString()} (included in total)` : '',
         payload.gcashReference ? `🔖 <b>GCash Ref:</b> ${payload.gcashReference}` : '',
         '',
         `🔗 <a href="${reviewLink}">Review &amp; Approve / Reject</a>`,

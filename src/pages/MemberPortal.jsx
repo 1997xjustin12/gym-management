@@ -623,15 +623,16 @@ export default function MemberPortal() {
 function RenewalModal({ member, settings, MEMBERSHIP_OPTIONS, submitRenewalRequest, onClose }) {
   const activePromos = settings.promos?.filter((p) => p.active) || [];
 
-  const [step, setStep]           = useState('plan');
-  const [plan, setPlan]           = useState(MEMBERSHIP_OPTIONS[0].value);
-  const [reference, setReference] = useState('');
+  const [step, setStep]               = useState('plan');
+  const [plan, setPlan]               = useState(MEMBERSHIP_OPTIONS[0].value);
+  const [coachingAddOn, setCoachingAddOn] = useState(false);
+  const [reference, setReference]     = useState('');
   const [receiptFile, setReceiptFile] = useState(null);
   const [receiptPreview, setReceiptPreview] = useState(null);
-  const [submitting, setSubmitting] = useState(false);
-  const [copied, setCopied]       = useState(false);
-  const receiptInputRef           = useRef(null);
-  const cameraInputRef            = useRef(null);
+  const [submitting, setSubmitting]   = useState(false);
+  const [copied, setCopied]           = useState(false);
+  const receiptInputRef               = useRef(null);
+  const cameraInputRef                = useRef(null);
 
   const selectedPromo = activePromos.find((p) => p.name === plan);
   const isStudent = plan === 'student';
@@ -648,6 +649,9 @@ function RenewalModal({ member, settings, MEMBERSHIP_OPTIONS, submitRenewalReque
   const selectedDurationDays = isStudent
     ? 30
     : selectedPromo?.duration_days || null;
+
+  const coachingFee  = coachingAddOn ? (Number(settings.priceCoaching) || 0) : 0;
+  const totalAmount  = price + coachingFee;
 
   const canSubmit = reference.trim() || receiptFile;
 
@@ -676,14 +680,16 @@ function RenewalModal({ member, settings, MEMBERSHIP_OPTIONS, submitRenewalReque
     setSubmitting(true);
     try {
       await submitRenewalRequest({
-        memberId:       member.id,
-        memberName:     member.name,
-        contactNumber:  member.contactNumber,
-        membershipType: plan,
-        amount:         price,
-        gcashReference: reference.trim(),
+        memberId:          member.id,
+        memberName:        member.name,
+        contactNumber:     member.contactNumber,
+        membershipType:    plan,
+        amount:            totalAmount,
+        gcashReference:    reference.trim(),
         receiptFile,
-        durationDays:   selectedDurationDays,
+        durationDays:      selectedDurationDays,
+        coachingRequested: coachingAddOn,
+        coachingPrice:     coachingFee,
       });
       setStep('done');
     } catch (err) {
@@ -784,6 +790,39 @@ function RenewalModal({ member, settings, MEMBERSHIP_OPTIONS, submitRenewalReque
                 )}
               </div>
 
+              {/* Coaching add-on */}
+              {Number(settings.priceCoaching) > 0 && (
+                <div>
+                  <p className="text-yellow-400 text-xs font-semibold uppercase tracking-wider pt-1">Add-on</p>
+                  <label className={`mt-2 flex items-center justify-between p-4 rounded-xl border cursor-pointer transition-all ${
+                    coachingAddOn
+                      ? 'border-yellow-500 bg-yellow-500/10'
+                      : 'border-slate-600 bg-slate-700/40 hover:border-slate-500'
+                  }`}>
+                    <div className="flex items-center gap-3">
+                      <input
+                        type="checkbox"
+                        checked={coachingAddOn}
+                        onChange={(e) => setCoachingAddOn(e.target.checked)}
+                        className="accent-yellow-500 w-4 h-4 shrink-0"
+                      />
+                      <div>
+                        <div className="flex items-center gap-1.5">
+                          <Dumbbell size={13} className="text-yellow-400" />
+                          <span className={`font-medium text-sm ${coachingAddOn ? 'text-yellow-300' : 'text-white'}`}>
+                            Personal Coaching
+                          </span>
+                        </div>
+                        <p className="text-slate-500 text-xs mt-0.5">Monthly coaching fee</p>
+                      </div>
+                    </div>
+                    <span className={`font-bold text-sm ${coachingAddOn ? 'text-yellow-300' : 'text-slate-300'}`}>
+                      +₱{Number(settings.priceCoaching).toLocaleString()}
+                    </span>
+                  </label>
+                </div>
+              )}
+
               {plan === 'student' && (
                 <div className="flex items-start gap-2.5 bg-sky-500/10 border border-sky-500/30 rounded-xl px-4 py-3">
                   <span className="text-sky-400 text-base shrink-0">🎓</span>
@@ -795,6 +834,24 @@ function RenewalModal({ member, settings, MEMBERSHIP_OPTIONS, submitRenewalReque
 
               {price === 0 && (
                 <p className="text-orange-400 text-xs text-center">Price not set for this plan. Please visit the gym.</p>
+              )}
+
+              {/* Total summary */}
+              {coachingAddOn && price > 0 && (
+                <div className="bg-slate-700/50 rounded-xl px-4 py-3 space-y-1.5">
+                  <div className="flex justify-between text-sm text-slate-400">
+                    <span>{planLabel}</span>
+                    <span>₱{price.toLocaleString()}</span>
+                  </div>
+                  <div className="flex justify-between text-sm text-yellow-400">
+                    <span>Personal Coaching</span>
+                    <span>+₱{coachingFee.toLocaleString()}</span>
+                  </div>
+                  <div className="flex justify-between text-white font-bold border-t border-slate-600 pt-1.5">
+                    <span>Total</span>
+                    <span>₱{totalAmount.toLocaleString()}</span>
+                  </div>
+                </div>
               )}
 
               <button
@@ -812,8 +869,15 @@ function RenewalModal({ member, settings, MEMBERSHIP_OPTIONS, submitRenewalReque
             <div className="space-y-4">
               <div className="bg-green-500/10 border border-green-500/30 rounded-xl p-4 text-center">
                 <p className="text-slate-400 text-sm">Amount to send</p>
-                <p className="text-green-400 font-black text-3xl mt-1">₱{price.toLocaleString()}</p>
-                <p className="text-slate-500 text-xs mt-0.5">{planLabel} renewal</p>
+                <p className="text-green-400 font-black text-3xl mt-1">₱{totalAmount.toLocaleString()}</p>
+                {coachingAddOn ? (
+                  <div className="mt-2 space-y-0.5 text-xs text-slate-500">
+                    <p>{planLabel}: ₱{price.toLocaleString()}</p>
+                    <p className="text-yellow-400/80">+ Coaching: ₱{coachingFee.toLocaleString()}</p>
+                  </div>
+                ) : (
+                  <p className="text-slate-500 text-xs mt-0.5">{planLabel} renewal</p>
+                )}
               </div>
 
               <div className="bg-slate-700/50 rounded-xl p-4 space-y-3">

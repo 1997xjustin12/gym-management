@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { CheckCircle, XCircle, CreditCard, AlertTriangle, ImageIcon, ChevronDown, Trash2 } from 'lucide-react';
+import { CheckCircle, XCircle, CreditCard, AlertTriangle, ImageIcon, ChevronDown, Trash2, Dumbbell } from 'lucide-react';
 import { useGym } from '../context/GymContext';
 import { supabase } from '../lib/supabase';
 import Navbar from '../components/Navbar';
@@ -194,7 +194,14 @@ export default function RenewalRequests() {
 
                     {/* Name + sub-info */}
                     <div className="flex-1 min-w-0">
-                      <p className="text-white font-semibold text-sm truncate">{req.member_name}</p>
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <p className="text-white font-semibold text-sm truncate">{req.member_name}</p>
+                        {req.coaching_requested && (
+                          <span className="inline-flex items-center gap-1 text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-yellow-500/15 text-yellow-400 border border-yellow-500/30 shrink-0">
+                            <Dumbbell size={9} /> Coaching
+                          </span>
+                        )}
+                      </div>
                       <p className="text-slate-500 text-xs">
                         {PLAN_LABELS[req.membership_type] || req.membership_type}
                         {' · '}
@@ -223,6 +230,9 @@ export default function RenewalRequests() {
                         <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
                           <InfoBox label="Plan"      value={PLAN_LABELS[req.membership_type] || req.membership_type} />
                           <InfoBox label="Amount"    value={`₱${Number(req.amount).toLocaleString()}`} highlight />
+                          {req.coaching_requested && (
+                            <InfoBox label="Coaching Fee" value={`₱${Number(req.coaching_price).toLocaleString()}`} highlight />
+                          )}
                           {req.gcash_reference && (
                             <InfoBox label="GCash Ref #" value={req.gcash_reference} mono />
                           )}

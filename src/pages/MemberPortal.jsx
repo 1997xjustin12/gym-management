@@ -1,12 +1,20 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import {
   Dumbbell, ArrowLeft, User, Phone, Calendar,
   CheckCircle, AlertTriangle, XCircle, Clock, MapPin,
   CreditCard, Copy, ChevronRight, X, Upload, ImageIcon, Camera,
+  FileText, UtensilsCrossed,
 } from 'lucide-react';
 import { useGym } from '../context/GymContext';
+import { supabase } from '../lib/supabase';
 import { formatDate, formatPhoneDisplay } from '../utils/helpers';
+
+const COACH_TABS = [
+  { key: 'note',      label: 'Notes',           Icon: FileText,        color: 'text-sky-400',    bg: 'bg-sky-500/15',    border: 'border-sky-500/30'    },
+  { key: 'workout',   label: 'Workout Program',  Icon: Dumbbell,        color: 'text-orange-400', bg: 'bg-orange-500/15', border: 'border-orange-500/30' },
+  { key: 'meal_plan', label: 'Meal Plan',        Icon: UtensilsCrossed, color: 'text-green-400',  bg: 'bg-green-500/15',  border: 'border-green-500/30'  },
+];
 
 const PLAN_PRICE_KEY = {
   monthly:       'priceMonthly',
@@ -25,6 +33,34 @@ export default function MemberPortal() {
   const [member, setMember]     = useState(null);
   const [notFound, setNotFound] = useState(false);
   const [renewTarget, setRenewTarget] = useState(null);
+  const [coachEntries, setCoachEntries] = useState([]);
+  const [coachInfo, setCoachInfo]       = useState(null);
+  const [coachTab, setCoachTab]         = useState('note');
+
+  useEffect(() => {
+    if (!member?.instructorId) {
+      setCoachEntries([]);
+      setCoachInfo(null);
+      return;
+    }
+    const fetch = async () => {
+      const [{ data: entries }, { data: inst }] = await Promise.all([
+        supabase
+          .from('coach_entries')
+          .select('*')
+          .eq('member_id', member.id)
+          .order('created_at', { ascending: false }),
+        supabase
+          .from('instructors')
+          .select('id, name, specialty, photo_url')
+          .eq('id', member.instructorId)
+          .single(),
+      ]);
+      setCoachEntries(entries || []);
+      setCoachInfo(inst || null);
+    };
+    fetch();
+  }, [member]);
 
   const handleLookup = (e) => {
     e.preventDefault();
@@ -392,6 +428,84 @@ export default function MemberPortal() {
               )}
             </div>
           </div>
+
+          {/* Coach section */}
+          {coachInfo && (
+            <div className="space-y-3">
+              {/* Coach card */}
+              <div className="bg-slate-800 rounded-2xl border border-yellow-500/20 p-4 flex items-center gap-3">
+                <div className="w-12 h-12 rounded-xl overflow-hidden bg-slate-700 shrink-0">
+                  {coachInfo.photo_url ? (
+                    <img src={coachInfo.photo_url} alt={coachInfo.name} className="w-full h-full object-cover" />
+                  ) : (
+                    <div className="w-full h-full flex items-center justify-center text-yellow-400 font-bold text-lg">
+                      {coachInfo.name.charAt(0).toUpperCase()}
+                    </div>
+                  )}
+                </div>
+                <div>
+                  <p className="text-xs text-slate-500 uppercase tracking-wide font-semibold">Your Coach</p>
+                  <p className="text-white font-bold">{coachInfo.name}</p>
+                  {coachInfo.specialty && <p className="text-yellow-400 text-xs">{coachInfo.specialty}</p>}
+                </div>
+              </div>
+
+              {/* Tabs */}
+              <div className="flex gap-2">
+                {COACH_TABS.map(({ key, label, Icon, color, bg, border }) => {
+                  const count = coachEntries.filter((e) => e.type === key).length;
+                  const isActive = coachTab === key;
+                  return (
+                    <button
+                      key={key}
+                      onClick={() => setCoachTab(key)}
+                      className={`flex-1 flex flex-col items-center gap-1.5 py-3 rounded-xl text-xs font-semibold transition-colors border ${
+                        isActive ? `${bg} ${color} ${border}` : 'bg-slate-800 text-slate-400 border-slate-700/50'
+                      }`}
+                    >
+                      <Icon size={16} />
+                      <span className="hidden sm:block leading-tight text-center">{label}</span>
+                      <span className="sm:hidden">{label.split(' ')[0]}</span>
+                      {count > 0 && (
+                        <span className={`text-[10px] px-1.5 py-0.5 rounded-full leading-none ${isActive ? bg : 'bg-slate-700 text-slate-400'}`}>
+                          {count}
+                        </span>
+                      )}
+                    </button>
+                  );
+                })}
+              </div>
+
+              {/* Entries */}
+              {(() => {
+                const tab = COACH_TABS.find((t) => t.key === coachTab);
+                const tabEntries = coachEntries.filter((e) => e.type === coachTab);
+                return tabEntries.length === 0 ? (
+                  <div className="text-center py-8 bg-slate-800/40 rounded-2xl border border-slate-700/30">
+                    <tab.Icon size={24} className="mx-auto text-slate-600 mb-2" />
+                    <p className="text-slate-500 text-sm">No {tab.label.toLowerCase()} from your coach yet</p>
+                  </div>
+                ) : (
+                  <div className="space-y-3">
+                    {tabEntries.map((entry) => {
+                      const tab = COACH_TABS.find((t) => t.key === entry.type);
+                      return (
+                        <div key={entry.id} className={`bg-slate-800 rounded-2xl border ${tab.border} p-4`}>
+                          {entry.title && (
+                            <p className="text-white font-semibold text-sm mb-1.5">{entry.title}</p>
+                          )}
+                          <p className="text-slate-300 text-sm whitespace-pre-wrap leading-relaxed">{entry.content}</p>
+                          <p className="text-slate-600 text-xs mt-2">
+                            {new Date(entry.created_at).toLocaleDateString('en-PH', { month: 'short', day: 'numeric', year: 'numeric' })}
+                          </p>
+                        </div>
+                      );
+                    })}
+                  </div>
+                );
+              })()}
+            </div>
+          )}
 
           {/* Back button */}
           <button

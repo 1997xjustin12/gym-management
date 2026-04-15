@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useParams, useNavigate, useLocation } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
 import { differenceInDays } from 'date-fns';
 import { Search, X, Dumbbell, ChevronRight, Users } from 'lucide-react';
@@ -15,10 +15,8 @@ function getMemberStatus(endDate) {
 }
 
 export default function CoachPortal() {
-  const { token }    = useParams();
-  const navigate     = useNavigate();
-  const location     = useLocation();
-  const base         = location.pathname.startsWith('/admin/coach') ? '/admin/coach' : '/coach';
+  const { code }   = useParams();
+  const navigate   = useNavigate();
 
   const [instructor, setInstructor] = useState(null);
   const [members, setMembers]       = useState([]);
@@ -31,7 +29,7 @@ export default function CoachPortal() {
       const { data: inst, error } = await supabase
         .from('instructors')
         .select('*')
-        .eq('portal_token', token)
+        .eq('access_code', code.toUpperCase())
         .single();
 
       if (error || !inst) { setNotFound(true); setLoading(false); return; }
@@ -47,7 +45,7 @@ export default function CoachPortal() {
       setLoading(false);
     };
     load();
-  }, [token]);
+  }, [code]);
 
   const filtered = members.filter((m) =>
     !query ||
@@ -140,7 +138,7 @@ export default function CoachPortal() {
                 return (
                   <button
                     key={member.id}
-                    onClick={() => navigate(`${base}/${token}/member/${member.id}`)}
+                    onClick={() => navigate(`/coach/${code}/member/${member.id}`)}
                     className="w-full bg-slate-800 hover:bg-slate-750 active:bg-slate-700 rounded-2xl border border-slate-700/50 p-3.5 flex items-center gap-3 text-left transition-colors"
                   >
                     {/* Avatar */}

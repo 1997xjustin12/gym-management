@@ -28,7 +28,7 @@ function fmtDate(str) {
 }
 
 export default function CoachMemberDetail() {
-  const { token, memberId } = useParams();
+  const { code, memberId } = useParams();
   const navigate = useNavigate();
 
   const [instructor, setInstructor] = useState(null);
@@ -55,7 +55,7 @@ export default function CoachMemberDetail() {
       const { data: inst, error: instErr } = await supabase
         .from('instructors')
         .select('id, name, photo_url, specialty')
-        .eq('portal_token', token)
+        .eq('access_code', code.toUpperCase())
         .single();
       if (instErr || !inst) { setNotFound(true); setLoading(false); return; }
       setInstructor(inst);
@@ -81,7 +81,7 @@ export default function CoachMemberDetail() {
       setLoading(false);
     };
     load();
-  }, [token, memberId]);
+  }, [code, memberId]);
 
   const openAdd = () => {
     setEditEntry(null);

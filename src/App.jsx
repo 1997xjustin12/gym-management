@@ -16,6 +16,7 @@ import MemberHistory from './pages/MemberHistory';
 import CheckIn from './pages/CheckIn';
 import AdminAttendance from './pages/AdminAttendance';
 import AdminInstructors from './pages/AdminInstructors';
+import CoachLogin from './pages/CoachLogin';
 import CoachPortal from './pages/CoachPortal';
 import CoachMemberDetail from './pages/CoachMemberDetail';
 
@@ -75,10 +76,9 @@ export default function App() {
           <Route path="/admin/attendance" element={<PrivateRoute><AdminAttendance /></PrivateRoute>} />
           <Route path="/admin/instructors" element={<PrivateRoute><AdminInstructors /></PrivateRoute>} />
           <Route path="/member" element={<MemberPortal />} />
-          <Route path="/coach/:token" element={<CoachPortal />} />
-          <Route path="/coach/:token/member/:memberId" element={<CoachMemberDetail />} />
-          <Route path="/admin/coach/:token" element={<CoachPortal />} />
-          <Route path="/admin/coach/:token/member/:memberId" element={<CoachMemberDetail />} />
+          <Route path="/coach" element={<CoachLogin />} />
+          <Route path="/coach/:code" element={<CoachPortal />} />
+          <Route path="/coach/:code/member/:memberId" element={<CoachMemberDetail />} />
           <Route path="/checkin" element={<CheckIn />} />
           <Route path="/review/:token" element={<ReviewPayment />} />
           <Route path="*" element={<Navigate to="/" replace />} />

@@ -245,8 +245,7 @@ export function GymProvider({ children }) {
 
   useEffect(() => { loadInstructors(); }, [loadInstructors]);
 
-  const addInstructor = async ({ name, specialty, contactNumber, email, bio, photo }) => {
-    const portalToken = crypto.randomUUID();
+  const addInstructor = async ({ name, specialty, contactNumber, email, bio, photo, accessCode }) => {
     const { data, error } = await supabase
       .from('instructors')
       .insert([{
@@ -255,7 +254,7 @@ export function GymProvider({ children }) {
         contact_number: contactNumber?.trim() || '',
         email: email?.trim() || null,
         bio: bio?.trim() || '',
-        portal_token: portalToken,
+        access_code: accessCode?.trim().toUpperCase() || null,
       }])
       .select()
       .single();
@@ -271,7 +270,7 @@ export function GymProvider({ children }) {
     return data;
   };
 
-  const updateInstructor = async (id, { name, specialty, contactNumber, email, bio, photo }) => {
+  const updateInstructor = async (id, { name, specialty, contactNumber, email, bio, photo, accessCode }) => {
     const existing = instructors.find((i) => i.id === id);
 
     let photoUrl = existing?.photo_url || null;
@@ -291,6 +290,7 @@ export function GymProvider({ children }) {
         email: email?.trim() || null,
         bio: bio?.trim() || '',
         photo_url: photoUrl,
+        access_code: accessCode?.trim().toUpperCase() || null,
       })
       .eq('id', id)
       .select()
@@ -314,14 +314,6 @@ export function GymProvider({ children }) {
       .eq('id', id);
     if (error) throw error;
     setInstructors((prev) => prev.map((i) => i.id === id ? { ...i, is_active: !isActive } : i));
-  };
-
-  const regeneratePortalToken = async (id) => {
-    const newToken = crypto.randomUUID();
-    const { error } = await supabase.from('instructors').update({ portal_token: newToken }).eq('id', id);
-    if (error) throw error;
-    setInstructors((prev) => prev.map((i) => i.id === id ? { ...i, portal_token: newToken } : i));
-    return newToken;
   };
 
   const submitRenewalRequest = async (payload) => {
@@ -666,7 +658,6 @@ export function GymProvider({ children }) {
         updateInstructor,
         deleteInstructor,
         toggleInstructor,
-        regeneratePortalToken,
       }}
     >
       {children}

@@ -191,8 +191,8 @@ export function GymProvider({ children }) {
   }, []);
 
   useEffect(() => {
-    if (isAdminLoggedIn) loadRenewalRequests();
-  }, [isAdminLoggedIn, loadRenewalRequests]);
+    loadRenewalRequests();
+  }, [loadRenewalRequests]);
 
   // ── Real-time: renewal requests ───────────────────────────────
   useEffect(() => {

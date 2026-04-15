@@ -70,9 +70,9 @@ export default function RenewalRequests() {
   };
 
   const FILTERS = [
-    { key: 'pending',  label: 'Pending',  count: pendingRenewals.length },
-    { key: 'approved', label: 'Approved' },
-    { key: 'rejected', label: 'Rejected' },
+    { key: 'pending',  label: 'Pending',  count: renewalRequests.filter((r) => r.status === 'pending').length },
+    { key: 'approved', label: 'Approved', count: renewalRequests.filter((r) => r.status === 'approved').length },
+    { key: 'rejected', label: 'Rejected', count: renewalRequests.filter((r) => r.status === 'rejected').length },
     { key: 'all',      label: 'All',      count: renewalRequests.length },
   ];
 

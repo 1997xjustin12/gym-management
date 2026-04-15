@@ -1,5 +1,5 @@
 import { Link, useNavigate, useLocation } from 'react-router-dom';
-import { LogOut, Users, LayoutDashboard, UserPlus, ArrowLeft, ClipboardList, CreditCard, Settings, CalendarCheck, MoreHorizontal } from 'lucide-react';
+import { LogOut, Users, LayoutDashboard, UserPlus, ArrowLeft, ClipboardList, CreditCard, Settings, CalendarCheck, Dumbbell } from 'lucide-react';
 import { useGym } from '../context/GymContext';
 import toast from 'react-hot-toast';
 import GymLogo from './GymLogo';
@@ -52,6 +52,7 @@ export default function Navbar({ title, showBack }) {
                 <NavLink to="/admin/attendance" icon={<CalendarCheck size={16} />} label="Attendance" active={location.pathname === '/admin/attendance'} />
                 <NavLink to="/admin/logs" icon={<ClipboardList size={16} />} label="Logs" active={location.pathname === '/admin/logs'} />
                 <NavLink to="/admin/renewals" icon={<CreditCard size={16} />} label="Payments" active={location.pathname === '/admin/renewals'} badge={pendingRenewals?.length} />
+                <NavLink to="/admin/instructors" icon={<Dumbbell size={16} />} label="Coaches" active={location.pathname === '/admin/instructors'} />
                 <NavLink to="/admin/settings" icon={<Settings size={16} />} label="Settings" active={location.pathname === '/admin/settings'} />
               </div>
               <button
@@ -100,6 +101,12 @@ export default function Navbar({ title, showBack }) {
               label="Payments"
               active={location.pathname === '/admin/renewals'}
               badge={pendingRenewals?.length}
+            />
+            <MobileNavLink
+              to="/admin/instructors"
+              icon={<Dumbbell size={21} />}
+              label="Coaches"
+              active={location.pathname === '/admin/instructors'}
             />
             <MobileNavLink
               to="/admin/settings"

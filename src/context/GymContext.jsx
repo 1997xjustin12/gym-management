@@ -245,14 +245,60 @@ export function GymProvider({ children }) {
 
   useEffect(() => { loadInstructors(); }, [loadInstructors]);
 
-  const addInstructor = async ({ name, specialty, contactNumber }) => {
+  const addInstructor = async ({ name, specialty, contactNumber, email, bio, photo }) => {
+    const portalToken = crypto.randomUUID();
     const { data, error } = await supabase
       .from('instructors')
-      .insert([{ name: name.trim(), specialty: specialty.trim(), contact_number: contactNumber.trim() }])
+      .insert([{
+        name: name.trim(),
+        specialty: specialty?.trim() || '',
+        contact_number: contactNumber?.trim() || '',
+        email: email?.trim() || null,
+        bio: bio?.trim() || '',
+        portal_token: portalToken,
+      }])
       .select()
       .single();
     if (error) throw error;
+
+    if (photo && isBase64(photo)) {
+      const photoUrl = await uploadPhoto(photo, `instructors/${data.id}`);
+      await supabase.from('instructors').update({ photo_url: photoUrl }).eq('id', data.id);
+      data.photo_url = photoUrl;
+    }
+
     setInstructors((prev) => [...prev, data].sort((a, b) => a.name.localeCompare(b.name)));
+    return data;
+  };
+
+  const updateInstructor = async (id, { name, specialty, contactNumber, email, bio, photo }) => {
+    const existing = instructors.find((i) => i.id === id);
+
+    let photoUrl = existing?.photo_url || null;
+    if (photo && isBase64(photo)) {
+      photoUrl = await uploadPhoto(photo, `instructors/${id}`);
+    } else if (!photo && existing?.photo_url) {
+      await supabase.storage.from('member-photos').remove([`instructors/${id}/photo.jpg`]);
+      photoUrl = null;
+    }
+
+    const { data, error } = await supabase
+      .from('instructors')
+      .update({
+        name: name.trim(),
+        specialty: specialty?.trim() || '',
+        contact_number: contactNumber?.trim() || '',
+        email: email?.trim() || null,
+        bio: bio?.trim() || '',
+        photo_url: photoUrl,
+      })
+      .eq('id', id)
+      .select()
+      .single();
+    if (error) throw error;
+
+    setInstructors((prev) => prev.map((i) => i.id === id ? data : i));
+    return data;
   };
 
   const deleteInstructor = async (id) => {
@@ -268,6 +314,14 @@ export function GymProvider({ children }) {
       .eq('id', id);
     if (error) throw error;
     setInstructors((prev) => prev.map((i) => i.id === id ? { ...i, is_active: !isActive } : i));
+  };
+
+  const regeneratePortalToken = async (id) => {
+    const newToken = crypto.randomUUID();
+    const { error } = await supabase.from('instructors').update({ portal_token: newToken }).eq('id', id);
+    if (error) throw error;
+    setInstructors((prev) => prev.map((i) => i.id === id ? { ...i, portal_token: newToken } : i));
+    return newToken;
   };
 
   const submitRenewalRequest = async (payload) => {
@@ -609,8 +663,10 @@ export function GymProvider({ children }) {
         // Instructors
         instructors,
         addInstructor,
+        updateInstructor,
         deleteInstructor,
         toggleInstructor,
+        regeneratePortalToken,
       }}
     >
       {children}

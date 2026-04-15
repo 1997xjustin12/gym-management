@@ -15,6 +15,9 @@ import ReviewPayment from './pages/ReviewPayment';
 import MemberHistory from './pages/MemberHistory';
 import CheckIn from './pages/CheckIn';
 import AdminAttendance from './pages/AdminAttendance';
+import AdminInstructors from './pages/AdminInstructors';
+import CoachPortal from './pages/CoachPortal';
+import CoachMemberDetail from './pages/CoachMemberDetail';
 
 function PrivateRoute({ children }) {
   const { isAdminLoggedIn } = useGym();
@@ -70,7 +73,10 @@ export default function App() {
           <Route path="/admin/settings" element={<PrivateRoute><AdminSettings /></PrivateRoute>} />
           <Route path="/admin/renewals" element={<PrivateRoute><RenewalRequests /></PrivateRoute>} />
           <Route path="/admin/attendance" element={<PrivateRoute><AdminAttendance /></PrivateRoute>} />
+          <Route path="/admin/instructors" element={<PrivateRoute><AdminInstructors /></PrivateRoute>} />
           <Route path="/member" element={<MemberPortal />} />
+          <Route path="/coach/:token" element={<CoachPortal />} />
+          <Route path="/coach/:token/member/:memberId" element={<CoachMemberDetail />} />
           <Route path="/checkin" element={<CheckIn />} />
           <Route path="/review/:token" element={<ReviewPayment />} />
           <Route path="*" element={<Navigate to="/" replace />} />

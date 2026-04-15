@@ -11,6 +11,7 @@ import MemberPortal from './pages/MemberPortal';
 import AdminLogs from './pages/AdminLogs';
 import AdminSettings from './pages/AdminSettings';
 import RenewalRequests from './pages/RenewalRequests';
+import ReviewPayment from './pages/ReviewPayment';
 
 function PrivateRoute({ children }) {
   const { isAdminLoggedIn } = useGym();
@@ -51,7 +52,7 @@ export default function App() {
         }}
       />
 
-      {loading || authLoading ? (
+      {authLoading ? (
         <LoadingScreen />
       ) : (
         <Routes>
@@ -65,6 +66,7 @@ export default function App() {
           <Route path="/admin/settings" element={<PrivateRoute><AdminSettings /></PrivateRoute>} />
           <Route path="/admin/renewals" element={<PrivateRoute><RenewalRequests /></PrivateRoute>} />
           <Route path="/member" element={<MemberPortal />} />
+          <Route path="/review/:token" element={<ReviewPayment />} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       )}

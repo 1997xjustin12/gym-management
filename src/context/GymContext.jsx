@@ -37,6 +37,8 @@ const toSettings = (row) => ({
   priceQuarterly: Number(row.price_quarterly) || 0,
   priceSemiAnnual: Number(row.price_semi_annual) || 0,
   priceAnnual: Number(row.price_annual) || 0,
+  priceStudent: Number(row.price_student) || 0,
+  studentDurationDays: Number(row.student_duration_days) || 30,
   telegramChatId: row.telegram_chat_id || '',
   telegramBotToken: row.telegram_bot_token || '',
   siteUrl: row.site_url || '',
@@ -75,6 +77,8 @@ export function GymProvider({ children }) {
     priceQuarterly: 0,
     priceSemiAnnual: 0,
     priceAnnual: 0,
+    priceStudent: 0,
+    studentDurationDays: 30,
     telegramChatId: '',
     telegramBotToken: '',
     siteUrl: '',
@@ -171,6 +175,8 @@ export function GymProvider({ children }) {
       price_quarterly: Number(formData.priceQuarterly) || 0,
       price_semi_annual: Number(formData.priceSemiAnnual) || 0,
       price_annual: Number(formData.priceAnnual) || 0,
+      price_student: Number(formData.priceStudent) || 0,
+      student_duration_days: Number(formData.studentDurationDays) || 30,
       telegram_chat_id: formData.telegramChatId || '',
       telegram_bot_token: formData.telegramBotToken || '',
       site_url: formData.siteUrl || '',
@@ -301,6 +307,7 @@ export function GymProvider({ children }) {
   // ── Helpers ───────────────────────────────────────────────────
   const getTypeDays = (membershipType) =>
     MEMBERSHIP_DAYS[membershipType]
+    || (membershipType === 'student' ? settings.studentDurationDays : null)
     || settings.promos.find((p) => p.name === membershipType)?.duration_days
     || 30;
 

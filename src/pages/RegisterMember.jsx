@@ -168,6 +168,13 @@ export default function RegisterMember() {
                     </option>
                   ))}
                 </optgroup>
+                {settings.priceStudent > 0 && (
+                  <optgroup label="Student">
+                    <option value="student">
+                      Student ({settings.studentDurationDays} days)
+                    </option>
+                  </optgroup>
+                )}
                 {activePromos.length > 0 && (
                   <optgroup label="Special Promos">
                     {activePromos.map((promo) => (

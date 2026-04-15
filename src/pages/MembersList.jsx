@@ -296,12 +296,20 @@ function QuickRenewModal({ member, settings, promos, renewMember, onClose }) {
   const [saving, setSaving]           = useState(false);
 
   const selectedPromo = promos.find((p) => p.name === plan);
-  const price = selectedPromo ? selectedPromo.price : (settings[PLAN_PRICE_KEY[plan]] || 0);
+  const isStudent = plan === 'student';
+  const price = isStudent
+    ? settings.priceStudent
+    : selectedPromo
+    ? selectedPromo.price
+    : (settings[PLAN_PRICE_KEY[plan]] || 0);
+  const customDays = isStudent
+    ? settings.studentDurationDays
+    : selectedPromo?.duration_days || null;
 
   const handleRenew = async () => {
     setSaving(true);
     try {
-      await renewMember(member.id, plan, paymentMethod, selectedPromo?.duration_days || null);
+      await renewMember(member.id, plan, paymentMethod, customDays);
       toast.success(`✅ Membership renewed for ${member.name}!`);
       onClose();
     } catch (err) {
@@ -367,6 +375,40 @@ function QuickRenewModal({ member, settings, promos, renewMember, onClose }) {
                   </label>
                 );
               })}
+
+              {/* Student membership */}
+              {settings.priceStudent > 0 && (
+                <>
+                  <p className="text-sky-400 text-xs font-medium uppercase tracking-wider pt-1">Student</p>
+                  <label
+                    className={`flex items-center justify-between p-3 rounded-xl border cursor-pointer transition-all ${
+                      plan === 'student'
+                        ? 'border-sky-500 bg-sky-500/10'
+                        : 'border-slate-600 bg-slate-700/40 hover:border-slate-500'
+                    }`}
+                  >
+                    <div className="flex items-center gap-3">
+                      <input
+                        type="radio"
+                        name="plan"
+                        value="student"
+                        checked={plan === 'student'}
+                        onChange={() => setPlan('student')}
+                        className="accent-sky-500"
+                      />
+                      <div>
+                        <span className={`font-medium text-sm ${plan === 'student' ? 'text-sky-300' : 'text-white'}`}>
+                          Student
+                        </span>
+                        <span className="text-slate-500 text-xs ml-2">{settings.studentDurationDays} days</span>
+                      </div>
+                    </div>
+                    <span className={`font-bold text-sm ${plan === 'student' ? 'text-sky-300' : 'text-slate-300'}`}>
+                      ₱{Number(settings.priceStudent).toLocaleString()}
+                    </span>
+                  </label>
+                </>
+              )}
 
               {/* Special promos */}
               {promos.length > 0 && (

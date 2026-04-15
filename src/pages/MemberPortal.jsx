@@ -30,8 +30,12 @@ export default function MemberPortal() {
     setSearched(true);
   };
 
-  const getMembershipLabel = (type) =>
-    MEMBERSHIP_OPTIONS.find((o) => o.value === type)?.label || type;
+  const getMembershipLabel = (type) => {
+    if (type === 'student') return 'Student';
+    const standard = MEMBERSHIP_OPTIONS.find((o) => o.value === type);
+    if (standard) return standard.label;
+    return type; // promo name or unknown
+  };
 
   const StatusDisplay = ({ member }) => {
     const { status, daysLeft } = getMemberStatus(member);
@@ -263,8 +267,20 @@ function RenewalModal({ member, settings, MEMBERSHIP_OPTIONS, submitRenewalReque
   const cameraInputRef            = useRef(null);
 
   const selectedPromo = activePromos.find((p) => p.name === plan);
-  const price = selectedPromo ? selectedPromo.price : (settings[PLAN_PRICE_KEY[plan]] || 0);
-  const planLabel = selectedPromo ? plan : (MEMBERSHIP_OPTIONS.find((o) => o.value === plan)?.label || plan);
+  const isStudent = plan === 'student';
+  const price = isStudent
+    ? settings.priceStudent
+    : selectedPromo
+    ? selectedPromo.price
+    : (settings[PLAN_PRICE_KEY[plan]] || 0);
+  const planLabel = isStudent
+    ? 'Student'
+    : selectedPromo
+    ? plan
+    : (MEMBERSHIP_OPTIONS.find((o) => o.value === plan)?.label || plan);
+  const selectedDurationDays = isStudent
+    ? settings.studentDurationDays
+    : selectedPromo?.duration_days || null;
 
   const canSubmit = reference.trim() || receiptFile;
 
@@ -300,7 +316,7 @@ function RenewalModal({ member, settings, MEMBERSHIP_OPTIONS, submitRenewalReque
         amount:         price,
         gcashReference: reference.trim(),
         receiptFile:    receiptFile,
-        durationDays:   selectedPromo?.duration_days || null,
+        durationDays:   selectedDurationDays,
       });
       setStep('done');
     } catch (err) {
@@ -363,6 +379,40 @@ function RenewalModal({ member, settings, MEMBERSHIP_OPTIONS, submitRenewalReque
                     </label>
                   );
                 })}
+
+                {/* Student plan */}
+                {settings.priceStudent > 0 && (
+                  <>
+                    <p className="text-sky-400 text-xs font-medium uppercase tracking-wider pt-1">Student</p>
+                    <label
+                      className={`flex items-center justify-between p-4 rounded-xl border cursor-pointer transition-all ${
+                        plan === 'student'
+                          ? 'border-sky-500 bg-sky-500/10'
+                          : 'border-slate-600 bg-slate-700/40 hover:border-slate-500'
+                      }`}
+                    >
+                      <div className="flex items-center gap-3">
+                        <input
+                          type="radio"
+                          name="plan"
+                          value="student"
+                          checked={plan === 'student'}
+                          onChange={() => setPlan('student')}
+                          className="accent-sky-500"
+                        />
+                        <div>
+                          <span className={`font-medium ${plan === 'student' ? 'text-sky-300' : 'text-white'}`}>
+                            Student
+                          </span>
+                          <span className="text-slate-500 text-xs ml-2">{settings.studentDurationDays} days</span>
+                        </div>
+                      </div>
+                      <span className={`font-bold ${plan === 'student' ? 'text-sky-300' : 'text-slate-300'}`}>
+                        ₱{Number(settings.priceStudent).toLocaleString()}
+                      </span>
+                    </label>
+                  </>
+                )}
 
                 {/* Special promos */}
                 {activePromos.length > 0 && (

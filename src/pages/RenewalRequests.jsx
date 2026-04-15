@@ -79,7 +79,7 @@ export default function RenewalRequests() {
   return (
     <div className="min-h-screen bg-slate-900">
       <Navbar />
-      <div className="max-w-3xl mx-auto px-4 py-6 space-y-6">
+      <div className="max-w-3xl mx-auto px-4 py-6 space-y-6 pb-24 sm:pb-8">
 
         {/* Header */}
         <div className="flex items-center gap-3">

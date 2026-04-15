@@ -1,5 +1,5 @@
 import { useNavigate, Navigate } from 'react-router-dom';
-import { ShieldCheck, User, ChevronRight, CalendarCheck } from 'lucide-react';
+import { ShieldCheck, User, ChevronRight, CalendarCheck, Dumbbell } from 'lucide-react';
 import { useGym } from '../context/GymContext';
 import GymLogo from '../components/GymLogo';
 
@@ -22,7 +22,7 @@ export default function Home() {
       {/* Hero */}
       <div className="flex-1 flex flex-col items-center justify-center px-6 py-16 text-center">
 
-        {/* Logo — fade + scale in */}
+        {/* Logo */}
         <div className="mb-6 relative animate-fade-in-down">
           <div className="absolute -inset-6 bg-orange-500/10 rounded-full blur-3xl animate-pulse-slow" />
           <GymLogo size={150} className="relative drop-shadow-2xl" />
@@ -33,28 +33,33 @@ export default function Home() {
           <h1 className="text-4xl sm:text-5xl font-black text-white mb-2 tracking-tight">
             POWER <span className="text-orange-500">FITNESS</span> GYM
           </h1>
-          <div className="w-12 h-1 bg-orange-500 rounded-full mx-auto mb-10" />
+          <div className="w-12 h-1 bg-orange-500 rounded-full mx-auto mb-3" />
+          <p className="text-slate-400 text-sm sm:text-base mb-10 tracking-wide">
+            Train Hard. <span className="text-slate-300 font-medium">Stay Strong.</span> Manage Smart.
+          </p>
         </div>
 
         {/* Portal Cards */}
-        <div className="w-full max-w-sm space-y-4">
+        <div className="w-full max-w-sm space-y-3">
 
           {/* Admin Portal */}
           <div className="animate-fade-in-up animation-delay-400">
             <button
               onClick={() => navigate('/admin/login')}
-              className="w-full group relative overflow-hidden bg-slate-800/80 backdrop-blur border border-slate-700 hover:border-orange-500/60 rounded-2xl p-6 text-left transition-all duration-300 hover:shadow-xl hover:shadow-orange-500/10 hover:-translate-y-0.5"
+              className="w-full group relative overflow-hidden bg-slate-800/80 backdrop-blur border border-slate-700 hover:border-orange-500/60 rounded-2xl p-5 text-left transition-all duration-300 hover:shadow-xl hover:shadow-orange-500/10 hover:-translate-y-0.5"
             >
               <div className="absolute inset-0 bg-gradient-to-br from-orange-500/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+              {/* Top accent */}
+              <div className="absolute top-0 left-0 right-0 h-0.5 bg-gradient-to-r from-orange-500/0 via-orange-500/60 to-orange-500/0 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
               <div className="relative flex items-center gap-4">
                 <div className="w-12 h-12 bg-orange-500/20 rounded-xl flex items-center justify-center group-hover:bg-orange-500/30 transition-all duration-300 group-hover:scale-110">
                   <ShieldCheck size={24} className="text-orange-400" />
                 </div>
                 <div>
-                  <h2 className="text-white font-bold text-lg leading-tight">Admin Portal</h2>
-                  <p className="text-slate-400 text-sm">Manage members &amp; memberships</p>
+                  <h2 className="text-white font-bold text-base leading-tight">Admin Portal</h2>
+                  <p className="text-slate-400 text-xs mt-0.5">Manage members &amp; memberships</p>
                 </div>
-                <ChevronRight size={20} className="ml-auto text-slate-600 group-hover:text-orange-400 group-hover:translate-x-1 transition-all duration-300" />
+                <ChevronRight size={18} className="ml-auto text-slate-600 group-hover:text-orange-400 group-hover:translate-x-1 transition-all duration-300" />
               </div>
             </button>
           </div>
@@ -63,18 +68,19 @@ export default function Home() {
           <div className="animate-fade-in-up animation-delay-600">
             <button
               onClick={() => navigate('/member')}
-              className="w-full group relative overflow-hidden bg-slate-800/80 backdrop-blur border border-slate-700 hover:border-sky-500/60 rounded-2xl p-6 text-left transition-all duration-300 hover:shadow-xl hover:shadow-sky-500/10 hover:-translate-y-0.5"
+              className="w-full group relative overflow-hidden bg-slate-800/80 backdrop-blur border border-slate-700 hover:border-sky-500/60 rounded-2xl p-5 text-left transition-all duration-300 hover:shadow-xl hover:shadow-sky-500/10 hover:-translate-y-0.5"
             >
               <div className="absolute inset-0 bg-gradient-to-br from-sky-500/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+              <div className="absolute top-0 left-0 right-0 h-0.5 bg-gradient-to-r from-sky-500/0 via-sky-500/60 to-sky-500/0 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
               <div className="relative flex items-center gap-4">
                 <div className="w-12 h-12 bg-sky-500/20 rounded-xl flex items-center justify-center group-hover:bg-sky-500/30 transition-all duration-300 group-hover:scale-110">
                   <User size={24} className="text-sky-400" />
                 </div>
                 <div>
-                  <h2 className="text-white font-bold text-lg leading-tight">Member Portal</h2>
-                  <p className="text-slate-400 text-sm">Check your membership status</p>
+                  <h2 className="text-white font-bold text-base leading-tight">Member Portal</h2>
+                  <p className="text-slate-400 text-xs mt-0.5">Check status &amp; request renewal</p>
                 </div>
-                <ChevronRight size={20} className="ml-auto text-slate-600 group-hover:text-sky-400 group-hover:translate-x-1 transition-all duration-300" />
+                <ChevronRight size={18} className="ml-auto text-slate-600 group-hover:text-sky-400 group-hover:translate-x-1 transition-all duration-300" />
               </div>
             </button>
           </div>
@@ -83,31 +89,38 @@ export default function Home() {
           <div className="animate-fade-in-up animation-delay-800">
             <button
               onClick={() => navigate('/checkin')}
-              className="w-full group relative overflow-hidden bg-slate-800/80 backdrop-blur border border-slate-700 hover:border-orange-500/60 rounded-2xl p-6 text-left transition-all duration-300 hover:shadow-xl hover:shadow-orange-500/10 hover:-translate-y-0.5"
+              className="w-full group relative overflow-hidden bg-slate-800/80 backdrop-blur border border-slate-700 hover:border-green-500/60 rounded-2xl p-5 text-left transition-all duration-300 hover:shadow-xl hover:shadow-green-500/10 hover:-translate-y-0.5"
             >
-              <div className="absolute inset-0 bg-gradient-to-br from-orange-500/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+              <div className="absolute inset-0 bg-gradient-to-br from-green-500/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+              <div className="absolute top-0 left-0 right-0 h-0.5 bg-gradient-to-r from-green-500/0 via-green-500/60 to-green-500/0 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
               <div className="relative flex items-center gap-4">
-                <div className="w-12 h-12 bg-orange-500/20 rounded-xl flex items-center justify-center group-hover:bg-orange-500/30 transition-all duration-300 group-hover:scale-110">
-                  <CalendarCheck size={24} className="text-orange-400" />
+                <div className="w-12 h-12 bg-green-500/20 rounded-xl flex items-center justify-center group-hover:bg-green-500/30 transition-all duration-300 group-hover:scale-110">
+                  <CalendarCheck size={24} className="text-green-400" />
                 </div>
                 <div>
-                  <h2 className="text-white font-bold text-lg leading-tight">Gym Check-In</h2>
-                  <p className="text-slate-400 text-sm">Log your visit for today</p>
+                  <h2 className="text-white font-bold text-base leading-tight">Gym Check-In</h2>
+                  <p className="text-slate-400 text-xs mt-0.5">Log your visit for today</p>
                 </div>
-                <ChevronRight size={20} className="ml-auto text-slate-600 group-hover:text-orange-400 group-hover:translate-x-1 transition-all duration-300" />
+                <ChevronRight size={18} className="ml-auto text-slate-600 group-hover:text-green-400 group-hover:translate-x-1 transition-all duration-300" />
               </div>
             </button>
           </div>
         </div>
+
+        {/* Powered-by tag */}
+        <div className="mt-10 animate-fade-in-up animation-delay-2000 flex items-center gap-2 text-slate-700">
+          <Dumbbell size={13} />
+          <span className="text-xs">Powered by GymHub</span>
+        </div>
       </div>
 
       {/* Footer */}
-      <div className="text-center pb-6 space-y-1 animate-fade-in-up animation-delay-2000">
+      <div className="text-center pb-6 px-4 space-y-1 animate-fade-in-up animation-delay-2000 border-t border-slate-800/60 pt-4">
         <p className="text-slate-600 text-xs">
           © {new Date().getFullYear()} Power Fitness Gym · All rights reserved
         </p>
         <p className="text-slate-700 text-xs">
-          2nd Floor Fernandez Bldg, Saavedra St, Toril, Davao City, Davao del Sur
+          2nd Floor Fernandez Bldg, Saavedra St, Toril, Davao City
         </p>
       </div>
 

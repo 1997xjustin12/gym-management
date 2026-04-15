@@ -58,7 +58,7 @@ export default function MembersList() {
     <div className="min-h-screen bg-slate-900">
       <Navbar title="Members" />
 
-      <div className="max-w-4xl mx-auto px-4 py-6 space-y-4">
+      <div className="max-w-4xl mx-auto px-4 py-6 space-y-4 pb-24 sm:pb-8">
         {/* Header Row */}
         <div className="flex items-center justify-between">
           <div>
@@ -131,9 +131,12 @@ export default function MembersList() {
 
         {/* Members List */}
         {filtered.length === 0 ? (
-          <div className="text-center py-16">
-            <p className="text-slate-500 text-lg">No members found</p>
-            <p className="text-slate-600 text-sm mt-1">Try changing your search or filter</p>
+          <div className="text-center py-16 bg-slate-800/40 rounded-2xl border border-slate-700/30">
+            <div className="w-14 h-14 bg-slate-700 rounded-2xl flex items-center justify-center mx-auto mb-4">
+              <Search size={24} className="text-slate-500" />
+            </div>
+            <p className="text-slate-300 font-semibold">No members found</p>
+            <p className="text-slate-500 text-sm mt-1">Try a different name, number, or filter</p>
           </div>
         ) : (
           <div className="space-y-2">
@@ -170,9 +173,13 @@ export default function MembersList() {
                         <StatusBadge status={statusInfo.status} label={statusInfo.label} />
                       </div>
                       <p className="text-slate-400 text-xs">{formatPhoneDisplay(member.contactNumber)}</p>
-                      <p className="text-slate-500 text-xs mt-0.5">
-                        {member.membershipType} · Ends {formatDate(member.membershipEndDate)}
-                      </p>
+                      <div className="flex items-center gap-2 mt-0.5">
+                        <span className="text-[11px] font-medium bg-slate-700 text-slate-300 px-2 py-0.5 rounded-md capitalize">
+                          {member.membershipType}
+                        </span>
+                        <span className="text-slate-600 text-xs">·</span>
+                        <p className="text-slate-500 text-xs">Ends {formatDate(member.membershipEndDate)}</p>
+                      </div>
                     </div>
 
                     {/* Actions */}
@@ -180,39 +187,39 @@ export default function MembersList() {
                       {statusInfo.status === 'expiring' && (
                         <button
                           onClick={() => setSmsTarget({ member, daysLeft: statusInfo.daysLeft })}
-                          className="w-8 h-8 bg-orange-500/20 hover:bg-orange-500/40 text-orange-400 rounded-lg flex items-center justify-center transition-colors"
+                          className="w-9 h-9 bg-orange-500/20 hover:bg-orange-500/40 text-orange-400 rounded-xl flex items-center justify-center transition-colors"
                           title="Send SMS"
                         >
-                          <MessageSquare size={14} />
+                          <MessageSquare size={15} />
                         </button>
                       )}
                       <button
                         onClick={() => setRenewTarget(member)}
-                        className="w-8 h-8 bg-green-500/20 hover:bg-green-500/40 text-green-400 rounded-lg flex items-center justify-center transition-colors"
+                        className="w-9 h-9 bg-green-500/20 hover:bg-green-500/40 text-green-400 rounded-xl flex items-center justify-center transition-colors"
                         title="Accept Payment & Renew"
                       >
-                        <RefreshCw size={14} />
+                        <RefreshCw size={15} />
                       </button>
                       <button
                         onClick={() => navigate(`/admin/members/${member.id}/history`)}
-                        className="w-8 h-8 bg-slate-700 hover:bg-slate-600 text-slate-300 rounded-lg flex items-center justify-center transition-colors"
+                        className="w-9 h-9 bg-slate-700 hover:bg-slate-600 text-slate-300 rounded-xl flex items-center justify-center transition-colors"
                         title="View History"
                       >
-                        <History size={14} />
+                        <History size={15} />
                       </button>
                       <button
                         onClick={() => navigate(`/admin/members/${member.id}/edit`)}
-                        className="w-8 h-8 bg-slate-700 hover:bg-slate-600 text-slate-300 rounded-lg flex items-center justify-center transition-colors"
+                        className="w-9 h-9 bg-slate-700 hover:bg-slate-600 text-slate-300 rounded-xl flex items-center justify-center transition-colors"
                         title="Edit"
                       >
-                        <Pencil size={14} />
+                        <Pencil size={15} />
                       </button>
                       <button
                         onClick={() => setConfirmDelete(member)}
-                        className="w-8 h-8 bg-slate-700 hover:bg-red-500/30 text-slate-400 hover:text-red-400 rounded-lg flex items-center justify-center transition-colors"
+                        className="w-9 h-9 bg-slate-700 hover:bg-red-500/30 text-slate-400 hover:text-red-400 rounded-xl flex items-center justify-center transition-colors"
                         title="Delete"
                       >
-                        <Trash2 size={14} />
+                        <Trash2 size={15} />
                       </button>
                     </div>
                   </div>
@@ -220,13 +227,16 @@ export default function MembersList() {
                   {/* Expiry warning bar */}
                   {statusInfo.status === 'expiring' && (
                     <div className="px-3.5 pb-3 pt-0">
-                      <div className="flex items-center justify-between text-xs">
-                        <span className="text-orange-400/70">Expiry progress</span>
+                      <div className="flex items-center justify-between text-xs mb-1.5">
+                        <span className="text-orange-400/70">Expiring</span>
+                        <span className="text-orange-400 font-semibold">
+                          {statusInfo.daysLeft === 0 ? 'Today!' : `${statusInfo.daysLeft} day${statusInfo.daysLeft !== 1 ? 's' : ''} left`}
+                        </span>
                       </div>
-                      <div className="mt-1.5 h-1.5 bg-slate-700 rounded-full overflow-hidden">
+                      <div className="h-1.5 bg-slate-700 rounded-full overflow-hidden">
                         <div
-                          className="h-full bg-orange-500 rounded-full transition-all"
-                          style={{ width: `${Math.max(5, ((5 - statusInfo.daysLeft) / 5) * 100)}%` }}
+                          className="h-full bg-gradient-to-r from-orange-500 to-red-500 rounded-full transition-all"
+                          style={{ width: `${Math.max(8, ((5 - statusInfo.daysLeft) / 5) * 100)}%` }}
                         />
                       </div>
                     </div>

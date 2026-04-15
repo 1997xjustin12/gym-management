@@ -88,7 +88,7 @@ export default function AdminLogs() {
     <div className="min-h-screen bg-slate-900">
       <Navbar title="Activity Logs" showBack />
 
-      <div className="max-w-4xl mx-auto px-4 py-6 space-y-4">
+      <div className="max-w-4xl mx-auto px-4 py-6 space-y-4 pb-24 sm:pb-8">
         {/* Header */}
         <div className="flex items-center justify-between">
           <div>

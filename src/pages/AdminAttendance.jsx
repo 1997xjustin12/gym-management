@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Users, Calendar, Clock, ChevronLeft, ChevronRight } from 'lucide-react';
 import { supabase } from '../lib/supabase';
+import { useGym } from '../context/GymContext';
 import Navbar from '../components/Navbar';
 
 function fmtTime(str) {
@@ -13,9 +14,13 @@ function toLocalDate(date) {
 }
 
 export default function AdminAttendance() {
+  const { members } = useGym();
   const [selectedDate, setSelectedDate] = useState(toLocalDate(new Date()));
   const [records, setRecords]           = useState([]);
   const [loading, setLoading]           = useState(true);
+
+  const getMemberPhoto = (memberId) =>
+    members.find((m) => m.id === memberId)?.photo || null;
 
   useEffect(() => {
     const load = async () => {
@@ -140,10 +145,18 @@ export default function AdminAttendance() {
                 <span className="text-slate-600 text-sm font-mono w-5 text-right shrink-0">{i + 1}</span>
 
                 {/* Avatar */}
-                <div className="w-9 h-9 bg-orange-500/20 rounded-xl flex items-center justify-center shrink-0">
-                  <span className="text-orange-400 font-bold text-sm">
-                    {rec.member_name.charAt(0).toUpperCase()}
-                  </span>
+                <div className="w-9 h-9 rounded-xl overflow-hidden bg-orange-500/20 shrink-0 flex items-center justify-center">
+                  {getMemberPhoto(rec.member_id) ? (
+                    <img
+                      src={getMemberPhoto(rec.member_id)}
+                      alt={rec.member_name}
+                      className="w-full h-full object-cover"
+                    />
+                  ) : (
+                    <span className="text-orange-400 font-bold text-sm">
+                      {rec.member_name.charAt(0).toUpperCase()}
+                    </span>
+                  )}
                 </div>
 
                 {/* Name */}

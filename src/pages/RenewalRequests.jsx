@@ -9,6 +9,7 @@ const PLAN_LABELS = {
   quarterly:     '3 Months',
   'semi-annual': '6 Months',
   annual:        '1 Year',
+  student:       'Student',
 };
 
 const STATUS_CFG = {

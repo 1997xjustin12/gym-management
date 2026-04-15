@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { Search, ArrowLeft, CheckCircle, Clock, XCircle, Dumbbell, AlertTriangle } from 'lucide-react';
 import { useGym } from '../context/GymContext';
@@ -25,6 +25,32 @@ export default function CheckIn() {
     setResults(found);
     setSearched(true);
   };
+
+  // Pre-check today's attendance for all results so already-checked-in members
+  // never show the Check In button
+  useEffect(() => {
+    if (!results || results.length === 0) return;
+    const today = new Date().toISOString().split('T')[0];
+    const ids = results.map((m) => m.id);
+    supabase
+      .from('attendance')
+      .select('member_id, checked_in_at')
+      .in('member_id', ids)
+      .gte('checked_in_at', `${today}T00:00:00`)
+      .lte('checked_in_at', `${today}T23:59:59`)
+      .then(({ data }) => {
+        if (!data || data.length === 0) return;
+        setCheckedIn((prev) => {
+          const updated = { ...prev };
+          data.forEach((rec) => {
+            if (!updated[rec.member_id]) {
+              updated[rec.member_id] = { time: rec.checked_in_at, duplicate: true };
+            }
+          });
+          return updated;
+        });
+      });
+  }, [results]);
 
   const handleCheckIn = async (member) => {
     setChecking(member.id);

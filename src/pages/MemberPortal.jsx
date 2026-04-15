@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import {
   Search, Dumbbell, ArrowLeft, User, Phone, Calendar,
   CheckCircle, AlertTriangle, XCircle, Clock, MapPin,
-  CreditCard, Copy, ChevronRight, X, Upload, ImageIcon,
+  CreditCard, Copy, ChevronRight, X, Upload, ImageIcon, Camera,
 } from 'lucide-react';
 import { useGym } from '../context/GymContext';
 import { formatDate, formatPhoneDisplay } from '../utils/helpers';
@@ -258,6 +258,7 @@ function RenewalModal({ member, settings, MEMBERSHIP_OPTIONS, submitRenewalReque
   const [submitting, setSubmitting] = useState(false);
   const [copied, setCopied]       = useState(false);
   const receiptInputRef           = useRef(null);
+  const cameraInputRef            = useRef(null);
 
   const price = settings[PLAN_PRICE_KEY[plan]] || 0;
   const planLabel = MEMBERSHIP_OPTIONS.find((o) => o.value === plan)?.label || plan;
@@ -274,6 +275,7 @@ function RenewalModal({ member, settings, MEMBERSHIP_OPTIONS, submitRenewalReque
     setReceiptFile(null);
     setReceiptPreview(null);
     if (receiptInputRef.current) receiptInputRef.current.value = '';
+    if (cameraInputRef.current) cameraInputRef.current.value = '';
   };
 
   const copyNumber = () => {
@@ -438,7 +440,7 @@ function RenewalModal({ member, settings, MEMBERSHIP_OPTIONS, submitRenewalReque
               {/* Receipt upload */}
               <div>
                 <label className="block text-slate-300 text-sm font-medium mb-1.5">
-                  Upload Payment Screenshot
+                  Payment Proof
                 </label>
                 {receiptPreview ? (
                   <div className="relative">
@@ -456,15 +458,35 @@ function RenewalModal({ member, settings, MEMBERSHIP_OPTIONS, submitRenewalReque
                     </button>
                   </div>
                 ) : (
-                  <div
-                    onClick={() => receiptInputRef.current?.click()}
-                    className="border-2 border-dashed border-slate-600 hover:border-green-500 rounded-xl p-5 text-center cursor-pointer transition-colors group"
-                  >
-                    <ImageIcon size={28} className="mx-auto text-slate-500 group-hover:text-green-400 mb-2 transition-colors" />
-                    <p className="text-slate-400 text-sm">Tap to upload your GCash receipt</p>
-                    <p className="text-slate-600 text-xs mt-0.5">JPG, PNG supported</p>
+                  <div className="grid grid-cols-2 gap-2">
+                    <button
+                      type="button"
+                      onClick={() => cameraInputRef.current?.click()}
+                      className="flex flex-col items-center justify-center gap-2 border-2 border-dashed border-slate-600 hover:border-green-500 rounded-xl p-4 text-center cursor-pointer transition-colors group"
+                    >
+                      <Camera size={24} className="text-slate-500 group-hover:text-green-400 transition-colors" />
+                      <p className="text-slate-400 text-xs font-medium">Take Photo</p>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => receiptInputRef.current?.click()}
+                      className="flex flex-col items-center justify-center gap-2 border-2 border-dashed border-slate-600 hover:border-green-500 rounded-xl p-4 text-center cursor-pointer transition-colors group"
+                    >
+                      <Upload size={24} className="text-slate-500 group-hover:text-green-400 transition-colors" />
+                      <p className="text-slate-400 text-xs font-medium">Upload from Gallery</p>
+                    </button>
                   </div>
                 )}
+                {/* Camera input */}
+                <input
+                  ref={cameraInputRef}
+                  type="file"
+                  accept="image/*"
+                  capture="environment"
+                  className="hidden"
+                  onChange={(e) => handleReceiptFile(e.target.files[0])}
+                />
+                {/* Gallery input */}
                 <input
                   ref={receiptInputRef}
                   type="file"
@@ -472,7 +494,6 @@ function RenewalModal({ member, settings, MEMBERSHIP_OPTIONS, submitRenewalReque
                   className="hidden"
                   onChange={(e) => handleReceiptFile(e.target.files[0])}
                 />
-                <p className="text-slate-500 text-xs mt-1">Take a photo or upload a screenshot of your payment</p>
               </div>
 
               {!canSubmit && (

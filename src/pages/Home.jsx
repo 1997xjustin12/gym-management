@@ -31,10 +31,9 @@ export default function Home() {
 
         {/* Title */}
         <div className="animate-fade-in-up animation-delay-200">
-          <h1 className="text-4xl sm:text-5xl font-black text-white mb-1 tracking-tight">
+          <h1 className="text-4xl sm:text-5xl font-black text-white mb-10 tracking-tight">
             Gym<span className="text-orange-500">Hub</span>
           </h1>
-          <p className="text-slate-500 text-sm mb-10">Gym Management System</p>
         </div>
 
         {/* Portal Cards */}

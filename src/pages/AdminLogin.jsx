@@ -106,8 +106,8 @@ export default function AdminLogin() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-900 flex flex-col items-center justify-center px-6">
-      <div className="w-full max-w-sm">
+    <div className="min-h-screen bg-slate-900 flex flex-col items-center justify-center p-4 sm:px-6">
+      <div className="w-full max-w-sm bg-slate-800/60 rounded-3xl border border-slate-700/50 p-6 sm:p-8 shadow-2xl">
         {/* Back */}
         <Link
           to="/"

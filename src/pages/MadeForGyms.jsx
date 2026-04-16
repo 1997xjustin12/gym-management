@@ -233,71 +233,230 @@ export default function MadeForGyms() {
       </nav>
 
       {/* ── Hero ────────────────────────────────────────────── */}
-      <section className="relative min-h-screen flex flex-col items-center justify-center px-5 pt-16 pb-20 text-center overflow-hidden">
+      <section className="relative min-h-screen flex items-center px-5 sm:px-8 pt-24 pb-16 overflow-hidden">
 
-        {/* Animated background orbs */}
+        {/* Background orbs */}
         <div className="absolute inset-0 -z-10 pointer-events-none overflow-hidden">
           <div className="hero-orb-1" />
           <div className="hero-orb-2" />
           <div className="hero-orb-3" />
-          {/* Grid overlay */}
           <div className="absolute inset-0"
             style={{ backgroundImage: 'linear-gradient(rgba(255,255,255,0.02) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.02) 1px, transparent 1px)', backgroundSize: '60px 60px' }} />
         </div>
 
-        {/* Badge */}
-        <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full border text-xs font-semibold mb-8 animate-fade-in"
-          style={{ borderColor: 'rgba(249,115,22,0.3)', background: 'rgba(249,115,22,0.08)', color: '#fb923c' }}>
-          <Zap size={12} />
-          Purpose-built for Philippine Gyms
-        </div>
+        <div className="max-w-7xl mx-auto w-full flex flex-col lg:flex-row items-center gap-12 lg:gap-16">
 
-        {/* Headline */}
-        <h1 className="text-5xl sm:text-6xl md:text-7xl lg:text-8xl font-black leading-[0.95] tracking-tighter mb-6 animate-fade-in-up">
-          The Operating System<br />
-          <span className="gradient-text">for Gym Owners</span>
-        </h1>
+          {/* ── Left: copy ── */}
+          <div className="flex-1 text-center lg:text-left">
+            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full border text-xs font-semibold mb-7 animate-fade-in"
+              style={{ borderColor: 'rgba(249,115,22,0.3)', background: 'rgba(249,115,22,0.08)', color: '#fb923c' }}>
+              <Zap size={12} /> Purpose-built for Philippine Gyms
+            </div>
 
-        <p className="text-slate-400 text-lg sm:text-xl max-w-2xl mx-auto leading-relaxed mb-10 animate-fade-in-up" style={{ animationDelay: '150ms' }}>
-          Stop managing your gym with group chats and notebooks.
-          GCash payments, member tracking, coach portals — one platform, zero chaos.
-        </p>
+            <h1 className="text-4xl sm:text-5xl xl:text-6xl font-black leading-[1.0] tracking-tighter mb-6 animate-fade-in-up">
+              The System Built<br />for Gyms —<br />
+              <span className="gradient-text">Not Adapted to Them</span>
+            </h1>
 
-        <div className="flex flex-col sm:flex-row items-center justify-center gap-4 animate-fade-in-up" style={{ animationDelay: '250ms' }}>
-          <a href="/admin/login"
-            className="w-full sm:w-auto group flex items-center justify-center gap-2 font-bold px-8 py-4 rounded-2xl text-base transition-all hover:-translate-y-1 hover:shadow-2xl"
-            style={{ background: 'linear-gradient(135deg, #f97316, #f59e0b)', boxShadow: '0 0 30px rgba(249,115,22,0.35)' }}>
-            Start Your Gym
-            <ArrowRight size={18} className="group-hover:translate-x-1 transition-transform" />
-          </a>
-          <a href="/member"
-            className="w-full sm:w-auto flex items-center justify-center gap-2 font-bold px-8 py-4 rounded-2xl text-base border border-white/10 bg-white/5 hover:bg-white/10 transition-all hover:-translate-y-0.5">
-            <UserCheck size={18} className="text-slate-400" />
-            See Member Portal
-          </a>
-        </div>
+            <p className="text-slate-400 text-base sm:text-lg max-w-lg mx-auto lg:mx-0 leading-relaxed mb-8 animate-fade-in-up" style={{ animationDelay: '120ms' }}>
+              Stop managing your gym with group chats and notebooks.
+              GCash payments, member tracking, coach portals — one platform, zero chaos.
+            </p>
 
-        <p className="text-slate-600 text-xs mt-6 animate-fade-in-up" style={{ animationDelay: '350ms' }}>
-          Works on any device · No app install · GCash ready
-        </p>
+            <div className="flex flex-col sm:flex-row justify-center lg:justify-start gap-3 animate-fade-in-up" style={{ animationDelay: '220ms' }}>
+              <a href="/admin/login"
+                className="group flex items-center justify-center gap-2 font-bold px-7 py-3.5 rounded-xl text-sm transition-all hover:-translate-y-1 hover:shadow-2xl"
+                style={{ background: 'linear-gradient(135deg, #f97316, #f59e0b)', boxShadow: '0 0 28px rgba(249,115,22,0.35)' }}>
+                Start Free
+                <ArrowRight size={16} className="group-hover:translate-x-1 transition-transform" />
+              </a>
+              <a href="#features"
+                className="flex items-center justify-center gap-2 font-bold px-7 py-3.5 rounded-xl text-sm border border-white/10 bg-white/5 hover:bg-white/10 transition-all">
+                See Features
+              </a>
+            </div>
 
-        {/* Floating stat chips */}
-        <div className="mt-16 flex flex-wrap justify-center gap-3 animate-fade-in-up" style={{ animationDelay: '450ms' }}>
-          {[
-            { icon: Globe, label: 'Web-based', sub: 'Any browser' },
-            { icon: CreditCard, label: 'GCash Ready', sub: 'Built-in payments' },
-            { icon: Bell, label: 'Telegram Alerts', sub: 'Instant notifications' },
-            { icon: Clock, label: '24/7 Portal', sub: 'Members self-serve' },
-          ].map(({ icon: Icon, label, sub }) => (
-            <div key={label}
-              className="flex items-center gap-3 px-4 py-3 rounded-2xl border border-white/8 bg-white/3 backdrop-blur-sm">
-              <Icon size={16} className="text-orange-400 shrink-0" />
-              <div className="text-left">
-                <p className="text-white text-xs font-bold leading-tight">{label}</p>
-                <p className="text-slate-600 text-[10px]">{sub}</p>
+            <p className="text-slate-600 text-xs mt-5 animate-fade-in-up" style={{ animationDelay: '320ms' }}>
+              Works on any device · No app install · GCash ready
+            </p>
+
+            {/* Mini trust chips */}
+            <div className="mt-8 flex flex-wrap justify-center lg:justify-start gap-2 animate-fade-in-up" style={{ animationDelay: '400ms' }}>
+              {[
+                { icon: CreditCard, label: 'GCash Payments' },
+                { icon: Bell, label: 'Telegram Alerts' },
+                { icon: Dumbbell, label: 'Coach Portal' },
+                { icon: Clock, label: '24/7 Member Portal' },
+              ].map(({ icon: Icon, label }) => (
+                <span key={label} className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium border border-white/8 bg-white/3 text-slate-300">
+                  <Icon size={11} className="text-orange-400" /> {label}
+                </span>
+              ))}
+            </div>
+          </div>
+
+          {/* ── Right: Dashboard mockup ── */}
+          <div className="flex-1 w-full max-w-2xl animate-fade-in-up" style={{ animationDelay: '200ms' }}>
+            <div className="dashboard-float">
+              {/* Browser chrome */}
+              <div className="rounded-2xl overflow-hidden shadow-2xl"
+                style={{ border: '1px solid rgba(255,255,255,0.1)', boxShadow: '0 0 80px rgba(249,115,22,0.12), 0 40px 80px rgba(0,0,0,0.6)' }}>
+
+                {/* Title bar */}
+                <div className="flex items-center gap-2 px-4 py-2.5"
+                  style={{ background: '#0f172a', borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
+                  <div className="flex gap-1.5">
+                    <div className="w-2.5 h-2.5 rounded-full bg-red-500/70" />
+                    <div className="w-2.5 h-2.5 rounded-full bg-yellow-500/70" />
+                    <div className="w-2.5 h-2.5 rounded-full bg-green-500/70" />
+                  </div>
+                  <div className="flex-1 mx-3 px-3 py-1 rounded-md text-[10px] text-slate-500 font-mono"
+                    style={{ background: '#1e293b' }}>
+                    powerfitnessgym.online/admin
+                  </div>
+                </div>
+
+                {/* Dashboard UI */}
+                <div className="flex" style={{ background: '#0f172a', height: '380px' }}>
+
+                  {/* Sidebar */}
+                  <div className="w-12 flex flex-col items-center py-4 gap-3 shrink-0"
+                    style={{ background: '#0a1120', borderRight: '1px solid rgba(255,255,255,0.05)' }}>
+                    <div className="w-7 h-7 rounded-lg flex items-center justify-center mb-2"
+                      style={{ background: 'linear-gradient(135deg,#f97316,#f59e0b)' }}>
+                      <Dumbbell size={13} className="text-white" />
+                    </div>
+                    {[Users, CreditCard, ClipboardList, BarChart3, Bell].map((Icon, i) => (
+                      <div key={i} className={`w-8 h-8 rounded-lg flex items-center justify-center ${i === 0 ? 'bg-orange-500/20' : ''}`}>
+                        <Icon size={13} className={i === 0 ? 'text-orange-400' : 'text-slate-600'} />
+                      </div>
+                    ))}
+                  </div>
+
+                  {/* Main content */}
+                  <div className="flex-1 overflow-hidden p-4 space-y-3">
+
+                    {/* Header */}
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="text-white text-xs font-bold">Dashboard</p>
+                        <p className="text-slate-600 text-[9px]">Power Fitness Gym</p>
+                      </div>
+                      <div className="flex items-center gap-1.5">
+                        <div className="w-5 h-5 rounded-md bg-orange-500/20 flex items-center justify-center">
+                          <Bell size={9} className="text-orange-400" />
+                        </div>
+                        <div className="w-5 h-5 rounded-full bg-slate-700" />
+                      </div>
+                    </div>
+
+                    {/* Stat cards */}
+                    <div className="grid grid-cols-4 gap-2">
+                      {[
+                        { label: 'Members', val: '248', color: '#38bdf8', delta: '+12' },
+                        { label: 'Active',  val: '201', color: '#4ade80', delta: '+5'  },
+                        { label: 'Expiring', val: '18', color: '#fb923c', delta: '3d'  },
+                        { label: 'Revenue', val: '₱124k', color: '#c084fc', delta: '+8%' },
+                      ].map(({ label, val, color, delta }) => (
+                        <div key={label} className="rounded-xl p-2.5"
+                          style={{ background: '#1e293b', border: '1px solid rgba(255,255,255,0.05)' }}>
+                          <p className="text-[8px] text-slate-500 mb-1">{label}</p>
+                          <p className="text-xs font-black" style={{ color }}>{val}</p>
+                          <p className="text-[8px] text-slate-600 mt-0.5">{delta}</p>
+                        </div>
+                      ))}
+                    </div>
+
+                    {/* Chart + list */}
+                    <div className="grid grid-cols-5 gap-2" style={{ height: '180px' }}>
+
+                      {/* Bar chart */}
+                      <div className="col-span-3 rounded-xl p-3 flex flex-col"
+                        style={{ background: '#1e293b', border: '1px solid rgba(255,255,255,0.05)' }}>
+                        <p className="text-[8px] text-slate-400 font-semibold mb-2">Monthly Renewals</p>
+                        <div className="flex items-end gap-1 flex-1">
+                          {[40, 65, 50, 80, 70, 90, 75, 95, 60, 85, 100, 78].map((h, i) => (
+                            <div key={i} className="flex-1 rounded-sm transition-all"
+                              style={{
+                                height: `${h}%`,
+                                background: i === 11
+                                  ? 'linear-gradient(180deg,#f97316,#f59e0b)'
+                                  : 'rgba(249,115,22,0.2)',
+                              }} />
+                          ))}
+                        </div>
+                        <div className="flex justify-between mt-1">
+                          {['Jan','','','','','','','','','','','Dec'].map((m, i) => (
+                            <p key={i} className="text-[6px] text-slate-700">{m}</p>
+                          ))}
+                        </div>
+                      </div>
+
+                      {/* Recent members */}
+                      <div className="col-span-2 rounded-xl p-3 flex flex-col"
+                        style={{ background: '#1e293b', border: '1px solid rgba(255,255,255,0.05)' }}>
+                        <p className="text-[8px] text-slate-400 font-semibold mb-2">Recent Members</p>
+                        <div className="space-y-1.5 flex-1 overflow-hidden">
+                          {[
+                            { name: 'Juan D.',   plan: 'Monthly', color: '#4ade80' },
+                            { name: 'Maria S.',  plan: 'Quarterly', color: '#38bdf8' },
+                            { name: 'Carlo R.',  plan: 'Annual',  color: '#c084fc' },
+                            { name: 'Ana L.',    plan: 'Monthly', color: '#fb923c' },
+                          ].map(({ name, plan, color }) => (
+                            <div key={name} className="flex items-center gap-1.5">
+                              <div className="w-4 h-4 rounded-md flex items-center justify-center text-[7px] font-black shrink-0"
+                                style={{ background: `${color}20`, color }}>
+                                {name[0]}
+                              </div>
+                              <div className="flex-1 min-w-0">
+                                <p className="text-[8px] text-white font-medium leading-tight truncate">{name}</p>
+                                <p className="text-[7px] text-slate-600">{plan}</p>
+                              </div>
+                              <div className="w-1.5 h-1.5 rounded-full shrink-0" style={{ background: color }} />
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Pending payment row */}
+                    <div className="flex items-center gap-2 rounded-xl px-3 py-2"
+                      style={{ background: 'rgba(249,115,22,0.08)', border: '1px solid rgba(249,115,22,0.2)' }}>
+                      <div className="w-1.5 h-1.5 rounded-full bg-orange-400 animate-pulse shrink-0" />
+                      <p className="text-[9px] text-orange-300 flex-1">3 GCash payments pending approval</p>
+                      <p className="text-[8px] text-orange-400 font-bold">Review →</p>
+                    </div>
+
+                  </div>
+                </div>
+              </div>
+
+              {/* Floating notification card */}
+              <div className="absolute -bottom-4 -left-4 rounded-xl px-3 py-2.5 flex items-center gap-2.5 shadow-xl notif-float"
+                style={{ background: '#1e293b', border: '1px solid rgba(74,222,128,0.25)', minWidth: '180px' }}>
+                <div className="w-7 h-7 rounded-lg flex items-center justify-center shrink-0"
+                  style={{ background: 'rgba(74,222,128,0.15)' }}>
+                  <Check size={13} className="text-green-400" />
+                </div>
+                <div>
+                  <p className="text-white text-[10px] font-bold leading-tight">Payment Approved</p>
+                  <p className="text-slate-500 text-[9px]">Juan dela Cruz · ₱500</p>
+                </div>
+              </div>
+
+              {/* Floating member chip */}
+              <div className="absolute -top-3 -right-3 rounded-xl px-3 py-2 flex items-center gap-2 shadow-xl member-float"
+                style={{ background: '#1e293b', border: '1px solid rgba(56,189,248,0.25)' }}>
+                <div className="w-6 h-6 rounded-lg flex items-center justify-center text-[9px] font-black"
+                  style={{ background: 'rgba(56,189,248,0.15)', color: '#38bdf8' }}>M</div>
+                <div>
+                  <p className="text-white text-[10px] font-bold leading-tight">New Member</p>
+                  <p className="text-slate-500 text-[9px]">Maria Santos registered</p>
+                </div>
               </div>
             </div>
-          ))}
+          </div>
+
         </div>
       </section>
 
@@ -713,6 +872,34 @@ export default function MadeForGyms() {
         .animate-fade-in-up {
           opacity: 0;
           animation: fade-in-up 0.8s ease forwards;
+        }
+
+        .dashboard-float {
+          position: relative;
+          animation: dashboard-drift 8s ease-in-out infinite;
+        }
+
+        @keyframes dashboard-drift {
+          0%, 100% { transform: translateY(0px); }
+          50%       { transform: translateY(-10px); }
+        }
+
+        .notif-float {
+          animation: notif-drift 6s ease-in-out infinite;
+        }
+
+        @keyframes notif-drift {
+          0%, 100% { transform: translate(0, 0); }
+          50%       { transform: translate(4px, -6px); }
+        }
+
+        .member-float {
+          animation: member-drift 7s ease-in-out infinite reverse;
+        }
+
+        @keyframes member-drift {
+          0%, 100% { transform: translate(0, 0); }
+          50%       { transform: translate(-4px, -8px); }
         }
       `}</style>
     </div>

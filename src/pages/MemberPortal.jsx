@@ -490,10 +490,18 @@ export default function MemberPortal() {
     const coachIsToday = coachDays === 0;
     const coachWarn    = coachDays !== null && coachDays > 0 && coachDays <= 5;
 
+    // Past coaching: any record whose end_date is today or earlier
+    // (includes records closed today when coach was changed)
     const pastCoaching = coachingHistory.filter((s) => {
       if (!s.end_date) return false;
       const e = new Date(s.end_date); e.setHours(0,0,0,0);
-      return e < today;
+      // Exclude the current active subscription (same instructor + start date)
+      if (
+        s.instructor_id === member.instructorId &&
+        s.start_date === member.coachingStartDate &&
+        e >= today
+      ) return false;
+      return e <= today;
     });
 
     return (
@@ -584,60 +592,72 @@ export default function MemberPortal() {
           )}
 
           {/* ── Coaching card (unified: status + coach profile + program tabs) ── */}
-          {coachInfo && (
-            <div className="bg-slate-800 rounded-2xl border border-yellow-500/20 overflow-hidden">
-              {/* Coach profile row */}
-              <div className="flex items-center gap-3 p-4">
-                <div className="w-12 h-12 rounded-xl overflow-hidden bg-slate-700 shrink-0">
-                  {coachInfo.photo_url ? (
-                    <img src={coachInfo.photo_url} alt={coachInfo.name} className="w-full h-full object-cover" />
-                  ) : (
-                    <div className="w-full h-full flex items-center justify-center text-yellow-400 font-bold text-lg">
-                      {coachInfo.name.charAt(0).toUpperCase()}
-                    </div>
-                  )}
-                </div>
-                <div className="flex-1 min-w-0">
-                  <p className="text-[10px] text-yellow-500/80 uppercase tracking-widest font-bold mb-0.5">Your Coach</p>
-                  <p className="text-white font-bold leading-tight truncate">{coachInfo.name}</p>
-                  {coachInfo.specialty && <p className="text-slate-400 text-xs mt-0.5 truncate">{coachInfo.specialty}</p>}
-                </div>
-                {/* Active coaching pill */}
-                {coachActive && (
-                  <div className={`shrink-0 text-right ${coachIsToday ? 'text-yellow-400' : coachWarn ? 'text-orange-400' : 'text-yellow-400'}`}>
-                    <p className="text-xs font-bold whitespace-nowrap">
-                      {coachDays === 0 ? 'Expires today' : `${coachDays}d left`}
-                    </p>
-                    {member.coachingPlan && <p className="text-[10px] opacity-60 mt-0.5 truncate max-w-[80px]">{member.coachingPlan}</p>}
+          {coachInfo && (() => {
+            const coachExpired = coachDays !== null && coachDays < 0;
+            const borderColor  = coachExpired ? 'border-slate-700/40' : 'border-yellow-500/20';
+            const labelColor   = coachExpired ? 'text-slate-500/80'   : 'text-yellow-500/80';
+            const nameColor    = coachExpired ? 'text-slate-400'      : 'text-white';
+            return (
+              <div className={`bg-slate-800 rounded-2xl border overflow-hidden ${borderColor}`}>
+                {/* Coach profile row */}
+                <div className="flex items-center gap-3 p-4">
+                  <div className={`w-12 h-12 rounded-xl overflow-hidden bg-slate-700 shrink-0 ${coachExpired ? 'opacity-50' : ''}`}>
+                    {coachInfo.photo_url ? (
+                      <img src={coachInfo.photo_url} alt={coachInfo.name} className="w-full h-full object-cover" />
+                    ) : (
+                      <div className={`w-full h-full flex items-center justify-center font-bold text-lg ${coachExpired ? 'text-slate-500' : 'text-yellow-400'}`}>
+                        {coachInfo.name.charAt(0).toUpperCase()}
+                      </div>
+                    )}
                   </div>
-                )}
-              </div>
+                  <div className="flex-1 min-w-0">
+                    <p className={`text-[10px] uppercase tracking-widest font-bold mb-0.5 ${labelColor}`}>
+                      {coachExpired ? 'Previous Coach' : 'Your Coach'}
+                    </p>
+                    <p className={`font-bold leading-tight truncate ${nameColor}`}>{coachInfo.name}</p>
+                    {coachInfo.specialty && <p className="text-slate-500 text-xs mt-0.5 truncate">{coachInfo.specialty}</p>}
+                  </div>
+                  {/* Coaching status pill */}
+                  {coachExpired ? (
+                    <span className="shrink-0 text-[11px] font-semibold px-2.5 py-1 rounded-full bg-slate-700/60 text-slate-500">
+                      Ended
+                    </span>
+                  ) : coachActive ? (
+                    <div className={`shrink-0 text-right ${coachIsToday ? 'text-yellow-400' : coachWarn ? 'text-orange-400' : 'text-yellow-400'}`}>
+                      <p className="text-xs font-bold whitespace-nowrap">
+                        {coachDays === 0 ? 'Expires today' : `${coachDays}d left`}
+                      </p>
+                      {member.coachingPlan && <p className="text-[10px] opacity-60 mt-0.5 truncate max-w-[80px]">{member.coachingPlan}</p>}
+                    </div>
+                  ) : null}
+                </div>
 
-              {/* Program quick-access tabs */}
-              <div className="border-t border-slate-700/50 px-4 py-3 grid grid-cols-3 gap-2">
-                {COACH_TABS.map(({ key, label, Icon, color, bg, border }) => {
-                  const count = coachEntries.filter((e) => e.type === key).length;
-                  return (
-                    <button
-                      key={key}
-                      onClick={() => { setCoachTab(key); setExpandedEntryId(null); setView('coach'); }}
-                      className={`flex flex-col items-center gap-1 py-2.5 rounded-xl border transition-all active:scale-95 ${
-                        count > 0
-                          ? `${bg} ${color} ${border}`
-                          : 'bg-slate-700/30 text-slate-600 border-slate-700/30'
-                      }`}
-                    >
-                      <Icon size={16} />
-                      <span className="text-[10px] font-semibold leading-none">{label.split(' ')[0]}</span>
-                      <span className={`text-[10px] leading-none ${count > 0 ? 'opacity-70' : 'opacity-40'}`}>
-                        {count > 0 ? `${count} item${count !== 1 ? 's' : ''}` : 'empty'}
-                      </span>
-                    </button>
-                  );
-                })}
+                {/* Program quick-access tabs */}
+                <div className={`border-t border-slate-700/50 px-4 py-3 grid grid-cols-3 gap-2 ${coachExpired ? 'opacity-60' : ''}`}>
+                  {COACH_TABS.map(({ key, label, Icon, color, bg, border }) => {
+                    const count = coachEntries.filter((e) => e.type === key).length;
+                    return (
+                      <button
+                        key={key}
+                        onClick={() => { setCoachTab(key); setExpandedEntryId(null); setView('coach'); }}
+                        className={`flex flex-col items-center gap-1 py-2.5 rounded-xl border transition-all active:scale-95 ${
+                          count > 0
+                            ? `${bg} ${color} ${border}`
+                            : 'bg-slate-700/30 text-slate-600 border-slate-700/30'
+                        }`}
+                      >
+                        <Icon size={16} />
+                        <span className="text-[10px] font-semibold leading-none">{label.split(' ')[0]}</span>
+                        <span className={`text-[10px] leading-none ${count > 0 ? 'opacity-70' : 'opacity-40'}`}>
+                          {count > 0 ? `${count} item${count !== 1 ? 's' : ''}` : 'empty'}
+                        </span>
+                      </button>
+                    );
+                  })}
+                </div>
               </div>
-            </div>
-          )}
+            );
+          })()}
 
           {/* ── Coaching history (collapsible) ── */}
           {pastCoaching.length > 0 && (

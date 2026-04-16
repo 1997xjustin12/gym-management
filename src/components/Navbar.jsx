@@ -74,24 +74,28 @@ export default function Navbar({ title, showBack }) {
       {isAdminLoggedIn && (
         <>
           <div className="fixed bottom-0 inset-x-0 z-40 sm:hidden bg-slate-900/98 backdrop-blur-lg border-t border-slate-800">
-            <div className="flex items-center justify-around h-16 px-1">
-              <MobileNavLink
-                to="/admin"
-                icon={<LayoutDashboard size={21} />}
-                label="Dashboard"
-                active={location.pathname === '/admin'}
-              />
-              <MobileNavLink
-                to="/admin/members"
-                icon={<Users size={21} />}
-                label="Members"
-                active={location.pathname.startsWith('/admin/members')}
-                badge={expiring.length}
-              />
+            <div className="flex items-center h-16 px-1">
+              {/* Left group */}
+              <div className="flex-1 flex items-center justify-around">
+                <MobileNavLink
+                  to="/admin"
+                  icon={<LayoutDashboard size={21} />}
+                  label="Dashboard"
+                  active={location.pathname === '/admin'}
+                />
+                <MobileNavLink
+                  to="/admin/members"
+                  icon={<Users size={21} />}
+                  label="Members"
+                  active={location.pathname.startsWith('/admin/members')}
+                  badge={expiring.length}
+                />
+              </div>
+
               {/* Center FAB — Add Member */}
               <Link
                 to="/admin/register"
-                className={`flex flex-col items-center justify-center w-14 h-14 -mt-5 rounded-2xl shadow-lg transition-all ${
+                className={`flex-shrink-0 flex flex-col items-center justify-center w-14 h-14 -mt-5 rounded-2xl shadow-lg transition-all ${
                   location.pathname === '/admin/register'
                     ? 'bg-orange-600 shadow-orange-500/40'
                     : 'bg-orange-500 hover:bg-orange-600 shadow-orange-500/30'
@@ -99,37 +103,41 @@ export default function Navbar({ title, showBack }) {
               >
                 <UserPlus size={22} className="text-white" />
               </Link>
-              <MobileNavLink
-                to="/admin/renewals"
-                icon={<CreditCard size={21} />}
-                label="Payments"
-                active={location.pathname === '/admin/renewals'}
-                badge={pendingRenewals?.length}
-              />
-              <MobileNavLink
-                to="/admin/instructors"
-                icon={<Dumbbell size={21} />}
-                label="Coaches"
-                active={location.pathname === '/admin/instructors'}
-              />
-              {/* More button — opens sheet */}
-              <button
-                onClick={() => setMoreOpen(true)}
-                className={`relative flex flex-col items-center gap-0.5 flex-1 py-1.5 rounded-xl transition-colors ${
-                  ['/admin/settings', '/admin/logs', '/admin/attendance'].includes(location.pathname)
-                    ? 'text-orange-400'
-                    : 'text-slate-500'
-                }`}
-              >
-                <div className={`p-1 rounded-lg transition-all ${
-                  ['/admin/settings', '/admin/logs', '/admin/attendance'].includes(location.pathname)
-                    ? 'bg-orange-500/15'
-                    : ''
-                }`}>
-                  <MoreHorizontal size={21} />
-                </div>
-                <span className="text-[10px] font-medium leading-none">More</span>
-              </button>
+
+              {/* Right group */}
+              <div className="flex-1 flex items-center justify-around">
+                <MobileNavLink
+                  to="/admin/renewals"
+                  icon={<CreditCard size={21} />}
+                  label="Payments"
+                  active={location.pathname === '/admin/renewals'}
+                  badge={pendingRenewals?.length}
+                />
+                <MobileNavLink
+                  to="/admin/instructors"
+                  icon={<Dumbbell size={21} />}
+                  label="Coaches"
+                  active={location.pathname === '/admin/instructors'}
+                />
+                {/* More button — opens sheet */}
+                <button
+                  onClick={() => setMoreOpen(true)}
+                  className={`relative flex flex-col items-center gap-0.5 flex-1 py-1.5 rounded-xl transition-colors ${
+                    ['/admin/settings', '/admin/logs', '/admin/attendance'].includes(location.pathname)
+                      ? 'text-orange-400'
+                      : 'text-slate-500'
+                  }`}
+                >
+                  <div className={`p-1 rounded-lg transition-all ${
+                    ['/admin/settings', '/admin/logs', '/admin/attendance'].includes(location.pathname)
+                      ? 'bg-orange-500/15'
+                      : ''
+                  }`}>
+                    <MoreHorizontal size={21} />
+                  </div>
+                  <span className="text-[10px] font-medium leading-none">More</span>
+                </button>
+              </div>
             </div>
             <div className="h-safe-area-inset-bottom" />
           </div>

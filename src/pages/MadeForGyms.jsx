@@ -306,15 +306,15 @@ export default function MadeForGyms() {
         <div className="max-w-4xl mx-auto grid grid-cols-2 md:grid-cols-4 gap-6 text-center">
           {[
             { value: 500, suffix: '+', label: 'Members Managed' },
-            { value: 98, suffix: '%', label: 'Payment Success Rate' },
-            { value: 10, suffix: 'x', label: 'Faster Renewals' },
-            { value: 0, suffix: ' notebooks', label: 'Needed', prefix: '' },
-          ].map(({ value, suffix, label, prefix }) => (
+            { value: 98,  suffix: '%', label: 'Payment Success Rate' },
+            { value: 10,  suffix: 'x', label: 'Faster Renewals' },
+            { value: 24,  suffix: '/7', label: 'Member Self-Service' },
+          ].map(({ value, suffix, label }) => (
             <Reveal key={label}>
               <div className="p-5">
                 <p className="text-4xl sm:text-5xl font-black mb-1"
                   style={{ background: 'linear-gradient(135deg, #fb923c, #fbbf24)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
-                  <Counter to={value} suffix={suffix} prefix={prefix || ''} />
+                  <Counter to={value} suffix={suffix} />
                 </p>
                 <p className="text-slate-400 text-sm font-medium">{label}</p>
               </div>

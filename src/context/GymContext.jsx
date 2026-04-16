@@ -31,6 +31,9 @@ const toMember = (row) => ({
   membershipEndDate: row.membership_end_date,
   notes: row.notes || '',
   instructorId: row.instructor_id || null,
+  coachingPlan: row.coaching_plan || null,
+  coachingStartDate: row.coaching_start_date || null,
+  coachingEndDate: row.coaching_end_date || null,
   createdAt: row.created_at,
   updatedAt: row.updated_at,
 });
@@ -46,6 +49,7 @@ const toSettings = (row) => ({
   priceAnnual: Number(row.price_annual) || 0,
   priceStudent: Number(row.price_student) || 0,
   priceCoaching: Number(row.price_coaching) || 0,
+  coachingPlans: Array.isArray(row.coaching_plans) ? row.coaching_plans : [],
   telegramChatId: row.telegram_chat_id || '',
   telegramBotToken: row.telegram_bot_token || '',
   siteUrl: row.site_url || '',
@@ -81,6 +85,7 @@ export function GymProvider({ children }) {
     gymName: 'Power Fitness Gym',
     gcashNumber: '',
     gcashName: '',
+    coachingPlans: [],
     gcashQrUrl: null,
     priceMonthly: 0,
     priceQuarterly: 0,
@@ -190,6 +195,7 @@ export function GymProvider({ children }) {
       price_annual: Number(formData.priceAnnual) || 0,
       price_student: Number(formData.priceStudent) || 0,
       price_coaching: Number(formData.priceCoaching) || 0,
+      coaching_plans: formData.coachingPlans || [],
       telegram_chat_id: formData.telegramChatId || '',
       telegram_bot_token: formData.telegramBotToken || '',
       site_url: formData.siteUrl || '',
@@ -489,6 +495,9 @@ export function GymProvider({ children }) {
         membership_end_date: endDate,
         notes: formData.notes || '',
         instructor_id: formData.instructorId || null,
+        coaching_plan: formData.coachingPlan || null,
+        coaching_start_date: formData.coachingStartDate || null,
+        coaching_end_date: formData.coachingEndDate || null,
       }])
       .select()
       .single();
@@ -540,6 +549,9 @@ export function GymProvider({ children }) {
         membership_end_date: endDate,
         notes: formData.notes || '',
         instructor_id: formData.instructorId || null,
+        coaching_plan: formData.coachingPlan || null,
+        coaching_start_date: formData.coachingStartDate || null,
+        coaching_end_date: formData.coachingEndDate || null,
         updated_at: new Date().toISOString(),
       })
       .eq('id', id)

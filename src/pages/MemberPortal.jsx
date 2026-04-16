@@ -571,6 +571,42 @@ export default function MemberPortal() {
             </div>
           </div>
 
+          {/* Coaching subscription status */}
+          {member.coachingEndDate && (() => {
+            const today = new Date(); today.setHours(0,0,0,0);
+            const end = new Date(member.coachingEndDate); end.setHours(0,0,0,0);
+            const days = Math.ceil((end - today) / 86400000);
+            const isExpired = days < 0;
+            const isExpiring = days >= 0 && days <= 5;
+            return (
+              <div className={`rounded-2xl border p-4 ${
+                isExpired  ? 'bg-red-500/8 border-red-500/25' :
+                isExpiring ? 'bg-orange-500/8 border-orange-500/25' :
+                             'bg-yellow-500/8 border-yellow-500/20'
+              }`}>
+                <div className="flex items-center gap-3">
+                  <div className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 ${
+                    isExpired ? 'bg-red-500/20' : isExpiring ? 'bg-orange-500/20' : 'bg-yellow-500/15'
+                  }`}>
+                    <Dumbbell size={16} className={isExpired ? 'text-red-400' : isExpiring ? 'text-orange-400' : 'text-yellow-400'} />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className={`text-xs font-bold uppercase tracking-wider mb-0.5 ${
+                      isExpired ? 'text-red-400/70' : isExpiring ? 'text-orange-400/70' : 'text-yellow-500/70'
+                    }`}>Coaching Subscription</p>
+                    <p className="text-white text-sm font-semibold">{member.coachingPlan || 'Active'}</p>
+                    <p className={`text-xs mt-0.5 ${isExpired ? 'text-red-400' : isExpiring ? 'text-orange-400' : 'text-slate-400'}`}>
+                      {isExpired
+                        ? `Expired ${Math.abs(days)} day${Math.abs(days) !== 1 ? 's' : ''} ago`
+                        : days === 0 ? 'Expires today!'
+                        : `${days} day${days !== 1 ? 's' : ''} remaining · ends ${formatDate(member.coachingEndDate)}`}
+                    </p>
+                  </div>
+                </div>
+              </div>
+            );
+          })()}
+
           {/* Coach card — tap to open coach view */}
           {coachInfo && (
             <button

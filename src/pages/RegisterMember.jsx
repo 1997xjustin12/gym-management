@@ -9,6 +9,12 @@ import toast from 'react-hot-toast';
 
 const today = () => new Date().toISOString().split('T')[0];
 
+const addDays = (dateStr, days) => {
+  const d = new Date(dateStr);
+  d.setDate(d.getDate() + days);
+  return d.toISOString().split('T')[0];
+};
+
 const EMPTY_FORM = {
   name: '',
   contactNumber: '',
@@ -17,6 +23,9 @@ const EMPTY_FORM = {
   notes: '',
   photo: null,
   instructorId: '',
+  coachingPlan: '',
+  coachingStartDate: today(),
+  coachingEndDate: '',
 };
 
 export default function RegisterMember() {
@@ -45,6 +54,9 @@ export default function RegisterMember() {
           notes: member.notes || '',
           photo: member.photo || null,
           instructorId: member.instructorId || '',
+          coachingPlan: member.coachingPlan || '',
+          coachingStartDate: member.coachingStartDate || today(),
+          coachingEndDate: member.coachingEndDate || '',
         });
       } else {
         toast.error('Member not found');
@@ -240,7 +252,13 @@ export default function RegisterMember() {
               <FormField label="Gym Coach (optional)" icon={<Dumbbell size={15} />}>
                 <select
                   value={form.instructorId}
-                  onChange={(e) => set('instructorId', e.target.value)}
+                  onChange={(e) => {
+                    set('instructorId', e.target.value);
+                    if (!e.target.value) {
+                      set('coachingPlan', '');
+                      set('coachingEndDate', '');
+                    }
+                  }}
                   className="input-field"
                 >
                   <option value="">— No coach assigned —</option>
@@ -254,6 +272,74 @@ export default function RegisterMember() {
                   Assign a personal trainer for this member
                 </p>
               </FormField>
+            )}
+
+            {/* Coaching package — visible only when a coach is assigned */}
+            {form.instructorId && (
+              <div className="bg-yellow-500/5 border border-yellow-500/20 rounded-2xl p-4 space-y-3">
+                <p className="text-yellow-400 text-xs font-bold uppercase tracking-wider flex items-center gap-1.5">
+                  <Dumbbell size={12} /> Coaching Subscription
+                </p>
+
+                {/* Plan picker */}
+                {settings.coachingPlans?.length > 0 ? (
+                  <div>
+                    <label className="block text-slate-300 text-sm font-medium mb-1.5">Package</label>
+                    <select
+                      value={form.coachingPlan}
+                      onChange={(e) => {
+                        const planName = e.target.value;
+                        set('coachingPlan', planName);
+                        const plan = settings.coachingPlans.find((p) => p.name === planName);
+                        if (plan && form.coachingStartDate) {
+                          set('coachingEndDate', addDays(form.coachingStartDate, plan.duration_days));
+                        } else {
+                          set('coachingEndDate', '');
+                        }
+                      }}
+                      className="input-field"
+                    >
+                      <option value="">— Select a coaching package —</option>
+                      {settings.coachingPlans.map((p) => (
+                        <option key={p.id} value={p.name}>
+                          {p.name} — ₱{Number(p.price).toLocaleString()} ({p.duration_days} days)
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                ) : (
+                  <p className="text-slate-500 text-xs">No coaching packages set up yet. Add them in Settings → Coaching Packages.</p>
+                )}
+
+                {/* Coaching dates */}
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-slate-300 text-sm font-medium mb-1.5">Start Date</label>
+                    <input
+                      type="date"
+                      value={form.coachingStartDate}
+                      onChange={(e) => {
+                        set('coachingStartDate', e.target.value);
+                        const plan = settings.coachingPlans?.find((p) => p.name === form.coachingPlan);
+                        if (plan && e.target.value) {
+                          set('coachingEndDate', addDays(e.target.value, plan.duration_days));
+                        }
+                      }}
+                      className="input-field"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-slate-300 text-sm font-medium mb-1.5">End Date</label>
+                    <input
+                      type="date"
+                      value={form.coachingEndDate}
+                      onChange={(e) => set('coachingEndDate', e.target.value)}
+                      className="input-field"
+                    />
+                    <p className="text-slate-600 text-xs mt-1">Auto-set by package, or override manually</p>
+                  </div>
+                </div>
+              </div>
             )}
           </div>
 

@@ -18,6 +18,7 @@ export default function AdminSettings() {
     gymName: '',
     gcashNumber: '',
     gcashName: '',
+    coachingPlans: [],
     gcashQrUrl: null,
     gcashQrFile: null,
     gcashQrPreview: null,
@@ -34,6 +35,8 @@ export default function AdminSettings() {
   const [saving, setSaving] = useState(false);
   const [newPromo, setNewPromo] = useState({ name: '', price: '', duration_days: '' });
   const [addingPromo, setAddingPromo] = useState(false);
+  const [newCoachPlan, setNewCoachPlan] = useState({ name: '', price: '', duration_days: '' });
+  const [addingCoachPlan, setAddingCoachPlan] = useState(false);
   const fileRef = useRef();
 
   useEffect(() => {
@@ -42,6 +45,7 @@ export default function AdminSettings() {
       gymName:        settings.gymName        || 'Power Fitness Gym',
       gcashNumber:    settings.gcashNumber,
       gcashName:      settings.gcashName,
+      coachingPlans:  settings.coachingPlans  || [],
       gcashQrUrl:     settings.gcashQrUrl,
       priceMonthly:       settings.priceMonthly       || '',
       priceQuarterly:     settings.priceQuarterly     || '',
@@ -260,27 +264,84 @@ export default function AdminSettings() {
               </p>
             </div>
 
-            {/* Coaching */}
+            {/* Coaching Plans */}
             <div className="border-t border-slate-700 pt-4 space-y-3">
-              <div className="flex items-center gap-2">
-                <Dumbbell size={15} className="text-yellow-400" />
-                <p className="text-slate-300 text-sm font-semibold">Personal Coaching</p>
-                <span className="text-slate-500 text-xs">— optional add-on</span>
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <Dumbbell size={15} className="text-yellow-400" />
+                  <p className="text-slate-300 text-sm font-semibold">Coaching Packages</p>
+                </div>
+                {!addingCoachPlan && (
+                  <button type="button" onClick={() => setAddingCoachPlan(true)}
+                    className="flex items-center gap-1 text-xs font-semibold text-yellow-400 hover:text-yellow-300 transition-colors">
+                    <Plus size={13} /> Add Package
+                  </button>
+                )}
               </div>
-              <div className="relative max-w-xs">
-                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-sm font-medium">₱</span>
-                <input
-                  type="number"
-                  min="0"
-                  value={form.priceCoaching}
-                  onChange={(e) => set('priceCoaching', e.target.value)}
-                  placeholder="0"
-                  className="w-full bg-slate-700 border border-slate-600 focus:border-yellow-500 text-white rounded-xl pl-7 pr-4 py-3 outline-none transition-colors text-sm"
-                />
-              </div>
-              <p className="text-slate-600 text-xs">
-                Monthly coaching fee. Members can add this when paying via GCash. Set to 0 to hide it.
+              <p className="text-slate-600 text-xs -mt-1">
+                Define coaching packages (e.g. "1 Session", "5 Sessions", "1 Month"). Members pick one when subscribing.
               </p>
+
+              {/* Existing plans */}
+              {form.coachingPlans.map((plan) => (
+                <div key={plan.id} className="flex items-center gap-3 bg-slate-700/40 rounded-xl px-4 py-2.5">
+                  <Dumbbell size={13} className="text-yellow-400 shrink-0" />
+                  <div className="flex-1 min-w-0">
+                    <p className="text-white text-sm font-semibold truncate">{plan.name}</p>
+                    <p className="text-slate-400 text-xs">₱{Number(plan.price).toLocaleString()} · {plan.duration_days} day{plan.duration_days !== 1 ? 's' : ''}</p>
+                  </div>
+                  <button type="button"
+                    onClick={() => set('coachingPlans', form.coachingPlans.filter((p) => p.id !== plan.id))}
+                    className="text-slate-500 hover:text-red-400 transition-colors p-1">
+                    <Trash2 size={14} />
+                  </button>
+                </div>
+              ))}
+
+              {/* Add new plan form */}
+              {addingCoachPlan && (
+                <div className="bg-slate-700/40 rounded-xl p-3 space-y-2">
+                  <input
+                    placeholder="Package name (e.g. 1 Month, 5 Sessions)"
+                    value={newCoachPlan.name}
+                    onChange={(e) => setNewCoachPlan((p) => ({ ...p, name: e.target.value }))}
+                    className="w-full bg-slate-700 border border-slate-600 focus:border-yellow-500 text-white rounded-lg px-3 py-2 text-sm outline-none"
+                  />
+                  <div className="grid grid-cols-2 gap-2">
+                    <input
+                      type="number" min="0" placeholder="Price (₱)"
+                      value={newCoachPlan.price}
+                      onChange={(e) => setNewCoachPlan((p) => ({ ...p, price: e.target.value }))}
+                      className="bg-slate-700 border border-slate-600 focus:border-yellow-500 text-white rounded-lg px-3 py-2 text-sm outline-none"
+                    />
+                    <input
+                      type="number" min="1" placeholder="Duration (days)"
+                      value={newCoachPlan.duration_days}
+                      onChange={(e) => setNewCoachPlan((p) => ({ ...p, duration_days: e.target.value }))}
+                      className="bg-slate-700 border border-slate-600 focus:border-yellow-500 text-white rounded-lg px-3 py-2 text-sm outline-none"
+                    />
+                  </div>
+                  <div className="flex gap-2">
+                    <button type="button"
+                      onClick={() => {
+                        const name = newCoachPlan.name.trim();
+                        const price = Number(newCoachPlan.price);
+                        const duration_days = Number(newCoachPlan.duration_days);
+                        if (!name || !price || !duration_days) return;
+                        set('coachingPlans', [...form.coachingPlans, { id: crypto.randomUUID(), name, price, duration_days }]);
+                        setNewCoachPlan({ name: '', price: '', duration_days: '' });
+                        setAddingCoachPlan(false);
+                      }}
+                      className="flex-1 bg-yellow-500 hover:bg-yellow-600 text-slate-900 font-semibold text-sm py-2 rounded-lg transition-colors">
+                      Add
+                    </button>
+                    <button type="button" onClick={() => setAddingCoachPlan(false)}
+                      className="flex-1 bg-slate-600 hover:bg-slate-500 text-white font-semibold text-sm py-2 rounded-lg transition-colors">
+                      Cancel
+                    </button>
+                  </div>
+                </div>
+              )}
             </div>
           </div>
 

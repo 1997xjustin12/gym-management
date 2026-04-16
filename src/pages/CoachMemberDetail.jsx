@@ -207,10 +207,25 @@ export default function CoachMemberDetail() {
             <p className="text-slate-400 text-sm capitalize">{member.membership_type} plan</p>
             <div className="flex items-center gap-2 mt-1 flex-wrap">
               <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${statusInfo.bg} ${statusInfo.color}`}>
-                {statusInfo.label}
+                Gym: {statusInfo.label}
               </span>
-              <span className="text-slate-500 text-xs">Ends {fmtDate(member.membership_end_date)}</span>
             </div>
+            {member.coaching_end_date && (() => {
+              const today = new Date(); today.setHours(0,0,0,0);
+              const end = new Date(member.coaching_end_date); end.setHours(0,0,0,0);
+              const days = Math.ceil((end - today) / 86400000);
+              const isExpired = days < 0;
+              const isExpiring = !isExpired && days <= 5;
+              return (
+                <div className={`mt-1.5 inline-flex items-center gap-1.5 text-xs font-semibold px-2.5 py-1 rounded-full ${
+                  isExpired ? 'bg-red-500/15 text-red-400' : isExpiring ? 'bg-orange-500/15 text-orange-400' : 'bg-yellow-500/15 text-yellow-400'
+                }`}>
+                  <Dumbbell size={10} />
+                  {member.coaching_plan && <span>{member.coaching_plan} · </span>}
+                  {isExpired ? `Coaching expired ${Math.abs(days)}d ago` : days === 0 ? 'Coaching expires today!' : `Coaching: ${days}d left`}
+                </div>
+              );
+            })()}
             {member.notes && (
               <p className="text-slate-500 text-xs mt-1.5 line-clamp-2 italic">{member.notes}</p>
             )}

@@ -1,3 +1,4 @@
+import { useEffect } from 'react';
 import { useNavigate, Navigate } from 'react-router-dom';
 import { ShieldCheck, User, ChevronRight, CalendarCheck, Dumbbell } from 'lucide-react';
 import { useGym } from '../context/GymContext';
@@ -6,6 +7,8 @@ import GymLogo from '../components/GymLogo';
 export default function Home() {
   const navigate = useNavigate();
   const { isAdminLoggedIn } = useGym();
+
+  useEffect(() => { sessionStorage.removeItem('memberPortal_id'); }, []);
 
   if (isAdminLoggedIn) return <Navigate to="/admin" replace />;
 

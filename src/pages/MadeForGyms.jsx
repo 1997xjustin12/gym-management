@@ -182,7 +182,7 @@ export default function MadeForGyms() {
       }`}>
         <div className="max-w-7xl mx-auto px-5 sm:px-8 h-16 flex items-center justify-between">
           <div className="flex items-center">
-            <img src="/madeforgyms.png" alt="MadeForGyms" className="h-8 w-auto" />
+            <img src="/madeforgyms.png" alt="MadeForGyms" className="h-10 w-auto max-w-[180px] object-contain" />
           </div>
 
           <div className="hidden md:flex items-center gap-8">
@@ -733,7 +733,7 @@ export default function MadeForGyms() {
 
               <div className="relative">
                 <div className="flex items-center justify-center mx-auto mb-8">
-                  <img src="/madeforgyms.png" alt="MadeForGyms" className="h-16 w-auto" style={{ filter: 'drop-shadow(0 0 20px rgba(34,197,94,0.5))' }} />
+                  <img src="/madeforgyms.png" alt="MadeForGyms" className="h-16 w-auto max-w-[280px] object-contain" style={{ filter: 'drop-shadow(0 0 20px rgba(34,197,94,0.5))' }} />
                 </div>
 
                 <h2 className="text-4xl sm:text-5xl md:text-6xl font-black tracking-tight mb-6 leading-tight">
@@ -762,7 +762,7 @@ export default function MadeForGyms() {
         <div className="max-w-6xl mx-auto">
           <div className="flex flex-col sm:flex-row items-center justify-between gap-8 mb-8">
             <div className="flex items-center gap-2">
-              <img src="/madeforgyms.png" alt="MadeForGyms" className="h-7 w-auto" />
+              <img src="/madeforgyms.png" alt="MadeForGyms" className="h-9 w-auto max-w-[160px] object-contain" />
               <p className="text-slate-600 text-xs">madeforgyms.com</p>
             </div>
 

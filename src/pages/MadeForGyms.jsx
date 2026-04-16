@@ -248,11 +248,6 @@ export default function MadeForGyms() {
 
           {/* ── Left: copy ── */}
           <div className="flex-1 text-center lg:text-left">
-            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full border text-xs font-semibold mb-7 animate-fade-in"
-              style={{ borderColor: 'rgba(249,115,22,0.3)', background: 'rgba(249,115,22,0.08)', color: '#fb923c' }}>
-              <Zap size={12} /> Purpose-built for Philippine Gyms
-            </div>
-
             <h1 className="text-4xl sm:text-5xl xl:text-6xl font-black leading-[1.0] tracking-tighter mb-6 animate-fade-in-up">
               The System Built<br />for Gyms —<br />
               <span className="gradient-text">Not Adapted to Them</span>

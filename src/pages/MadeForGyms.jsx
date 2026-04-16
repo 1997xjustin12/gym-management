@@ -72,7 +72,7 @@ const FEATURES = [
     desc: 'Members pay directly from their phone. You get a notification and approve with one tap — zero friction.',
   },
   {
-    icon: Bell, color: '#fb923c', glow: 'rgba(251,146,60,0.15)',
+    icon: Bell, color: '#4ade80', glow: 'rgba(251,146,60,0.15)',
     title: 'Telegram Alerts',
     desc: 'Instant Telegram notifications for every new payment. Review receipts and approve without opening the app.',
   },
@@ -94,7 +94,7 @@ const FEATURES = [
 ];
 
 const STEPS = [
-  { num: '01', color: '#fb923c', title: 'Create Your Gym Account', desc: 'Set up your gym in minutes — add your GCash details, membership prices, and your Telegram bot.' },
+  { num: '01', color: '#4ade80', title: 'Create Your Gym Account', desc: 'Set up your gym in minutes — add your GCash details, membership prices, and your Telegram bot.' },
   { num: '02', color: '#38bdf8', title: 'Onboard Your Team', desc: 'Add coaches with their own access codes and portals. They log in, you stay in control.' },
   { num: '03', color: '#4ade80', title: 'Members Go Digital', desc: 'Share the member portal link. Members check status, renew, and see their coach plans — all from their phone.' },
   { num: '04', color: '#c084fc', title: 'Run on Autopilot', desc: 'Payments, renewals, and reminders run automatically. You focus on growing, not admin work.' },
@@ -105,7 +105,7 @@ const TESTIMONIALS = [
     name: 'Coach Renz',
     role: 'Owner, Iron Peak Gym — Davao City',
     avatar: 'R',
-    color: '#fb923c',
+    color: '#4ade80',
     text: '"Before this, I was tracking renewals in a notebook. Now I just check Telegram. Game changer for our 120 members."',
     stars: 5,
   },
@@ -149,7 +149,7 @@ const PLANS = [
     period: '/month',
     desc: 'The full system for serious gyms.',
     highlight: true,
-    color: '#fb923c',
+    color: '#4ade80',
     features: [
       'Unlimited members',
       'Telegram notifications',
@@ -181,12 +181,8 @@ export default function MadeForGyms() {
         scrolled ? 'bg-black/70 backdrop-blur-xl border-b border-white/5' : 'bg-transparent'
       }`}>
         <div className="max-w-7xl mx-auto px-5 sm:px-8 h-16 flex items-center justify-between">
-          <div className="flex items-center gap-2.5">
-            <div className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0"
-              style={{ background: 'linear-gradient(135deg, #f97316, #f59e0b)', boxShadow: '0 0 20px rgba(249,115,22,0.4)' }}>
-              <Dumbbell size={18} className="text-white" />
-            </div>
-            <span className="font-black text-lg tracking-tight">MadeForGyms</span>
+          <div className="flex items-center">
+            <img src="/madeforgyms.png" alt="MadeForGyms" className="h-8 w-auto" />
           </div>
 
           <div className="hidden md:flex items-center gap-8">
@@ -204,7 +200,7 @@ export default function MadeForGyms() {
             </a>
             <a href="/admin/login"
               className="text-sm font-bold px-5 py-2.5 rounded-xl transition-all hover:-translate-y-0.5"
-              style={{ background: 'linear-gradient(135deg, #f97316, #f59e0b)', boxShadow: '0 0 20px rgba(249,115,22,0.3)' }}>
+              style={{ background: 'linear-gradient(135deg, #16a34a, #4ade80)', boxShadow: '0 0 20px rgba(34,197,94,0.3)' }}>
               Get Started
             </a>
           </div>
@@ -225,7 +221,7 @@ export default function MadeForGyms() {
             ))}
             <a href="/admin/login"
               className="block text-center font-bold py-3.5 rounded-xl mt-2"
-              style={{ background: 'linear-gradient(135deg, #f97316, #f59e0b)' }}>
+              style={{ background: 'linear-gradient(135deg, #16a34a, #4ade80)' }}>
               Get Started
             </a>
           </div>
@@ -261,7 +257,7 @@ export default function MadeForGyms() {
             <div className="flex flex-col sm:flex-row justify-center lg:justify-start gap-3 animate-fade-in-up" style={{ animationDelay: '220ms' }}>
               <a href="/admin/login"
                 className="group flex items-center justify-center gap-2 font-bold px-7 py-3.5 rounded-xl text-sm transition-all hover:-translate-y-1 hover:shadow-2xl"
-                style={{ background: 'linear-gradient(135deg, #f97316, #f59e0b)', boxShadow: '0 0 28px rgba(249,115,22,0.35)' }}>
+                style={{ background: 'linear-gradient(135deg, #16a34a, #4ade80)', boxShadow: '0 0 28px rgba(34,197,94,0.35)' }}>
                 Start Free
                 <ArrowRight size={16} className="group-hover:translate-x-1 transition-transform" />
               </a>
@@ -284,7 +280,7 @@ export default function MadeForGyms() {
                 { icon: Clock, label: '24/7 Member Portal' },
               ].map(({ icon: Icon, label }) => (
                 <span key={label} className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium border border-white/8 bg-white/3 text-slate-300">
-                  <Icon size={11} className="text-orange-400" /> {label}
+                  <Icon size={11} className="text-green-400" /> {label}
                 </span>
               ))}
             </div>
@@ -295,7 +291,7 @@ export default function MadeForGyms() {
             <div className="dashboard-float">
               {/* Browser chrome */}
               <div className="rounded-2xl overflow-hidden shadow-2xl"
-                style={{ border: '1px solid rgba(255,255,255,0.1)', boxShadow: '0 0 80px rgba(249,115,22,0.12), 0 40px 80px rgba(0,0,0,0.6)' }}>
+                style={{ border: '1px solid rgba(255,255,255,0.1)', boxShadow: '0 0 80px rgba(34,197,94,0.12), 0 40px 80px rgba(0,0,0,0.6)' }}>
 
                 {/* Title bar */}
                 <div className="flex items-center gap-2 px-4 py-2.5"
@@ -318,12 +314,12 @@ export default function MadeForGyms() {
                   <div className="w-12 flex flex-col items-center py-4 gap-3 shrink-0"
                     style={{ background: '#0a1120', borderRight: '1px solid rgba(255,255,255,0.05)' }}>
                     <div className="w-7 h-7 rounded-lg flex items-center justify-center mb-2"
-                      style={{ background: 'linear-gradient(135deg,#f97316,#f59e0b)' }}>
+                      style={{ background: 'linear-gradient(135deg,#16a34a,#4ade80)' }}>
                       <Dumbbell size={13} className="text-white" />
                     </div>
                     {[Users, CreditCard, ClipboardList, BarChart3, Bell].map((Icon, i) => (
-                      <div key={i} className={`w-8 h-8 rounded-lg flex items-center justify-center ${i === 0 ? 'bg-orange-500/20' : ''}`}>
-                        <Icon size={13} className={i === 0 ? 'text-orange-400' : 'text-slate-600'} />
+                      <div key={i} className={`w-8 h-8 rounded-lg flex items-center justify-center ${i === 0 ? 'bg-green-500/20' : ''}`}>
+                        <Icon size={13} className={i === 0 ? 'text-green-400' : 'text-slate-600'} />
                       </div>
                     ))}
                   </div>
@@ -338,8 +334,8 @@ export default function MadeForGyms() {
                         <p className="text-slate-600 text-[9px]">Power Fitness Gym</p>
                       </div>
                       <div className="flex items-center gap-1.5">
-                        <div className="w-5 h-5 rounded-md bg-orange-500/20 flex items-center justify-center">
-                          <Bell size={9} className="text-orange-400" />
+                        <div className="w-5 h-5 rounded-md bg-green-500/20 flex items-center justify-center">
+                          <Bell size={9} className="text-green-400" />
                         </div>
                         <div className="w-5 h-5 rounded-full bg-slate-700" />
                       </div>
@@ -350,7 +346,7 @@ export default function MadeForGyms() {
                       {[
                         { label: 'Members', val: '248', color: '#38bdf8', delta: '+12' },
                         { label: 'Active',  val: '201', color: '#4ade80', delta: '+5'  },
-                        { label: 'Expiring', val: '18', color: '#fb923c', delta: '3d'  },
+                        { label: 'Expiring', val: '18', color: '#4ade80', delta: '3d'  },
                         { label: 'Revenue', val: '₱124k', color: '#c084fc', delta: '+8%' },
                       ].map(({ label, val, color, delta }) => (
                         <div key={label} className="rounded-xl p-2.5"
@@ -375,8 +371,8 @@ export default function MadeForGyms() {
                               style={{
                                 height: `${h}%`,
                                 background: i === 11
-                                  ? 'linear-gradient(180deg,#f97316,#f59e0b)'
-                                  : 'rgba(249,115,22,0.2)',
+                                  ? 'linear-gradient(180deg,#16a34a,#4ade80)'
+                                  : 'rgba(34,197,94,0.2)',
                               }} />
                           ))}
                         </div>
@@ -396,7 +392,7 @@ export default function MadeForGyms() {
                             { name: 'Juan D.',   plan: 'Monthly', color: '#4ade80' },
                             { name: 'Maria S.',  plan: 'Quarterly', color: '#38bdf8' },
                             { name: 'Carlo R.',  plan: 'Annual',  color: '#c084fc' },
-                            { name: 'Ana L.',    plan: 'Monthly', color: '#fb923c' },
+                            { name: 'Ana L.',    plan: 'Monthly', color: '#4ade80' },
                           ].map(({ name, plan, color }) => (
                             <div key={name} className="flex items-center gap-1.5">
                               <div className="w-4 h-4 rounded-md flex items-center justify-center text-[7px] font-black shrink-0"
@@ -416,10 +412,10 @@ export default function MadeForGyms() {
 
                     {/* Pending payment row */}
                     <div className="flex items-center gap-2 rounded-xl px-3 py-2"
-                      style={{ background: 'rgba(249,115,22,0.08)', border: '1px solid rgba(249,115,22,0.2)' }}>
-                      <div className="w-1.5 h-1.5 rounded-full bg-orange-400 animate-pulse shrink-0" />
-                      <p className="text-[9px] text-orange-300 flex-1">3 GCash payments pending approval</p>
-                      <p className="text-[8px] text-orange-400 font-bold">Review →</p>
+                      style={{ background: 'rgba(34,197,94,0.08)', border: '1px solid rgba(34,197,94,0.2)' }}>
+                      <div className="w-1.5 h-1.5 rounded-full bg-green-400 animate-pulse shrink-0" />
+                      <p className="text-[9px] text-green-300 flex-1">3 GCash payments pending approval</p>
+                      <p className="text-[8px] text-green-400 font-bold">Review →</p>
                     </div>
 
                   </div>
@@ -456,7 +452,7 @@ export default function MadeForGyms() {
       </section>
 
       {/* ── Stats ───────────────────────────────────────────── */}
-      <section className="py-16 px-5 border-y border-white/5" style={{ background: 'linear-gradient(180deg, rgba(249,115,22,0.03) 0%, transparent 100%)' }}>
+      <section className="py-16 px-5 border-y border-white/5" style={{ background: 'linear-gradient(180deg, rgba(34,197,94,0.03) 0%, transparent 100%)' }}>
         <div className="max-w-4xl mx-auto grid grid-cols-2 md:grid-cols-4 gap-6 text-center">
           {[
             { value: 500, suffix: '+', label: 'Members Managed' },
@@ -467,7 +463,7 @@ export default function MadeForGyms() {
             <Reveal key={label}>
               <div className="p-5">
                 <p className="text-4xl sm:text-5xl font-black mb-1"
-                  style={{ background: 'linear-gradient(135deg, #fb923c, #fbbf24)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
+                  style={{ background: 'linear-gradient(135deg, #4ade80, #86efac)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
                   <Counter to={value} suffix={suffix} />
                 </p>
                 <p className="text-slate-400 text-sm font-medium">{label}</p>
@@ -481,7 +477,7 @@ export default function MadeForGyms() {
       <section id="features" className="py-28 px-5 sm:px-8">
         <div className="max-w-7xl mx-auto">
           <Reveal className="text-center mb-16">
-            <p className="text-xs font-bold uppercase tracking-[0.2em] mb-4" style={{ color: '#fb923c' }}>Features</p>
+            <p className="text-xs font-bold uppercase tracking-[0.2em] mb-4" style={{ color: '#4ade80' }}>Features</p>
             <h2 className="text-4xl sm:text-5xl font-black tracking-tight mb-5">
               Built for how gyms<br />actually operate
             </h2>
@@ -593,7 +589,7 @@ export default function MadeForGyms() {
 
           <div className="relative space-y-4">
             {/* Vertical line */}
-            <div className="absolute left-8 top-8 bottom-8 w-px hidden md:block" style={{ background: 'linear-gradient(180deg, rgba(249,115,22,0.5), rgba(192,132,252,0.1))' }} />
+            <div className="absolute left-8 top-8 bottom-8 w-px hidden md:block" style={{ background: 'linear-gradient(180deg, rgba(34,197,94,0.5), rgba(192,132,252,0.1))' }} />
 
             {STEPS.map(({ num, color, title, desc }, i) => (
               <Reveal key={num} delay={i * 100}>
@@ -614,7 +610,7 @@ export default function MadeForGyms() {
       </section>
 
       {/* ── Testimonials ────────────────────────────────────── */}
-      <section className="py-20 px-5 sm:px-8" style={{ background: 'linear-gradient(180deg, transparent, rgba(249,115,22,0.03), transparent)' }}>
+      <section className="py-20 px-5 sm:px-8" style={{ background: 'linear-gradient(180deg, transparent, rgba(34,197,94,0.03), transparent)' }}>
         <div className="max-w-6xl mx-auto">
           <Reveal className="text-center mb-14">
             <p className="text-xs font-bold uppercase tracking-[0.2em] mb-4" style={{ color: '#c084fc' }}>Testimonials</p>
@@ -629,7 +625,7 @@ export default function MadeForGyms() {
                 <div className="h-full p-6 rounded-2xl border border-white/8 bg-white/2 hover:bg-white/4 hover:border-white/12 transition-all flex flex-col">
                   <div className="flex mb-4">
                     {Array.from({ length: stars }).map((_, i) => (
-                      <Star key={i} size={14} fill="#fb923c" className="text-orange-400" />
+                      <Star key={i} size={14} fill="#4ade80" className="text-green-400" />
                     ))}
                   </div>
                   <p className="text-slate-300 text-sm leading-relaxed flex-1 mb-5">{text}</p>
@@ -654,7 +650,7 @@ export default function MadeForGyms() {
       <section id="pricing" className="py-28 px-5 sm:px-8">
         <div className="max-w-3xl mx-auto">
           <Reveal className="text-center mb-14">
-            <p className="text-xs font-bold uppercase tracking-[0.2em] mb-4" style={{ color: '#fbbf24' }}>Pricing</p>
+            <p className="text-xs font-bold uppercase tracking-[0.2em] mb-4" style={{ color: '#86efac' }}>Pricing</p>
             <h2 className="text-4xl sm:text-5xl font-black tracking-tight mb-5">
               Simple pricing,<br />serious results
             </h2>
@@ -666,26 +662,26 @@ export default function MadeForGyms() {
               <Reveal key={name} delay={i * 100} className="h-full">
                 <div className="relative h-full rounded-2xl p-7 flex flex-col overflow-hidden"
                   style={{
-                    background: highlight ? `linear-gradient(135deg, rgba(249,115,22,0.08), rgba(245,158,11,0.04))` : 'rgba(255,255,255,0.02)',
-                    border: highlight ? '1px solid rgba(249,115,22,0.35)' : '1px solid rgba(255,255,255,0.08)',
-                    boxShadow: highlight ? '0 0 60px rgba(249,115,22,0.1)' : 'none',
+                    background: highlight ? `linear-gradient(135deg, rgba(34,197,94,0.08), rgba(34,197,94,0.04))` : 'rgba(255,255,255,0.02)',
+                    border: highlight ? '1px solid rgba(34,197,94,0.35)' : '1px solid rgba(255,255,255,0.08)',
+                    boxShadow: highlight ? '0 0 60px rgba(34,197,94,0.1)' : 'none',
                   }}>
 
                   {highlight && (
                     <div className="absolute top-4 right-4 text-[11px] font-bold px-3 py-1 rounded-full"
-                      style={{ background: 'rgba(249,115,22,0.2)', color: '#fb923c', border: '1px solid rgba(249,115,22,0.3)' }}>
+                      style={{ background: 'rgba(34,197,94,0.2)', color: '#4ade80', border: '1px solid rgba(34,197,94,0.3)' }}>
                       Most Popular
                     </div>
                   )}
 
                   {/* BG glow for Pro */}
                   {highlight && <div className="absolute top-0 right-0 w-48 h-48 rounded-full pointer-events-none"
-                    style={{ background: 'radial-gradient(circle, rgba(249,115,22,0.06) 0%, transparent 70%)' }} />}
+                    style={{ background: 'radial-gradient(circle, rgba(34,197,94,0.06) 0%, transparent 70%)' }} />}
 
                   <div className="relative">
                     <p className="text-slate-400 text-sm font-medium mb-2">{name}</p>
                     <div className="flex items-end gap-1 mb-1">
-                      <span className="text-5xl font-black" style={{ color: highlight ? '#fb923c' : 'white' }}>{price}</span>
+                      <span className="text-5xl font-black" style={{ color: highlight ? '#4ade80' : 'white' }}>{price}</span>
                       <span className="text-slate-500 text-sm mb-2">{period}</span>
                     </div>
                     <p className="text-slate-500 text-xs mb-6">{desc}</p>
@@ -702,7 +698,7 @@ export default function MadeForGyms() {
                     <a href="/admin/login"
                       className="block text-center font-bold py-3.5 rounded-xl text-sm transition-all hover:-translate-y-0.5"
                       style={highlight
-                        ? { background: 'linear-gradient(135deg, #f97316, #f59e0b)', boxShadow: '0 0 20px rgba(249,115,22,0.3)' }
+                        ? { background: 'linear-gradient(135deg, #16a34a, #4ade80)', boxShadow: '0 0 20px rgba(34,197,94,0.3)' }
                         : { background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)' }
                       }>
                       Get Started
@@ -716,7 +712,7 @@ export default function MadeForGyms() {
           <Reveal className="mt-8 text-center">
             <p className="text-slate-600 text-sm">
               Need a custom setup for multiple branches?{' '}
-              <a href="mailto:hello@madeforgyms.com" className="text-orange-400 hover:text-orange-300 transition-colors">
+              <a href="mailto:hello@madeforgyms.com" className="text-green-400 hover:text-green-300 transition-colors">
                 Contact us →
               </a>
             </p>
@@ -731,14 +727,13 @@ export default function MadeForGyms() {
             <div className="relative rounded-3xl overflow-hidden py-20 px-8">
               {/* BG */}
               <div className="absolute inset-0"
-                style={{ background: 'linear-gradient(135deg, rgba(249,115,22,0.1) 0%, rgba(245,158,11,0.05) 50%, rgba(192,132,252,0.08) 100%)', border: '1px solid rgba(249,115,22,0.2)' }} />
+                style={{ background: 'linear-gradient(135deg, rgba(34,197,94,0.1) 0%, rgba(34,197,94,0.05) 50%, rgba(192,132,252,0.08) 100%)', border: '1px solid rgba(34,197,94,0.2)' }} />
               <div className="absolute top-0 left-1/2 -translate-x-1/2 w-96 h-40 rounded-full pointer-events-none"
-                style={{ background: 'radial-gradient(ellipse, rgba(249,115,22,0.12) 0%, transparent 70%)' }} />
+                style={{ background: 'radial-gradient(ellipse, rgba(34,197,94,0.12) 0%, transparent 70%)' }} />
 
               <div className="relative">
-                <div className="w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-8"
-                  style={{ background: 'linear-gradient(135deg, #f97316, #f59e0b)', boxShadow: '0 0 40px rgba(249,115,22,0.4)' }}>
-                  <Dumbbell size={30} className="text-white" />
+                <div className="flex items-center justify-center mx-auto mb-8">
+                  <img src="/madeforgyms.png" alt="MadeForGyms" className="h-16 w-auto" style={{ filter: 'drop-shadow(0 0 20px rgba(34,197,94,0.5))' }} />
                 </div>
 
                 <h2 className="text-4xl sm:text-5xl md:text-6xl font-black tracking-tight mb-6 leading-tight">
@@ -752,7 +747,7 @@ export default function MadeForGyms() {
 
                 <a href="/admin/login"
                   className="group inline-flex items-center gap-2 font-bold px-10 py-5 rounded-2xl text-lg transition-all hover:-translate-y-1 hover:shadow-2xl"
-                  style={{ background: 'linear-gradient(135deg, #f97316, #f59e0b)', boxShadow: '0 0 40px rgba(249,115,22,0.35)' }}>
+                  style={{ background: 'linear-gradient(135deg, #16a34a, #4ade80)', boxShadow: '0 0 40px rgba(34,197,94,0.35)' }}>
                   Start Managing Your Gym
                   <ArrowRight size={20} className="group-hover:translate-x-1 transition-transform" />
                 </a>
@@ -766,15 +761,9 @@ export default function MadeForGyms() {
       <footer className="border-t border-white/5 py-12 px-5 sm:px-8">
         <div className="max-w-6xl mx-auto">
           <div className="flex flex-col sm:flex-row items-center justify-between gap-8 mb-8">
-            <div className="flex items-center gap-2.5">
-              <div className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0"
-                style={{ background: 'linear-gradient(135deg, #f97316, #f59e0b)' }}>
-                <Dumbbell size={18} className="text-white" />
-              </div>
-              <div>
-                <p className="font-black text-base leading-tight">MadeForGyms</p>
-                <p className="text-slate-600 text-xs">madeforgyms.com</p>
-              </div>
+            <div className="flex items-center gap-2">
+              <img src="/madeforgyms.png" alt="MadeForGyms" className="h-7 w-auto" />
+              <p className="text-slate-600 text-xs">madeforgyms.com</p>
             </div>
 
             <div className="flex flex-wrap justify-center gap-6 text-sm text-slate-500">
@@ -797,7 +786,7 @@ export default function MadeForGyms() {
       {/* ── Global styles ────────────────────────────────────── */}
       <style>{`
         .gradient-text {
-          background: linear-gradient(135deg, #fb923c 0%, #fbbf24 50%, #fb923c 100%);
+          background: linear-gradient(135deg, #4ade80 0%, #86efac 50%, #4ade80 100%);
           background-size: 200% auto;
           -webkit-background-clip: text;
           -webkit-text-fill-color: transparent;
@@ -817,7 +806,7 @@ export default function MadeForGyms() {
           width: 600px;
           height: 600px;
           border-radius: 50%;
-          background: radial-gradient(circle, rgba(249,115,22,0.12) 0%, transparent 70%);
+          background: radial-gradient(circle, rgba(34,197,94,0.12) 0%, transparent 70%);
           animation: orb-float 10s ease-in-out infinite;
         }
 

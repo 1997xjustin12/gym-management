@@ -258,6 +258,10 @@ export function GymProvider({ children }) {
   useEffect(() => { loadInstructors(); }, [loadInstructors]);
 
   const addInstructor = async ({ name, specialty, contactNumber, email, bio, photo, accessCode }) => {
+    const code = accessCode?.trim().toUpperCase() || null;
+    if (code && instructors.some((i) => (i.access_code || '').toUpperCase() === code)) {
+      throw new Error(`Access code "${code}" is already used by another coach.`);
+    }
     const { data, error } = await supabase
       .from('instructors')
       .insert([{
@@ -266,11 +270,14 @@ export function GymProvider({ children }) {
         contact_number: contactNumber?.trim() || '',
         email: email?.trim() || null,
         bio: bio?.trim() || '',
-        access_code: accessCode?.trim().toUpperCase() || null,
+        access_code: code,
       }])
       .select()
       .single();
-    if (error) throw error;
+    if (error) {
+      if (error.message?.includes('unique')) throw new Error(`Access code "${code}" is already used by another coach.`);
+      throw error;
+    }
 
     if (photo && isBase64(photo)) {
       const photoUrl = await uploadPhoto(photo, `instructors/${data.id}`);
@@ -283,6 +290,10 @@ export function GymProvider({ children }) {
   };
 
   const updateInstructor = async (id, { name, specialty, contactNumber, email, bio, photo, accessCode }) => {
+    const code = accessCode?.trim().toUpperCase() || null;
+    if (code && instructors.some((i) => i.id !== id && (i.access_code || '').toUpperCase() === code)) {
+      throw new Error(`Access code "${code}" is already used by another coach.`);
+    }
     const existing = instructors.find((i) => i.id === id);
 
     let photoUrl = existing?.photo_url || null;
@@ -302,12 +313,15 @@ export function GymProvider({ children }) {
         email: email?.trim() || null,
         bio: bio?.trim() || '',
         photo_url: photoUrl,
-        access_code: accessCode?.trim().toUpperCase() || null,
+        access_code: code,
       })
       .eq('id', id)
       .select()
       .single();
-    if (error) throw error;
+    if (error) {
+      if (error.message?.includes('unique')) throw new Error(`Access code "${code}" is already used by another coach.`);
+      throw error;
+    }
 
     setInstructors((prev) => prev.map((i) => i.id === id ? data : i));
     return data;

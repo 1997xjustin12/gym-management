@@ -1,6 +1,6 @@
 import { useState, useMemo, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { Search, UserPlus, Pencil, MessageSquare, Trash2, X, Download, RefreshCw, CheckCircle, Banknote, CreditCard, History } from 'lucide-react';
+import { Search, UserPlus, Pencil, MessageSquare, Trash2, X, Download, RefreshCw, CheckCircle, Banknote, CreditCard, History, ChevronDown } from 'lucide-react';
 import { useGym } from '../context/GymContext';
 import Navbar from '../components/Navbar';
 import Pagination from '../components/Pagination';
@@ -26,6 +26,7 @@ export default function MembersList() {
   const [smsTarget, setSmsTarget] = useState(null);
   const [confirmDelete, setConfirmDelete] = useState(null);
   const [renewTarget, setRenewTarget] = useState(null);
+  const [expandedId, setExpandedId] = useState(null);
 
   const filtered = useMemo(() => {
     return members.filter((m) => {
@@ -151,6 +152,9 @@ export default function MembersList() {
           <div className="space-y-2">
             {paginated.map((member) => {
               const statusInfo = getMemberStatus(member);
+              const isExpanded = expandedId === member.id;
+              const instructor = member.instructorId ? instructors.find((i) => i.id === member.instructorId) : null;
+
               return (
                 <div
                   key={member.id}
@@ -160,101 +164,110 @@ export default function MembersList() {
                       : 'border-slate-700/50'
                   }`}
                 >
-                  <div className="flex items-center gap-3 p-3.5">
+                  {/* ── Always-visible row ── */}
+                  <button
+                    className="w-full flex items-center gap-3 p-3.5 text-left"
+                    onClick={() => setExpandedId(isExpanded ? null : member.id)}
+                  >
                     {/* Avatar */}
-                    <div className="w-12 h-12 rounded-xl overflow-hidden bg-slate-700 shrink-0">
+                    <div className="w-11 h-11 rounded-xl overflow-hidden bg-slate-700 shrink-0">
                       {member.photo ? (
                         <img src={member.photo} alt={member.name} className="w-full h-full object-cover" />
                       ) : (
-                        <div className={`w-full h-full flex items-center justify-center font-bold text-lg ${
+                        <div className={`w-full h-full flex items-center justify-center font-bold text-base ${
                           statusInfo.status === 'expiring' ? 'text-orange-400' :
-                          statusInfo.status === 'expired' ? 'text-red-400' : 'text-sky-400'
+                          statusInfo.status === 'expired'  ? 'text-red-400'    : 'text-sky-400'
                         }`}>
                           {member.name.charAt(0).toUpperCase()}
                         </div>
                       )}
                     </div>
 
-                    {/* Info */}
+                    {/* Name + status + phone */}
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 flex-wrap">
                         <p className="text-white font-semibold text-sm">{member.name}</p>
                         <StatusBadge status={statusInfo.status} label={statusInfo.label} />
                       </div>
-                      <p className="text-slate-400 text-xs">{formatPhoneDisplay(member.contactNumber)}</p>
-                      <div className="flex items-center gap-2 mt-0.5 flex-wrap">
-                        <span className="text-[11px] font-medium bg-slate-700 text-slate-300 px-2 py-0.5 rounded-md capitalize">
+                      <p className="text-slate-400 text-xs mt-0.5">{formatPhoneDisplay(member.contactNumber)}</p>
+                    </div>
+
+                    {/* Chevron */}
+                    <ChevronDown
+                      size={18}
+                      className={`text-slate-500 shrink-0 transition-transform duration-200 ${isExpanded ? 'rotate-180' : ''}`}
+                    />
+                  </button>
+
+                  {/* ── Expanded details + actions (mobile collapsible) ── */}
+                  {isExpanded && (
+                    <div className="px-3.5 pb-4 space-y-3 border-t border-slate-700/50 pt-3">
+
+                      {/* Detail chips */}
+                      <div className="flex flex-wrap gap-2">
+                        <span className="text-xs font-medium bg-slate-700 text-slate-300 px-2.5 py-1 rounded-lg capitalize">
                           {member.membershipType}
                         </span>
-                        {member.instructorId && (() => {
-                          const inst = instructors.find((i) => i.id === member.instructorId);
-                          return inst ? (
-                            <span className="text-[11px] font-medium bg-yellow-500/15 text-yellow-400 px-2 py-0.5 rounded-md">
-                              🏋️ {inst.name}
-                            </span>
-                          ) : null;
-                        })()}
-                        <span className="text-slate-600 text-xs">·</span>
-                        <p className="text-slate-500 text-xs">Ends {formatDate(member.membershipEndDate)}</p>
-                      </div>
-                    </div>
-
-                    {/* Actions */}
-                    <div className="flex items-center gap-1 shrink-0">
-                      {statusInfo.status === 'expiring' && (
-                        <button
-                          onClick={() => setSmsTarget({ member, daysLeft: statusInfo.daysLeft })}
-                          className="w-9 h-9 bg-orange-500/20 hover:bg-orange-500/40 text-orange-400 rounded-xl flex items-center justify-center transition-colors"
-                          title="Send SMS"
-                        >
-                          <MessageSquare size={15} />
-                        </button>
-                      )}
-                      <button
-                        onClick={() => setRenewTarget(member)}
-                        className="w-9 h-9 bg-green-500/20 hover:bg-green-500/40 text-green-400 rounded-xl flex items-center justify-center transition-colors"
-                        title="Accept Payment & Renew"
-                      >
-                        <RefreshCw size={15} />
-                      </button>
-                      <button
-                        onClick={() => navigate(`/admin/members/${member.id}/history`)}
-                        className="w-9 h-9 bg-slate-700 hover:bg-slate-600 text-slate-300 rounded-xl flex items-center justify-center transition-colors"
-                        title="View History"
-                      >
-                        <History size={15} />
-                      </button>
-                      <button
-                        onClick={() => navigate(`/admin/members/${member.id}/edit`)}
-                        className="w-9 h-9 bg-slate-700 hover:bg-slate-600 text-slate-300 rounded-xl flex items-center justify-center transition-colors"
-                        title="Edit"
-                      >
-                        <Pencil size={15} />
-                      </button>
-                      <button
-                        onClick={() => setConfirmDelete(member)}
-                        className="w-9 h-9 bg-slate-700 hover:bg-red-500/30 text-slate-400 hover:text-red-400 rounded-xl flex items-center justify-center transition-colors"
-                        title="Delete"
-                      >
-                        <Trash2 size={15} />
-                      </button>
-                    </div>
-                  </div>
-
-                  {/* Expiry warning bar */}
-                  {statusInfo.status === 'expiring' && (
-                    <div className="px-3.5 pb-3 pt-0">
-                      <div className="flex items-center justify-between text-xs mb-1.5">
-                        <span className="text-orange-400/70">Expiring</span>
-                        <span className="text-orange-400 font-semibold">
-                          {statusInfo.daysLeft === 0 ? 'Today!' : `${statusInfo.daysLeft} day${statusInfo.daysLeft !== 1 ? 's' : ''} left`}
+                        {instructor && (
+                          <span className="text-xs font-medium bg-yellow-500/15 text-yellow-400 px-2.5 py-1 rounded-lg">
+                            🏋️ {instructor.name}
+                          </span>
+                        )}
+                        <span className="text-xs font-medium bg-slate-700/60 text-slate-400 px-2.5 py-1 rounded-lg">
+                          Ends {formatDate(member.membershipEndDate)}
                         </span>
                       </div>
-                      <div className="h-1.5 bg-slate-700 rounded-full overflow-hidden">
-                        <div
-                          className="h-full bg-gradient-to-r from-orange-500 to-red-500 rounded-full transition-all"
-                          style={{ width: `${Math.max(8, ((5 - statusInfo.daysLeft) / 5) * 100)}%` }}
-                        />
+
+                      {/* Expiry progress bar */}
+                      {statusInfo.status === 'expiring' && (
+                        <div>
+                          <div className="flex items-center justify-between text-xs mb-1.5">
+                            <span className="text-orange-400/70">Expiring</span>
+                            <span className="text-orange-400 font-semibold">
+                              {statusInfo.daysLeft === 0 ? 'Today!' : `${statusInfo.daysLeft} day${statusInfo.daysLeft !== 1 ? 's' : ''} left`}
+                            </span>
+                          </div>
+                          <div className="h-1.5 bg-slate-700 rounded-full overflow-hidden">
+                            <div
+                              className="h-full bg-gradient-to-r from-orange-500 to-red-500 rounded-full"
+                              style={{ width: `${Math.max(8, ((5 - statusInfo.daysLeft) / 5) * 100)}%` }}
+                            />
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Action buttons grid */}
+                      <div className="grid grid-cols-2 gap-2">
+                        <button
+                          onClick={() => navigate(`/admin/members/${member.id}/edit`)}
+                          className="flex items-center justify-center gap-2 bg-slate-700 hover:bg-slate-600 text-slate-200 py-2.5 rounded-xl text-sm font-medium transition-colors"
+                        >
+                          <Pencil size={14} /> Edit
+                        </button>
+                        <button
+                          onClick={() => navigate(`/admin/members/${member.id}/history`)}
+                          className="flex items-center justify-center gap-2 bg-slate-700 hover:bg-slate-600 text-slate-200 py-2.5 rounded-xl text-sm font-medium transition-colors"
+                        >
+                          <History size={14} /> History
+                        </button>
+                        <button
+                          onClick={() => { setRenewTarget(member); setExpandedId(null); }}
+                          className="flex items-center justify-center gap-2 bg-green-500/20 hover:bg-green-500/30 text-green-400 py-2.5 rounded-xl text-sm font-medium transition-colors"
+                        >
+                          <RefreshCw size={14} /> Renew
+                        </button>
+                        <button
+                          onClick={() => setSmsTarget({ member, daysLeft: statusInfo.daysLeft })}
+                          className="flex items-center justify-center gap-2 bg-orange-500/15 hover:bg-orange-500/25 text-orange-400 py-2.5 rounded-xl text-sm font-medium transition-colors"
+                        >
+                          <MessageSquare size={14} /> SMS
+                        </button>
+                        <button
+                          onClick={() => { setConfirmDelete(member); setExpandedId(null); }}
+                          className="col-span-2 flex items-center justify-center gap-2 bg-red-500/10 hover:bg-red-500/20 text-red-400 py-2.5 rounded-xl text-sm font-medium transition-colors"
+                        >
+                          <Trash2 size={14} /> Remove Member
+                        </button>
                       </div>
                     </div>
                   )}

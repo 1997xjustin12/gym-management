@@ -36,6 +36,7 @@ const toMember = (row) => ({
 });
 
 const toSettings = (row) => ({
+  gymName: row.gym_name || 'Power Fitness Gym',
   gcashNumber: row.gcash_number || '',
   gcashName: row.gcash_name || '',
   gcashQrUrl: row.gcash_qr_url || null,
@@ -77,6 +78,7 @@ export function GymProvider({ children }) {
   const [isAdminLoggedIn, setIsAdminLoggedIn] = useState(false);
   const [adminEmail, setAdminEmail] = useState(null);
   const [settings, setSettings] = useState({
+    gymName: 'Power Fitness Gym',
     gcashNumber: '',
     gcashName: '',
     gcashQrUrl: null,
@@ -178,6 +180,7 @@ export function GymProvider({ children }) {
 
     const { error } = await supabase.from('gym_settings').upsert({
       id: 'default',
+      gym_name: formData.gymName || 'Power Fitness Gym',
       gcash_number: formData.gcashNumber,
       gcash_name: formData.gcashName,
       gcash_qr_url: gcashQrUrl,

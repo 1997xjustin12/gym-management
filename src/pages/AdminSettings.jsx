@@ -15,6 +15,7 @@ const PRICE_FIELDS = [
 export default function AdminSettings() {
   const { settings, saveSettings, instructors } = useGym();
   const [form, setForm] = useState({
+    gymName: '',
     gcashNumber: '',
     gcashName: '',
     gcashQrUrl: null,
@@ -38,6 +39,7 @@ export default function AdminSettings() {
   useEffect(() => {
     setForm((f) => ({
       ...f,
+      gymName:        settings.gymName        || 'Power Fitness Gym',
       gcashNumber:    settings.gcashNumber,
       gcashName:      settings.gcashName,
       gcashQrUrl:     settings.gcashQrUrl,
@@ -122,6 +124,22 @@ export default function AdminSettings() {
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-5">
+
+          {/* Gym Identity */}
+          <div className="bg-slate-800 rounded-2xl border border-slate-700/50 p-5 space-y-4">
+            <h2 className="text-white font-semibold text-base">Gym Identity</h2>
+            <div>
+              <label className="block text-slate-300 text-sm font-medium mb-1.5">Gym Name</label>
+              <input
+                type="text"
+                value={form.gymName}
+                onChange={(e) => set('gymName', e.target.value)}
+                placeholder="e.g. Power Fitness Gym"
+                className="w-full bg-slate-700 border border-slate-600 focus:border-orange-500 text-white rounded-xl px-4 py-3 outline-none transition-colors placeholder:text-slate-500 text-sm"
+              />
+              <p className="text-slate-500 text-xs mt-1.5">Shown in the navbar and throughout the app.</p>
+            </div>
+          </div>
 
           {/* GCash details */}
           <div className="bg-slate-800 rounded-2xl border border-slate-700/50 p-5 space-y-4">

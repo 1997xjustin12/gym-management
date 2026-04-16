@@ -6,7 +6,7 @@ import GymLogo from './GymLogo';
 import { useState, useEffect } from 'react';
 
 export default function Navbar({ title, showBack }) {
-  const { isAdminLoggedIn, adminLogout, getExpiringMembers, pendingRenewals } = useGym();
+  const { isAdminLoggedIn, adminLogout, getExpiringMembers, pendingRenewals, settings } = useGym();
   const navigate = useNavigate();
   const location = useLocation();
   const expiring = getExpiringMembers();
@@ -36,7 +36,7 @@ export default function Navbar({ title, showBack }) {
             ) : (
               <Link to={isAdminLoggedIn ? '/admin' : '/'} className="flex items-center gap-2 shrink-0">
                 <GymLogo size={40} />
-                <span className="font-bold text-white">Power Fitness</span>
+                <span className="font-bold text-white">{settings.gymName || 'Power Fitness Gym'}</span>
               </Link>
             )}
             {title && (

@@ -465,262 +465,223 @@ export default function MemberPortal() {
     const latestRequest = renewalRequests
       .filter((r) => r.member_id === member.id)
       .sort((a, b) => new Date(b.created_at) - new Date(a.created_at))[0];
-
-    // Only show pending/rejected — approved is communicated by the Active status card
     const showPaymentStatus = latestRequest && latestRequest.status !== 'approved';
+
+    // Progress bar: how far through the membership period
+    const startMs  = new Date(member.membershipStartDate).setHours(0,0,0,0);
+    const endMs    = new Date(member.membershipEndDate).setHours(0,0,0,0);
+    const todayMs  = new Date().setHours(0,0,0,0);
+    const totalD   = Math.max(1, Math.round((endMs - startMs) / 86400000));
+    const elapsed  = Math.round((todayMs - startMs) / 86400000);
+    const progress = Math.min(100, Math.max(0, (elapsed / totalD) * 100));
+
+    // Status theme
+    const theme = {
+      active:   { gradient: 'from-green-500/25',  bar: 'bg-green-500',  badge: 'bg-green-500/15 text-green-400 border-green-500/30',  icon: <CheckCircle  size={13} />, label: 'Active'        },
+      expiring: { gradient: 'from-orange-500/25', bar: 'bg-orange-400', badge: 'bg-orange-500/15 text-orange-400 border-orange-500/30', icon: <AlertTriangle size={13} />, label: 'Expiring Soon' },
+      expired:  { gradient: 'from-red-500/25',    bar: 'bg-red-500',    badge: 'bg-red-500/15 text-red-400 border-red-500/30',          icon: <XCircle      size={13} />, label: 'Expired'       },
+    }[status];
+
+    // Coaching subscription check
+    const today = new Date(); today.setHours(0,0,0,0);
+    const coachEnd = member.coachingEndDate ? (() => { const d = new Date(member.coachingEndDate); d.setHours(0,0,0,0); return d; })() : null;
+    const coachDays    = coachEnd ? Math.ceil((coachEnd - today) / 86400000) : null;
+    const coachActive  = coachDays !== null && coachDays >= 0;
+    const coachIsToday = coachDays === 0;
+    const coachWarn    = coachDays !== null && coachDays > 0 && coachDays <= 5;
+
+    const pastCoaching = coachingHistory.filter((s) => {
+      if (!s.end_date) return false;
+      const e = new Date(s.end_date); e.setHours(0,0,0,0);
+      return e < today;
+    });
 
     return (
       <div className="min-h-screen bg-slate-900 flex flex-col">
-        {/* Header */}
+        {/* Sticky header */}
         <div className="sticky top-0 z-40 bg-slate-900/95 backdrop-blur border-b border-slate-800">
           <div className="max-w-lg mx-auto px-4 h-14 flex items-center gap-3">
             <button onClick={goHome} className="text-slate-400 hover:text-white p-1 transition-colors">
               <ArrowLeft size={20} />
             </button>
-            <div className="flex items-center gap-2">
-              <div className="w-8 h-8 bg-sky-500 rounded-lg flex items-center justify-center">
-                <Dumbbell size={16} className="text-white" />
-              </div>
-              <span className="font-bold text-white">Member Portal</span>
+            <div className="w-8 h-8 bg-sky-500 rounded-lg flex items-center justify-center">
+              <Dumbbell size={16} className="text-white" />
             </div>
+            <span className="font-bold text-white flex-1 truncate">{member.name}</span>
+            <span className={`text-xs font-semibold px-2.5 py-1 rounded-full border flex items-center gap-1 ${theme.badge}`}>
+              {theme.icon} {theme.label}
+            </span>
           </div>
         </div>
 
-        <div className="max-w-lg mx-auto w-full px-4 py-6 space-y-4">
-          {/* Member card */}
-          <div className={`bg-slate-800 rounded-2xl border overflow-hidden ${
-            status === 'expiring' ? 'border-orange-500/40'
-            : status === 'expired' ? 'border-red-500/30'
-            : 'border-slate-700/50'
-          }`}>
-            {/* Member header */}
-            <div className="flex items-center gap-4 p-5 border-b border-slate-700/50">
-              <div className="w-16 h-16 rounded-2xl overflow-hidden bg-slate-700 shrink-0">
+        <div className="max-w-lg mx-auto w-full px-4 py-5 space-y-3 pb-8">
+
+          {/* ── Hero card ── */}
+          <div className="bg-slate-800 rounded-2xl border border-slate-700/50 overflow-hidden">
+            {/* Gradient banner */}
+            <div className={`h-20 bg-gradient-to-b ${theme.gradient} to-transparent`} />
+            {/* Avatar row */}
+            <div className="flex items-end gap-4 px-5 -mt-10 pb-5">
+              <div className="w-20 h-20 rounded-2xl overflow-hidden bg-slate-700 border-4 border-slate-800 shrink-0 shadow-xl">
                 {member.photo ? (
                   <img src={member.photo} alt={member.name} className="w-full h-full object-cover" />
                 ) : (
-                  <div className="w-full h-full flex items-center justify-center text-sky-400 font-black text-2xl">
+                  <div className="w-full h-full flex items-center justify-center text-sky-400 font-black text-3xl">
                     {member.name.charAt(0).toUpperCase()}
                   </div>
                 )}
               </div>
-              <div>
-                <h2 className="text-white font-bold text-xl">{member.name}</h2>
+              <div className="pb-1 flex-1 min-w-0">
+                <h2 className="text-white font-bold text-xl leading-tight truncate">{member.name}</h2>
                 <p className="text-slate-400 text-sm flex items-center gap-1.5 mt-0.5">
                   <Phone size={12} />
                   {formatPhoneDisplay(member.contactNumber)}
                 </p>
+                <div className="flex items-center gap-2 mt-2 flex-wrap">
+                  <span className={`inline-flex items-center gap-1.5 text-xs font-semibold px-2.5 py-1 rounded-full border ${theme.badge}`}>
+                    {theme.icon} {theme.label}
+                  </span>
+                  <span className="text-xs px-2.5 py-1 rounded-full bg-slate-700/70 text-slate-300 font-medium">
+                    {getMembershipLabel(member.membershipType)}
+                  </span>
+                </div>
               </div>
-            </div>
-
-            {/* Status & details */}
-            <div className="p-5 space-y-4">
-              {/* Status card */}
-              {status === 'active' && (
-                <div className="flex items-center gap-4 bg-green-500/10 border border-green-500/30 rounded-2xl p-4">
-                  <div className="w-12 h-12 bg-green-500/20 rounded-xl flex items-center justify-center shrink-0">
-                    <CheckCircle size={24} className="text-green-400" />
-                  </div>
-                  <div>
-                    <p className="text-green-400 font-bold text-lg">Active</p>
-                    <p className="text-slate-400 text-sm">{daysLeft} days remaining</p>
-                  </div>
-                </div>
-              )}
-              {status === 'expiring' && (
-                <div className="flex items-center gap-4 bg-orange-500/10 border border-orange-500/40 rounded-2xl p-4">
-                  <div className="w-12 h-12 bg-orange-500/20 rounded-xl flex items-center justify-center shrink-0">
-                    <AlertTriangle size={24} className="text-orange-400" />
-                  </div>
-                  <div>
-                    <p className="text-orange-400 font-bold text-lg">Expiring Soon</p>
-                    <p className="text-slate-400 text-sm">
-                      Expires in <strong className="text-orange-300">{daysLeft} day{daysLeft !== 1 ? 's' : ''}</strong> — please renew soon!
-                    </p>
-                  </div>
-                </div>
-              )}
-              {status === 'expired' && (
-                <div className="flex items-center gap-4 bg-red-500/10 border border-red-500/30 rounded-2xl p-4">
-                  <div className="w-12 h-12 bg-red-500/20 rounded-xl flex items-center justify-center shrink-0">
-                    <XCircle size={24} className="text-red-400" />
-                  </div>
-                  <div>
-                    <p className="text-red-400 font-bold text-lg">Expired</p>
-                    <p className="text-slate-400 text-sm">Membership ended {Math.abs(daysLeft)} days ago</p>
-                  </div>
-                </div>
-              )}
-
-              {/* Detail grid */}
-              <div className="grid grid-cols-2 gap-3">
-                <DetailCard icon={<TagIcon size={14} />} label="Plan" value={getMembershipLabel(member.membershipType)} />
-                <DetailCard
-                  icon={<Clock size={14} />}
-                  label="Days Left"
-                  value={daysLeft >= 0 ? `${daysLeft} days` : 'Expired'}
-                  valueClass={status === 'expired' ? 'text-red-400' : status === 'expiring' ? 'text-orange-400' : 'text-green-400'}
-                />
-                <DetailCard icon={<Calendar size={14} />} label="Start Date" value={formatDate(member.membershipStartDate)} />
-                <DetailCard
-                  icon={<Calendar size={14} />}
-                  label="End Date"
-                  value={formatDate(member.membershipEndDate)}
-                  valueClass={status !== 'active' ? 'text-red-400' : ''}
-                />
-              </div>
-
-              {/* Payment status (pending/rejected only) */}
-              {showPaymentStatus && <PaymentStatus request={latestRequest} />}
-
-              {/* Renew button */}
-              {needsRenewal && settings.gcashNumber && latestRequest?.status !== 'pending' && (
-                <button
-                  onClick={() => setRenewTarget(member)}
-                  className="w-full flex items-center justify-center gap-2 bg-green-500 hover:bg-green-600 text-white font-bold py-3 rounded-xl transition-colors"
-                >
-                  <CreditCard size={18} />
-                  {latestRequest?.status === 'rejected' ? 'Resubmit Payment' : 'Pay via GCash'}
-                </button>
-              )}
             </div>
           </div>
 
-          {/* Coaching subscription status — active only */}
-          {(() => {
-            if (!member.coachingEndDate) return null;
-            const today = new Date(); today.setHours(0,0,0,0);
-            const end = new Date(member.coachingEndDate); end.setHours(0,0,0,0);
-            const days = Math.ceil((end - today) / 86400000);
-            if (days < 0) return null; // expired → goes to history section below
-            const isToday    = days === 0;
-            const isExpiring = days > 0 && days <= 5;
-            const colorCard  = isToday ? 'bg-yellow-500/8 border-yellow-500/25' : isExpiring ? 'bg-orange-500/8 border-orange-500/25' : 'bg-yellow-500/8 border-yellow-500/20';
-            const colorIcon  = isToday ? 'bg-yellow-500/15' : isExpiring ? 'bg-orange-500/20' : 'bg-yellow-500/15';
-            const colorDumb  = isToday ? 'text-yellow-400' : isExpiring ? 'text-orange-400' : 'text-yellow-400';
-            const colorLabel = isToday ? 'text-yellow-500/70' : isExpiring ? 'text-orange-400/70' : 'text-yellow-500/70';
-            const colorSub   = isToday ? 'text-yellow-400' : isExpiring ? 'text-orange-400' : 'text-slate-400';
-            const subText    = isToday
-              ? 'Active · expires today'
-              : `${days} day${days !== 1 ? 's' : ''} remaining · ends ${formatDate(member.coachingEndDate)}`;
-            return (
-              <div className={`rounded-2xl border p-4 ${colorCard}`}>
-                <div className="flex items-center gap-3">
-                  <div className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 ${colorIcon}`}>
-                    <Dumbbell size={16} className={colorDumb} />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <p className={`text-xs font-bold uppercase tracking-wider mb-0.5 ${colorLabel}`}>Coaching Subscription</p>
-                    <p className="text-white text-sm font-semibold">{member.coachingPlan || 'Active'}</p>
-                    <p className={`text-xs mt-0.5 ${colorSub}`}>{subText}</p>
-                  </div>
-                </div>
-              </div>
-            );
-          })()}
+          {/* ── Membership timeline card ── */}
+          <div className="bg-slate-800 rounded-2xl border border-slate-700/50 p-5">
+            <p className="text-slate-500 text-[11px] font-bold uppercase tracking-widest mb-3">Membership</p>
+            <div className="flex items-baseline gap-2 mb-1">
+              <span className={`text-4xl font-black tabular-nums leading-none ${
+                status === 'expired' ? 'text-red-400' : status === 'expiring' ? 'text-orange-400' : 'text-white'
+              }`}>
+                {Math.abs(daysLeft)}
+              </span>
+              <span className="text-slate-400 text-sm">
+                {status === 'expired' ? 'days overdue' : 'days remaining'}
+              </span>
+            </div>
+            <div className="flex items-center justify-between text-xs text-slate-500 mb-2 mt-3">
+              <span>{formatDate(member.membershipStartDate)}</span>
+              <span className={status !== 'active' ? 'text-red-400/80' : ''}>{formatDate(member.membershipEndDate)}</span>
+            </div>
+            <div className="h-1.5 bg-slate-700 rounded-full overflow-hidden">
+              <div className={`h-full rounded-full ${theme.bar}`} style={{ width: `${progress}%` }} />
+            </div>
+          </div>
 
-          {/* Coaching history — past/expired subscriptions */}
-          {coachingHistory.filter((s) => {
-            if (!s.end_date) return false;
-            const e = new Date(s.end_date); e.setHours(0,0,0,0);
-            const t = new Date(); t.setHours(0,0,0,0);
-            return e < t;
-          }).length > 0 && (() => {
-            const past = coachingHistory.filter((s) => {
-              if (!s.end_date) return false;
-              const e = new Date(s.end_date); e.setHours(0,0,0,0);
-              const t = new Date(); t.setHours(0,0,0,0);
-              return e < t;
-            });
-            return (
-              <div className="bg-slate-800/60 rounded-2xl border border-slate-700/40 overflow-hidden">
-                <button
-                  onClick={() => setHistoryOpen((o) => !o)}
-                  className="w-full flex items-center justify-between px-4 py-3 text-left"
-                >
-                  <div className="flex items-center gap-2">
-                    <Dumbbell size={14} className="text-slate-500" />
-                    <span className="text-slate-400 text-sm font-semibold">Coaching History</span>
-                    <span className="text-xs bg-slate-700 text-slate-400 px-2 py-0.5 rounded-full">{past.length}</span>
-                  </div>
-                  <ChevronDown size={15} className={`text-slate-500 transition-transform duration-200 ${historyOpen ? 'rotate-180' : ''}`} />
-                </button>
-
-                {historyOpen && (
-                  <div className="border-t border-slate-700/40 divide-y divide-slate-700/30">
-                    {past.map((sub) => (
-                      <div key={sub.id} className="px-4 py-3 flex items-start gap-3">
-                        <div className="w-7 h-7 rounded-lg bg-slate-700 flex items-center justify-center shrink-0 mt-0.5">
-                          <Dumbbell size={12} className="text-slate-400" />
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <p className="text-slate-300 text-sm font-semibold">
-                            {sub.instructor_name || 'Coach'}
-                          </p>
-                          {sub.coaching_plan && (
-                            <p className="text-slate-500 text-xs">{sub.coaching_plan}</p>
-                          )}
-                          <p className="text-slate-600 text-xs mt-0.5">
-                            {sub.start_date ? formatDate(sub.start_date) : '—'}
-                            {' → '}
-                            {sub.end_date ? formatDate(sub.end_date) : '—'}
-                          </p>
-                        </div>
-                        <span className="text-xs text-red-400/70 bg-red-500/10 px-2 py-0.5 rounded-full shrink-0 self-start mt-0.5">
-                          Expired
-                        </span>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </div>
-            );
-          })()}
-
-          {/* Coach card — tap to open coach view */}
-          {coachInfo && (
+          {/* ── Payment status & renew ── */}
+          {showPaymentStatus && <PaymentStatus request={latestRequest} />}
+          {needsRenewal && settings.gcashNumber && latestRequest?.status !== 'pending' && (
             <button
-              onClick={() => { setCoachTab('note'); setExpandedEntryId(null); setView('coach'); }}
-              className="w-full bg-slate-800 hover:bg-slate-750 active:bg-slate-700 border border-yellow-500/25 rounded-2xl p-4 flex items-center gap-3 text-left transition-colors"
+              onClick={() => setRenewTarget(member)}
+              className="w-full flex items-center justify-center gap-2 bg-green-500 hover:bg-green-600 active:bg-green-700 text-white font-bold py-4 rounded-2xl transition-colors shadow-lg shadow-green-500/20"
             >
-              <div className="w-12 h-12 rounded-xl overflow-hidden bg-slate-700 shrink-0">
-                {coachInfo.photo_url ? (
-                  <img src={coachInfo.photo_url} alt={coachInfo.name} className="w-full h-full object-cover" />
-                ) : (
-                  <div className="w-full h-full flex items-center justify-center text-yellow-400 font-bold text-lg">
-                    {coachInfo.name.charAt(0).toUpperCase()}
-                  </div>
-                )}
-              </div>
-              <div className="flex-1 min-w-0">
-                <p className="text-[11px] text-yellow-500/80 uppercase tracking-widest font-bold mb-0.5">Your Coach</p>
-                <p className="text-white font-bold leading-tight">{coachInfo.name}</p>
-                {coachInfo.specialty && <p className="text-slate-400 text-xs mt-0.5">{coachInfo.specialty}</p>}
-                <div className="flex gap-2 mt-2 flex-wrap">
-                  {COACH_TABS.map(({ key, label, Icon, color, bg }) => {
-                    const count = coachEntries.filter((e) => e.type === key).length;
-                    if (!count) return null;
-                    return (
-                      <span key={key} className={`inline-flex items-center gap-1 text-[11px] font-semibold px-2 py-0.5 rounded-full ${bg} ${color}`}>
-                        <Icon size={10} /> {count} {label.split(' ')[0]}
-                      </span>
-                    );
-                  })}
-                  {coachEntries.length === 0 && (
-                    <span className="text-slate-600 text-xs">No entries yet</span>
-                  )}
-                </div>
-              </div>
-              <ChevronRight size={16} className="text-yellow-500/60 shrink-0" />
+              <CreditCard size={18} />
+              {latestRequest?.status === 'rejected' ? 'Resubmit Payment' : 'Renew via GCash'}
             </button>
           )}
 
-          {/* Back button */}
+          {/* ── Coaching card (unified: status + coach profile + program tabs) ── */}
+          {coachInfo && (
+            <div className="bg-slate-800 rounded-2xl border border-yellow-500/20 overflow-hidden">
+              {/* Coach profile row */}
+              <div className="flex items-center gap-3 p-4">
+                <div className="w-12 h-12 rounded-xl overflow-hidden bg-slate-700 shrink-0">
+                  {coachInfo.photo_url ? (
+                    <img src={coachInfo.photo_url} alt={coachInfo.name} className="w-full h-full object-cover" />
+                  ) : (
+                    <div className="w-full h-full flex items-center justify-center text-yellow-400 font-bold text-lg">
+                      {coachInfo.name.charAt(0).toUpperCase()}
+                    </div>
+                  )}
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-[10px] text-yellow-500/80 uppercase tracking-widest font-bold mb-0.5">Your Coach</p>
+                  <p className="text-white font-bold leading-tight truncate">{coachInfo.name}</p>
+                  {coachInfo.specialty && <p className="text-slate-400 text-xs mt-0.5 truncate">{coachInfo.specialty}</p>}
+                </div>
+                {/* Active coaching pill */}
+                {coachActive && (
+                  <div className={`shrink-0 text-right ${coachIsToday ? 'text-yellow-400' : coachWarn ? 'text-orange-400' : 'text-yellow-400'}`}>
+                    <p className="text-xs font-bold whitespace-nowrap">
+                      {coachDays === 0 ? 'Expires today' : `${coachDays}d left`}
+                    </p>
+                    {member.coachingPlan && <p className="text-[10px] opacity-60 mt-0.5 truncate max-w-[80px]">{member.coachingPlan}</p>}
+                  </div>
+                )}
+              </div>
+
+              {/* Program quick-access tabs */}
+              <div className="border-t border-slate-700/50 px-4 py-3 grid grid-cols-3 gap-2">
+                {COACH_TABS.map(({ key, label, Icon, color, bg, border }) => {
+                  const count = coachEntries.filter((e) => e.type === key).length;
+                  return (
+                    <button
+                      key={key}
+                      onClick={() => { setCoachTab(key); setExpandedEntryId(null); setView('coach'); }}
+                      className={`flex flex-col items-center gap-1 py-2.5 rounded-xl border transition-all active:scale-95 ${
+                        count > 0
+                          ? `${bg} ${color} ${border}`
+                          : 'bg-slate-700/30 text-slate-600 border-slate-700/30'
+                      }`}
+                    >
+                      <Icon size={16} />
+                      <span className="text-[10px] font-semibold leading-none">{label.split(' ')[0]}</span>
+                      <span className={`text-[10px] leading-none ${count > 0 ? 'opacity-70' : 'opacity-40'}`}>
+                        {count > 0 ? `${count} item${count !== 1 ? 's' : ''}` : 'empty'}
+                      </span>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+
+          {/* ── Coaching history (collapsible) ── */}
+          {pastCoaching.length > 0 && (
+            <div className="bg-slate-800/60 rounded-2xl border border-slate-700/40 overflow-hidden">
+              <button
+                onClick={() => setHistoryOpen((o) => !o)}
+                className="w-full flex items-center justify-between px-4 py-3.5 text-left"
+              >
+                <div className="flex items-center gap-2">
+                  <Dumbbell size={13} className="text-slate-500" />
+                  <span className="text-slate-400 text-sm font-semibold">Coaching History</span>
+                  <span className="text-[11px] bg-slate-700 text-slate-400 px-2 py-0.5 rounded-full font-medium">{pastCoaching.length}</span>
+                </div>
+                <ChevronDown size={15} className={`text-slate-500 transition-transform duration-200 ${historyOpen ? 'rotate-180' : ''}`} />
+              </button>
+
+              {historyOpen && (
+                <div className="border-t border-slate-700/40 divide-y divide-slate-700/30">
+                  {pastCoaching.map((sub) => (
+                    <div key={sub.id} className="px-4 py-3 flex items-center gap-3">
+                      <div className="w-8 h-8 rounded-xl bg-slate-700 flex items-center justify-center shrink-0">
+                        <Dumbbell size={13} className="text-slate-400" />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-slate-300 text-sm font-semibold truncate">{sub.instructor_name || 'Coach'}</p>
+                        <p className="text-slate-500 text-xs mt-0.5">
+                          {sub.coaching_plan && <span className="mr-1.5">{sub.coaching_plan} ·</span>}
+                          {sub.start_date ? formatDate(sub.start_date) : '—'} → {sub.end_date ? formatDate(sub.end_date) : '—'}
+                        </p>
+                      </div>
+                      <span className="text-[11px] text-slate-500 bg-slate-700/60 px-2 py-0.5 rounded-full shrink-0">Ended</span>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* ── Back button ── */}
           <button
             onClick={goHome}
-            className="w-full bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-300 font-medium py-3.5 rounded-2xl transition-colors flex items-center justify-center gap-2"
+            className="w-full bg-slate-800/80 hover:bg-slate-700 border border-slate-700/60 text-slate-400 hover:text-slate-200 font-medium py-3.5 rounded-2xl transition-colors flex items-center justify-center gap-2 mt-2"
           >
-            <ArrowLeft size={16} /> Back to Home
+            <ArrowLeft size={15} /> Back to Home
           </button>
         </div>
 

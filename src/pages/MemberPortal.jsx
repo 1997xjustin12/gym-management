@@ -39,6 +39,8 @@ export default function MemberPortal() {
   const [expandedEntryId, setExpandedEntryId] = useState(null);
   const [coachingHistory, setCoachingHistory] = useState([]);
   const [historyOpen, setHistoryOpen]         = useState(false);
+  const [checkInRecord, setCheckInRecord]     = useState(null); // null = not loaded, false = not checked in, object = checked in
+  const [checkingIn, setCheckingIn]           = useState(false);
 
   // Restore session on refresh — once members are loaded, check sessionStorage
   useEffect(() => {
@@ -90,6 +92,49 @@ export default function MemberPortal() {
       .then(({ data }) => setCoachingHistory(data || []));
   }, [member?.id]);
 
+  // Fetch today's check-in record
+  useEffect(() => {
+    if (!member?.id) { setCheckInRecord(null); return; }
+    const today = new Date().toISOString().split('T')[0];
+    supabase
+      .from('attendance')
+      .select('id, checked_in_at')
+      .eq('member_id', member.id)
+      .gte('checked_in_at', `${today}T00:00:00`)
+      .lte('checked_in_at', `${today}T23:59:59`)
+      .maybeSingle()
+      .then(({ data }) => setCheckInRecord(data || false));
+  }, [member?.id]);
+
+  const handleCheckIn = async () => {
+    if (checkingIn || checkInRecord) return;
+    setCheckingIn(true);
+    try {
+      const today = new Date().toISOString().split('T')[0];
+      // Double-check to prevent duplicate
+      const { data: existing } = await supabase
+        .from('attendance')
+        .select('id, checked_in_at')
+        .eq('member_id', member.id)
+        .gte('checked_in_at', `${today}T00:00:00`)
+        .lte('checked_in_at', `${today}T23:59:59`)
+        .maybeSingle();
+      if (existing) { setCheckInRecord(existing); return; }
+
+      const { data, error } = await supabase
+        .from('attendance')
+        .insert([{ member_id: member.id, member_name: member.name }])
+        .select()
+        .single();
+      if (error) throw error;
+      setCheckInRecord(data);
+    } catch (err) {
+      alert('Check-in failed: ' + err.message);
+    } finally {
+      setCheckingIn(false);
+    }
+  };
+
   const handleLookup = (e) => {
     e.preventDefault();
     const digits = phone.replace(/\D/g, '');
@@ -124,6 +169,7 @@ export default function MemberPortal() {
     setNotFound(false);
     setCoachingHistory([]);
     setHistoryOpen(false);
+    setCheckInRecord(null);
   };
 
   const getMembershipLabel = (type) => {
@@ -578,6 +624,44 @@ export default function MemberPortal() {
               <div className={`h-full rounded-full ${theme.bar}`} style={{ width: `${progress}%` }} />
             </div>
           </div>
+
+          {/* ── Check-In ── */}
+          {(() => {
+            const fmtTime = (str) => new Date(str).toLocaleTimeString('en-PH', { hour: 'numeric', minute: '2-digit', hour12: true });
+            if (status === 'expired') return null; // expired members can't check in
+
+            if (checkInRecord) {
+              // Already checked in today
+              return (
+                <div className="flex items-center gap-4 bg-green-500/10 border border-green-500/30 rounded-2xl p-4">
+                  <div className="w-11 h-11 bg-green-500/20 rounded-xl flex items-center justify-center shrink-0">
+                    <CheckCircle size={22} className="text-green-400" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-green-400 font-bold text-sm">Checked in today</p>
+                    <p className="text-slate-400 text-xs mt-0.5 flex items-center gap-1">
+                      <Clock size={11} />
+                      {fmtTime(checkInRecord.checked_in_at)}
+                    </p>
+                  </div>
+                </div>
+              );
+            }
+
+            // Not checked in yet
+            return (
+              <button
+                onClick={handleCheckIn}
+                disabled={checkingIn}
+                className="w-full flex items-center justify-center gap-2 bg-sky-500 hover:bg-sky-600 active:bg-sky-700 disabled:opacity-50 text-white font-bold py-4 rounded-2xl transition-colors shadow-lg shadow-sky-500/20"
+              >
+                {checkingIn
+                  ? <span className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                  : <><CheckCircle size={18} /> Check In for Today</>
+                }
+              </button>
+            );
+          })()}
 
           {/* ── Payment status & renew ── */}
           {showPaymentStatus && <PaymentStatus request={latestRequest} />}

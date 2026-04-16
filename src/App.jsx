@@ -20,6 +20,7 @@ import CoachLogin from './pages/CoachLogin';
 import CoachPortal from './pages/CoachPortal';
 import CoachMemberDetail from './pages/CoachMemberDetail';
 import Landing from './pages/Landing';
+import MadeForGyms from './pages/MadeForGyms';
 
 function PrivateRoute({ children }) {
   const { isAdminLoggedIn } = useGym();
@@ -77,6 +78,7 @@ export default function App() {
           <Route path="/admin/attendance" element={<PrivateRoute><AdminAttendance /></PrivateRoute>} />
           <Route path="/admin/instructors" element={<PrivateRoute><AdminInstructors /></PrivateRoute>} />
           <Route path="/landing" element={<Landing />} />
+          <Route path="/mfg" element={<MadeForGyms />} />
           <Route path="/member" element={<MemberPortal />} />
           <Route path="/coach" element={<CoachLogin />} />
           <Route path="/admin/coach" element={<Navigate to="/coach" replace />} />

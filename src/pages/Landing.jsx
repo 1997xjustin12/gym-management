@@ -115,19 +115,19 @@ const STEPS = [
 
 const PLANS = [
   {
-    name: 'Starter',
-    price: 'Free',
-    period: '',
+    name: 'Basic',
+    price: '₱499',
+    period: '/month',
     desc: 'Perfect for small gyms getting started.',
     highlight: false,
     features: [
-      'Up to 50 members',
+      'Up to 100 members',
       'Member portal',
       'GCash payment requests',
       'Attendance tracking',
       'Activity logs',
     ],
-    cta: 'Get Started Free',
+    cta: 'Get Started',
   },
   {
     name: 'Pro',
@@ -144,7 +144,7 @@ const PLANS = [
       'Custom promos & pricing',
       'Priority support',
     ],
-    cta: 'Start Free Trial',
+    cta: 'Get Started',
   },
 ];
 
@@ -250,7 +250,7 @@ export default function Landing() {
               href="/admin/login"
               className="w-full sm:w-auto flex items-center justify-center gap-2 bg-orange-500 hover:bg-orange-600 text-white font-bold px-8 py-4 rounded-2xl text-base transition-all hover:shadow-lg hover:shadow-orange-500/25 hover:-translate-y-0.5"
             >
-              Start Managing Free <ChevronRight size={18} />
+              Get Started <ChevronRight size={18} />
             </a>
             <a
               href="/member"
@@ -260,7 +260,7 @@ export default function Landing() {
             </a>
           </div>
 
-          <p className="text-slate-600 text-xs mt-5">No credit card required · Works on any device · GCash ready</p>
+          <p className="text-slate-600 text-xs mt-5">Works on any device · No app install needed · GCash ready</p>
         </div>
 
         {/* Stats row */}
@@ -369,7 +369,7 @@ export default function Landing() {
             <p className="text-green-400 text-sm font-bold uppercase tracking-widest mb-3">Pricing</p>
             <h2 className="text-3xl sm:text-4xl font-black mb-4">Simple, Transparent Pricing</h2>
             <p className="text-slate-400 max-w-xl mx-auto">
-              Start free. Upgrade when you need more.
+              Choose the plan that fits your gym's size and needs.
             </p>
           </div>
 
@@ -435,7 +435,7 @@ export default function Landing() {
               href="/admin/login"
               className="inline-flex items-center gap-2 bg-orange-500 hover:bg-orange-600 text-white font-bold px-10 py-4 rounded-2xl transition-all hover:shadow-xl hover:shadow-orange-500/25 hover:-translate-y-0.5 text-base"
             >
-              Get Started Free <ChevronRight size={18} />
+              Get Started <ChevronRight size={18} />
             </a>
           </div>
         </div>

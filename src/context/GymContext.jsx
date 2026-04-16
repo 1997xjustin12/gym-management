@@ -530,14 +530,14 @@ export function GymProvider({ children }) {
     // Record coaching subscription history
     if (formData.instructorId && formData.coachingStartDate) {
       const inst = instructors.find((i) => i.id === formData.instructorId);
-      await supabase.from('coaching_subscriptions').insert([{
+      await supabase.from('coaching_subscriptions').upsert([{
         member_id: inserted.id,
         instructor_id: formData.instructorId,
         instructor_name: inst?.name || null,
         coaching_plan: formData.coachingPlan || null,
         start_date: formData.coachingStartDate,
         end_date: formData.coachingEndDate || null,
-      }]);
+      }], { onConflict: 'member_id,instructor_id,start_date' });
     }
 
     const member = toMember(inserted);
@@ -589,8 +589,18 @@ export function GymProvider({ children }) {
     const updated = toMember(data);
     setMembers((prev) => prev.map((m) => (m.id === id ? updated : m)));
 
-    // Always upsert coaching subscription record when coaching is set
-    // (idempotent — safe to run even if nothing changed, ensures backfill for pre-feature members)
+    // Coach change: close old coach's record before writing the new one
+    const coachChanged = (formData.instructorId || null) !== (existing?.instructorId || null);
+    if (coachChanged && existing?.instructorId && existing?.coachingStartDate) {
+      const todayStr = new Date().toISOString().split('T')[0];
+      await supabase.from('coaching_subscriptions')
+        .update({ end_date: todayStr })
+        .eq('member_id', id)
+        .eq('instructor_id', existing.instructorId)
+        .eq('start_date', existing.coachingStartDate);
+    }
+
+    // Upsert coaching subscription (idempotent — unique on member+coach+start)
     if (formData.instructorId && formData.coachingStartDate) {
       const inst = instructors.find((i) => i.id === formData.instructorId);
       const { error: csErr } = await supabase.from('coaching_subscriptions').upsert([{
@@ -600,8 +610,18 @@ export function GymProvider({ children }) {
         coaching_plan: formData.coachingPlan || null,
         start_date: formData.coachingStartDate,
         end_date: formData.coachingEndDate || null,
-      }], { onConflict: 'member_id,start_date' });
+      }], { onConflict: 'member_id,instructor_id,start_date' });
       if (csErr) console.error('coaching_subscriptions upsert failed:', csErr.message);
+    }
+
+    // Log coach assignment/removal specifically
+    if (coachChanged) {
+      const newCoach = instructors.find((i) => i.id === formData.instructorId);
+      const oldCoach = instructors.find((i) => i.id === existing?.instructorId);
+      const desc = newCoach
+        ? `Assigned coach ${newCoach.name}${oldCoach ? ` (was ${oldCoach.name})` : ''} for: ${updated.name}`
+        : `Removed coach ${oldCoach?.name || ''} from: ${updated.name}`;
+      await logAction('COACHING_UPDATED', desc, updated.name, id);
     }
 
     const isRenewal = existing?.membershipStartDate !== startDate;

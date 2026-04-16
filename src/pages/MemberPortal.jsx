@@ -33,10 +33,12 @@ export default function MemberPortal() {
   const [member, setMember]     = useState(null);
   const [notFound, setNotFound] = useState(false);
   const [renewTarget, setRenewTarget] = useState(null);
-  const [coachEntries, setCoachEntries]     = useState([]);
-  const [coachInfo, setCoachInfo]           = useState(null);
-  const [coachTab, setCoachTab]             = useState('note');
+  const [coachEntries, setCoachEntries]       = useState([]);
+  const [coachInfo, setCoachInfo]             = useState(null);
+  const [coachTab, setCoachTab]               = useState('note');
   const [expandedEntryId, setExpandedEntryId] = useState(null);
+  const [coachingHistory, setCoachingHistory] = useState([]);
+  const [historyOpen, setHistoryOpen]         = useState(false);
 
   // Restore session on refresh — once members are loaded, check sessionStorage
   useEffect(() => {
@@ -77,6 +79,17 @@ export default function MemberPortal() {
     fetch();
   }, [member]);
 
+  // Fetch coaching subscription history
+  useEffect(() => {
+    if (!member?.id) { setCoachingHistory([]); return; }
+    supabase
+      .from('coaching_subscriptions')
+      .select('*')
+      .eq('member_id', member.id)
+      .order('start_date', { ascending: false })
+      .then(({ data }) => setCoachingHistory(data || []));
+  }, [member?.id]);
+
   const handleLookup = (e) => {
     e.preventDefault();
     const digits = phone.replace(/\D/g, '');
@@ -109,6 +122,8 @@ export default function MemberPortal() {
     setMember(null);
     setMatches([]);
     setNotFound(false);
+    setCoachingHistory([]);
+    setHistoryOpen(false);
   };
 
   const getMembershipLabel = (type) => {
@@ -571,22 +586,21 @@ export default function MemberPortal() {
             </div>
           </div>
 
-          {/* Coaching subscription status */}
-          {member.coachingEndDate && (() => {
+          {/* Coaching subscription status — active only */}
+          {(() => {
+            if (!member.coachingEndDate) return null;
             const today = new Date(); today.setHours(0,0,0,0);
             const end = new Date(member.coachingEndDate); end.setHours(0,0,0,0);
             const days = Math.ceil((end - today) / 86400000);
-            const isExpired  = days < 0;
+            if (days < 0) return null; // expired → goes to history section below
             const isToday    = days === 0;
             const isExpiring = days > 0 && days <= 5;
-            const colorCard  = isExpired ? 'bg-red-500/8 border-red-500/25' : isToday ? 'bg-yellow-500/8 border-yellow-500/25' : isExpiring ? 'bg-orange-500/8 border-orange-500/25' : 'bg-yellow-500/8 border-yellow-500/20';
-            const colorIcon  = isExpired ? 'bg-red-500/20' : isToday ? 'bg-yellow-500/15' : isExpiring ? 'bg-orange-500/20' : 'bg-yellow-500/15';
-            const colorDumb  = isExpired ? 'text-red-400' : isToday ? 'text-yellow-400' : isExpiring ? 'text-orange-400' : 'text-yellow-400';
-            const colorLabel = isExpired ? 'text-red-400/70' : isToday ? 'text-yellow-500/70' : isExpiring ? 'text-orange-400/70' : 'text-yellow-500/70';
-            const colorSub   = isExpired ? 'text-red-400' : isToday ? 'text-yellow-400' : isExpiring ? 'text-orange-400' : 'text-slate-400';
-            const subText    = isExpired
-              ? `Expired ${Math.abs(days)} day${Math.abs(days) !== 1 ? 's' : ''} ago`
-              : isToday
+            const colorCard  = isToday ? 'bg-yellow-500/8 border-yellow-500/25' : isExpiring ? 'bg-orange-500/8 border-orange-500/25' : 'bg-yellow-500/8 border-yellow-500/20';
+            const colorIcon  = isToday ? 'bg-yellow-500/15' : isExpiring ? 'bg-orange-500/20' : 'bg-yellow-500/15';
+            const colorDumb  = isToday ? 'text-yellow-400' : isExpiring ? 'text-orange-400' : 'text-yellow-400';
+            const colorLabel = isToday ? 'text-yellow-500/70' : isExpiring ? 'text-orange-400/70' : 'text-yellow-500/70';
+            const colorSub   = isToday ? 'text-yellow-400' : isExpiring ? 'text-orange-400' : 'text-slate-400';
+            const subText    = isToday
               ? 'Active · expires today'
               : `${days} day${days !== 1 ? 's' : ''} remaining · ends ${formatDate(member.coachingEndDate)}`;
             return (
@@ -601,6 +615,64 @@ export default function MemberPortal() {
                     <p className={`text-xs mt-0.5 ${colorSub}`}>{subText}</p>
                   </div>
                 </div>
+              </div>
+            );
+          })()}
+
+          {/* Coaching history — past/expired subscriptions */}
+          {coachingHistory.filter((s) => {
+            if (!s.end_date) return false;
+            const e = new Date(s.end_date); e.setHours(0,0,0,0);
+            const t = new Date(); t.setHours(0,0,0,0);
+            return e < t;
+          }).length > 0 && (() => {
+            const past = coachingHistory.filter((s) => {
+              if (!s.end_date) return false;
+              const e = new Date(s.end_date); e.setHours(0,0,0,0);
+              const t = new Date(); t.setHours(0,0,0,0);
+              return e < t;
+            });
+            return (
+              <div className="bg-slate-800/60 rounded-2xl border border-slate-700/40 overflow-hidden">
+                <button
+                  onClick={() => setHistoryOpen((o) => !o)}
+                  className="w-full flex items-center justify-between px-4 py-3 text-left"
+                >
+                  <div className="flex items-center gap-2">
+                    <Dumbbell size={14} className="text-slate-500" />
+                    <span className="text-slate-400 text-sm font-semibold">Coaching History</span>
+                    <span className="text-xs bg-slate-700 text-slate-400 px-2 py-0.5 rounded-full">{past.length}</span>
+                  </div>
+                  <ChevronDown size={15} className={`text-slate-500 transition-transform duration-200 ${historyOpen ? 'rotate-180' : ''}`} />
+                </button>
+
+                {historyOpen && (
+                  <div className="border-t border-slate-700/40 divide-y divide-slate-700/30">
+                    {past.map((sub) => (
+                      <div key={sub.id} className="px-4 py-3 flex items-start gap-3">
+                        <div className="w-7 h-7 rounded-lg bg-slate-700 flex items-center justify-center shrink-0 mt-0.5">
+                          <Dumbbell size={12} className="text-slate-400" />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="text-slate-300 text-sm font-semibold">
+                            {sub.instructor_name || 'Coach'}
+                          </p>
+                          {sub.coaching_plan && (
+                            <p className="text-slate-500 text-xs">{sub.coaching_plan}</p>
+                          )}
+                          <p className="text-slate-600 text-xs mt-0.5">
+                            {sub.start_date ? formatDate(sub.start_date) : '—'}
+                            {' → '}
+                            {sub.end_date ? formatDate(sub.end_date) : '—'}
+                          </p>
+                        </div>
+                        <span className="text-xs text-red-400/70 bg-red-500/10 px-2 py-0.5 rounded-full shrink-0 self-start mt-0.5">
+                          Expired
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
             );
           })()}

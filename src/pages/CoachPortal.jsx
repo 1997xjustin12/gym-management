@@ -23,6 +23,7 @@ export default function CoachPortal() {
   const [loading, setLoading]       = useState(true);
   const [notFound, setNotFound]     = useState(false);
   const [query, setQuery]           = useState('');
+  const [pastOpen, setPastOpen]     = useState(false);
 
   useEffect(() => {
     const load = async () => {
@@ -47,11 +48,20 @@ export default function CoachPortal() {
     load();
   }, [code]);
 
+  const todayMs = new Date().setHours(0, 0, 0, 0);
   const filtered = members.filter((m) =>
     !query ||
     m.name.toLowerCase().includes(query.toLowerCase()) ||
     (m.contact_number || '').includes(query)
   );
+  const activeFiltered = filtered.filter((m) => {
+    if (!m.coaching_end_date) return true;
+    return new Date(m.coaching_end_date).setHours(0, 0, 0, 0) >= todayMs;
+  });
+  const pastFiltered = filtered.filter((m) => {
+    if (!m.coaching_end_date) return false;
+    return new Date(m.coaching_end_date).setHours(0, 0, 0, 0) < todayMs;
+  });
 
   if (loading) return (
     <div className="min-h-screen bg-slate-900 flex items-center justify-center">
@@ -102,7 +112,7 @@ export default function CoachPortal() {
           <div className="flex items-center gap-2">
             <Users size={16} className="text-slate-400" />
             <h2 className="text-white font-semibold">
-              My Members <span className="text-slate-500 font-normal text-sm">({members.length})</span>
+              My Members <span className="text-slate-500 font-normal text-sm">({activeFiltered.length})</span>
             </h2>
           </div>
 
@@ -124,16 +134,20 @@ export default function CoachPortal() {
             </div>
           )}
 
-          {/* Member list */}
-          {filtered.length === 0 ? (
+          {/* Active member list */}
+          {activeFiltered.length === 0 && pastFiltered.length === 0 ? (
             <div className="text-center py-12 bg-slate-800/40 rounded-2xl border border-slate-700/30">
               <p className="text-slate-400">
                 {members.length === 0 ? 'No members assigned yet' : 'No members found'}
               </p>
             </div>
+          ) : activeFiltered.length === 0 ? (
+            <div className="text-center py-8 bg-slate-800/40 rounded-2xl border border-slate-700/30">
+              <p className="text-slate-400 text-sm">No active coaching members</p>
+            </div>
           ) : (
             <div className="space-y-2">
-              {filtered.map((member) => {
+              {activeFiltered.map((member) => {
                 const { label, color, bg } = getMemberStatus(member.membership_end_date);
                 return (
                   <button
@@ -141,7 +155,6 @@ export default function CoachPortal() {
                     onClick={() => navigate(`/coach/${code}/member/${member.id}`)}
                     className="w-full bg-slate-800 hover:bg-slate-750 active:bg-slate-700 rounded-2xl border border-slate-700/50 p-3.5 flex items-center gap-3 text-left transition-colors"
                   >
-                    {/* Avatar */}
                     <div className="w-12 h-12 rounded-xl overflow-hidden bg-slate-700 shrink-0">
                       {member.photo_url ? (
                         <img src={member.photo_url} alt={member.name} className="w-full h-full object-cover" />
@@ -151,8 +164,6 @@ export default function CoachPortal() {
                         </div>
                       )}
                     </div>
-
-                    {/* Info */}
                     <div className="flex-1 min-w-0">
                       <p className="text-white font-semibold text-sm">{member.name}</p>
                       <p className="text-slate-400 text-xs capitalize">{member.membership_type} plan</p>
@@ -160,11 +171,59 @@ export default function CoachPortal() {
                         {label}
                       </span>
                     </div>
-
                     <ChevronRight size={16} className="text-slate-500 shrink-0" />
                   </button>
                 );
               })}
+            </div>
+          )}
+
+          {/* Past / expired coaching members */}
+          {pastFiltered.length > 0 && (
+            <div className="mt-2">
+              <button
+                onClick={() => setPastOpen((o) => !o)}
+                className="w-full flex items-center justify-between px-4 py-3 bg-slate-800/60 rounded-2xl border border-slate-700/40 text-left"
+              >
+                <div className="flex items-center gap-2">
+                  <Users size={14} className="text-slate-500" />
+                  <span className="text-slate-400 text-sm font-semibold">Past Members</span>
+                  <span className="text-xs bg-slate-700 text-slate-400 px-2 py-0.5 rounded-full">{pastFiltered.length}</span>
+                </div>
+                <ChevronRight size={15} className={`text-slate-500 transition-transform duration-200 ${pastOpen ? 'rotate-90' : ''}`} />
+              </button>
+
+              {pastOpen && (
+                <div className="mt-1 space-y-2">
+                  {pastFiltered.map((member) => {
+                    const coachEnd = member.coaching_end_date
+                      ? new Date(member.coaching_end_date).toLocaleDateString('en-PH', { month: 'short', day: 'numeric', year: 'numeric' })
+                      : null;
+                    return (
+                      <div
+                        key={member.id}
+                        className="w-full bg-slate-800/50 rounded-2xl border border-slate-700/30 p-3.5 flex items-center gap-3 opacity-70"
+                      >
+                        <div className="w-12 h-12 rounded-xl overflow-hidden bg-slate-700 shrink-0">
+                          {member.photo_url ? (
+                            <img src={member.photo_url} alt={member.name} className="w-full h-full object-cover" />
+                          ) : (
+                            <div className="w-full h-full flex items-center justify-center font-bold text-lg text-slate-500">
+                              {member.name.charAt(0).toUpperCase()}
+                            </div>
+                          )}
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="text-slate-300 font-semibold text-sm">{member.name}</p>
+                          {member.coaching_plan && <p className="text-slate-500 text-xs">{member.coaching_plan}</p>}
+                          {coachEnd && <p className="text-slate-600 text-xs mt-0.5">Coaching ended {coachEnd}</p>}
+                        </div>
+                        <span className="text-xs text-red-400/60 bg-red-500/10 px-2 py-0.5 rounded-full shrink-0">Expired</span>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
             </div>
           )}
         </div>

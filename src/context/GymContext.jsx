@@ -513,6 +513,19 @@ export function GymProvider({ children }) {
       inserted.photo_url = photoUrl;
     }
 
+    // Record coaching subscription history
+    if (formData.instructorId && formData.coachingStartDate) {
+      const inst = instructors.find((i) => i.id === formData.instructorId);
+      await supabase.from('coaching_subscriptions').insert([{
+        member_id: inserted.id,
+        instructor_id: formData.instructorId,
+        instructor_name: inst?.name || null,
+        coaching_plan: formData.coachingPlan || null,
+        start_date: formData.coachingStartDate,
+        end_date: formData.coachingEndDate || null,
+      }]);
+    }
+
     const member = toMember(inserted);
     setMembers((prev) => [member, ...prev]);
     await logAction('MEMBER_ADDED', `Registered new member: ${member.name}`, member.name, member.id);
@@ -561,6 +574,26 @@ export function GymProvider({ children }) {
 
     const updated = toMember(data);
     setMembers((prev) => prev.map((m) => (m.id === id ? updated : m)));
+
+    // Record coaching subscription history if coaching changed
+    const coachingChanged =
+      (formData.instructorId || null) !== (existing?.instructorId || null) ||
+      (formData.coachingStartDate || null) !== (existing?.coachingStartDate || null) ||
+      (formData.coachingPlan || null) !== (existing?.coachingPlan || null) ||
+      (formData.coachingEndDate || null) !== (existing?.coachingEndDate || null);
+
+    if (coachingChanged && formData.instructorId && formData.coachingStartDate) {
+      const inst = instructors.find((i) => i.id === formData.instructorId);
+      await supabase.from('coaching_subscriptions').upsert([{
+        member_id: id,
+        instructor_id: formData.instructorId,
+        instructor_name: inst?.name || null,
+        coaching_plan: formData.coachingPlan || null,
+        start_date: formData.coachingStartDate,
+        end_date: formData.coachingEndDate || null,
+      }], { onConflict: 'member_id,start_date' });
+    }
+
     const isRenewal = existing?.membershipStartDate !== startDate;
     if (isRenewal) {
       await logAction('MEMBERSHIP_RENEWED', `Renewed membership for: ${updated.name}`, updated.name, id);

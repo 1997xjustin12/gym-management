@@ -6,6 +6,32 @@ import {
   TrendingUp, Clock, Globe, UserCheck, Layers,
 } from 'lucide-react';
 
+/* ── MadeForGyms logo (cropped from canvas) ─────────────────── */
+// Logo content sits at x=284-1210, y=207-515 in the 1536×1024 source PNG
+function MFGLogo({ height = 36 }) {
+  const scale = height / 308;
+  const bgW = Math.round(1536 * scale);
+  const bgH = Math.round(1024 * scale);
+  const bgX = -Math.round(284 * scale);
+  const bgY = -Math.round(207 * scale);
+  const w = Math.round(926 * scale);
+  return (
+    <div
+      role="img"
+      aria-label="MadeForGyms"
+      style={{
+        width: w,
+        height,
+        backgroundImage: 'url(/madeforgyms.png)',
+        backgroundSize: `${bgW}px ${bgH}px`,
+        backgroundPosition: `${bgX}px ${bgY}px`,
+        backgroundRepeat: 'no-repeat',
+        flexShrink: 0,
+      }}
+    />
+  );
+}
+
 /* ── Scroll-reveal hook ─────────────────────────────────────── */
 function useReveal(threshold = 0.15) {
   const ref = useRef(null);
@@ -182,7 +208,7 @@ export default function MadeForGyms() {
       }`}>
         <div className="max-w-7xl mx-auto px-5 sm:px-8 h-16 flex items-center justify-between">
           <div className="flex items-center">
-            <img src="/madeforgyms.png" alt="MadeForGyms" className="h-10 w-auto max-w-[180px] object-contain" />
+            <MFGLogo height={38} />
           </div>
 
           <div className="hidden md:flex items-center gap-8">
@@ -733,7 +759,7 @@ export default function MadeForGyms() {
 
               <div className="relative">
                 <div className="flex items-center justify-center mx-auto mb-8">
-                  <img src="/madeforgyms.png" alt="MadeForGyms" className="h-16 w-auto max-w-[280px] object-contain" style={{ filter: 'drop-shadow(0 0 20px rgba(34,197,94,0.5))' }} />
+                  <MFGLogo height={72} />
                 </div>
 
                 <h2 className="text-4xl sm:text-5xl md:text-6xl font-black tracking-tight mb-6 leading-tight">
@@ -762,7 +788,7 @@ export default function MadeForGyms() {
         <div className="max-w-6xl mx-auto">
           <div className="flex flex-col sm:flex-row items-center justify-between gap-8 mb-8">
             <div className="flex items-center gap-2">
-              <img src="/madeforgyms.png" alt="MadeForGyms" className="h-9 w-auto max-w-[160px] object-contain" />
+              <MFGLogo height={34} />
               <p className="text-slate-600 text-xs">madeforgyms.com</p>
             </div>
 

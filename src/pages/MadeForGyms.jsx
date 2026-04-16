@@ -284,7 +284,7 @@ export default function MadeForGyms() {
               <a href="/admin/login"
                 className="group flex items-center justify-center gap-2 font-bold px-7 py-3.5 rounded-xl text-sm transition-all hover:-translate-y-1 hover:shadow-2xl"
                 style={{ background: 'linear-gradient(135deg, #16a34a, #4ade80)', boxShadow: '0 0 28px rgba(34,197,94,0.35)' }}>
-                Start Free
+                Get Started
                 <ArrowRight size={16} className="group-hover:translate-x-1 transition-transform" />
               </a>
               <a href="#features"

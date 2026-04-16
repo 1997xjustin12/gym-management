@@ -338,9 +338,9 @@ export default function MadeForGyms() {
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
             {FEATURES.map(({ icon: Icon, color, glow, title, desc }, i) => (
-              <Reveal key={title} delay={i * 80}>
+              <Reveal key={title} delay={i * 80} className="h-full">
                 <div
-                  className="group relative p-6 rounded-2xl border border-white/8 bg-white/2 hover:border-white/15 transition-all duration-300 hover:-translate-y-1 cursor-default overflow-hidden"
+                  className="group relative h-full p-6 rounded-2xl border border-white/8 bg-white/2 hover:border-white/15 transition-all duration-300 hover:-translate-y-1 cursor-default overflow-hidden"
                   style={{ '--glow': glow }}
                 >
                   {/* Hover glow */}
@@ -471,7 +471,7 @@ export default function MadeForGyms() {
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
             {TESTIMONIALS.map(({ name, role, avatar, color, text, stars }, i) => (
-              <Reveal key={name} delay={i * 100}>
+              <Reveal key={name} delay={i * 100} className="h-full">
                 <div className="h-full p-6 rounded-2xl border border-white/8 bg-white/2 hover:bg-white/4 hover:border-white/12 transition-all flex flex-col">
                   <div className="flex mb-4">
                     {Array.from({ length: stars }).map((_, i) => (
@@ -509,7 +509,7 @@ export default function MadeForGyms() {
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
             {PLANS.map(({ name, price, period, desc, highlight, color, features }, i) => (
-              <Reveal key={name} delay={i * 100}>
+              <Reveal key={name} delay={i * 100} className="h-full">
                 <div className="relative h-full rounded-2xl p-7 flex flex-col overflow-hidden"
                   style={{
                     background: highlight ? `linear-gradient(135deg, rgba(249,115,22,0.08), rgba(245,158,11,0.04))` : 'rgba(255,255,255,0.02)',

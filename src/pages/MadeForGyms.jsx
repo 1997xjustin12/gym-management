@@ -312,7 +312,7 @@ export default function MadeForGyms() {
                   </div>
                   <div className="flex-1 mx-3 px-3 py-1 rounded-md text-[10px] text-slate-500 font-mono"
                     style={{ background: '#1e293b' }}>
-                    powerfitnessgym.online/admin
+                    madeforgyms.com/admin
                   </div>
                 </div>
 

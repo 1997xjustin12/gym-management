@@ -589,16 +589,11 @@ export function GymProvider({ children }) {
     const updated = toMember(data);
     setMembers((prev) => prev.map((m) => (m.id === id ? updated : m)));
 
-    // Record coaching subscription history if coaching changed
-    const coachingChanged =
-      (formData.instructorId || null) !== (existing?.instructorId || null) ||
-      (formData.coachingStartDate || null) !== (existing?.coachingStartDate || null) ||
-      (formData.coachingPlan || null) !== (existing?.coachingPlan || null) ||
-      (formData.coachingEndDate || null) !== (existing?.coachingEndDate || null);
-
-    if (coachingChanged && formData.instructorId && formData.coachingStartDate) {
+    // Always upsert coaching subscription record when coaching is set
+    // (idempotent — safe to run even if nothing changed, ensures backfill for pre-feature members)
+    if (formData.instructorId && formData.coachingStartDate) {
       const inst = instructors.find((i) => i.id === formData.instructorId);
-      await supabase.from('coaching_subscriptions').upsert([{
+      const { error: csErr } = await supabase.from('coaching_subscriptions').upsert([{
         member_id: id,
         instructor_id: formData.instructorId,
         instructor_name: inst?.name || null,
@@ -606,6 +601,7 @@ export function GymProvider({ children }) {
         start_date: formData.coachingStartDate,
         end_date: formData.coachingEndDate || null,
       }], { onConflict: 'member_id,start_date' });
+      if (csErr) console.error('coaching_subscriptions upsert failed:', csErr.message);
     }
 
     const isRenewal = existing?.membershipStartDate !== startDate;

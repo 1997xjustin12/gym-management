@@ -1,14 +1,17 @@
 import { Link, useNavigate, useLocation } from 'react-router-dom';
-import { LogOut, Users, LayoutDashboard, UserPlus, ArrowLeft, ClipboardList, CreditCard, Settings, CalendarCheck, Dumbbell } from 'lucide-react';
+import { LogOut, Users, LayoutDashboard, UserPlus, ArrowLeft, ClipboardList, CreditCard, Settings, CalendarCheck, Dumbbell, MoreHorizontal, X } from 'lucide-react';
 import { useGym } from '../context/GymContext';
 import toast from 'react-hot-toast';
 import GymLogo from './GymLogo';
+import { useState, useEffect } from 'react';
 
 export default function Navbar({ title, showBack }) {
   const { isAdminLoggedIn, adminLogout, getExpiringMembers, pendingRenewals } = useGym();
   const navigate = useNavigate();
   const location = useLocation();
   const expiring = getExpiringMembers();
+  const [moreOpen, setMoreOpen] = useState(false);
+  useEffect(() => { setMoreOpen(false); }, [location.pathname]);
 
   const handleLogout = async () => {
     await adminLogout();
@@ -57,7 +60,7 @@ export default function Navbar({ title, showBack }) {
               </div>
               <button
                 onClick={handleLogout}
-                className="ml-1 p-2 text-slate-400 hover:text-red-400 hover:bg-red-400/10 rounded-lg transition-colors"
+                className="ml-1 p-2 text-slate-400 hover:text-red-400 hover:bg-red-400/10 rounded-lg transition-colors hidden sm:flex"
                 title="Logout"
               >
                 <LogOut size={16} />
@@ -69,55 +72,135 @@ export default function Navbar({ title, showBack }) {
 
       {/* Mobile Bottom Nav */}
       {isAdminLoggedIn && (
-        <div className="fixed bottom-0 inset-x-0 z-40 sm:hidden bg-slate-900/98 backdrop-blur-lg border-t border-slate-800">
-          <div className="flex items-center justify-around h-16 px-1">
-            <MobileNavLink
-              to="/admin"
-              icon={<LayoutDashboard size={21} />}
-              label="Dashboard"
-              active={location.pathname === '/admin'}
-            />
-            <MobileNavLink
-              to="/admin/members"
-              icon={<Users size={21} />}
-              label="Members"
-              active={location.pathname.startsWith('/admin/members')}
-              badge={expiring.length}
-            />
-            {/* Center FAB — Add Member */}
-            <Link
-              to="/admin/register"
-              className={`flex flex-col items-center justify-center w-14 h-14 -mt-5 rounded-2xl shadow-lg transition-all ${
-                location.pathname === '/admin/register'
-                  ? 'bg-orange-600 shadow-orange-500/40'
-                  : 'bg-orange-500 hover:bg-orange-600 shadow-orange-500/30'
-              }`}
-            >
-              <UserPlus size={22} className="text-white" />
-            </Link>
-            <MobileNavLink
-              to="/admin/renewals"
-              icon={<CreditCard size={21} />}
-              label="Payments"
-              active={location.pathname === '/admin/renewals'}
-              badge={pendingRenewals?.length}
-            />
-            <MobileNavLink
-              to="/admin/instructors"
-              icon={<Dumbbell size={21} />}
-              label="Coaches"
-              active={location.pathname === '/admin/instructors'}
-            />
-            <MobileNavLink
-              to="/admin/settings"
-              icon={<Settings size={21} />}
-              label="More"
-              active={['/admin/settings', '/admin/logs', '/admin/attendance'].includes(location.pathname)}
-            />
+        <>
+          <div className="fixed bottom-0 inset-x-0 z-40 sm:hidden bg-slate-900/98 backdrop-blur-lg border-t border-slate-800">
+            <div className="flex items-center justify-around h-16 px-1">
+              <MobileNavLink
+                to="/admin"
+                icon={<LayoutDashboard size={21} />}
+                label="Dashboard"
+                active={location.pathname === '/admin'}
+              />
+              <MobileNavLink
+                to="/admin/members"
+                icon={<Users size={21} />}
+                label="Members"
+                active={location.pathname.startsWith('/admin/members')}
+                badge={expiring.length}
+              />
+              {/* Center FAB — Add Member */}
+              <Link
+                to="/admin/register"
+                className={`flex flex-col items-center justify-center w-14 h-14 -mt-5 rounded-2xl shadow-lg transition-all ${
+                  location.pathname === '/admin/register'
+                    ? 'bg-orange-600 shadow-orange-500/40'
+                    : 'bg-orange-500 hover:bg-orange-600 shadow-orange-500/30'
+                }`}
+              >
+                <UserPlus size={22} className="text-white" />
+              </Link>
+              <MobileNavLink
+                to="/admin/renewals"
+                icon={<CreditCard size={21} />}
+                label="Payments"
+                active={location.pathname === '/admin/renewals'}
+                badge={pendingRenewals?.length}
+              />
+              <MobileNavLink
+                to="/admin/instructors"
+                icon={<Dumbbell size={21} />}
+                label="Coaches"
+                active={location.pathname === '/admin/instructors'}
+              />
+              {/* More button — opens sheet */}
+              <button
+                onClick={() => setMoreOpen(true)}
+                className={`relative flex flex-col items-center gap-0.5 flex-1 py-1.5 rounded-xl transition-colors ${
+                  ['/admin/settings', '/admin/logs', '/admin/attendance'].includes(location.pathname)
+                    ? 'text-orange-400'
+                    : 'text-slate-500'
+                }`}
+              >
+                <div className={`p-1 rounded-lg transition-all ${
+                  ['/admin/settings', '/admin/logs', '/admin/attendance'].includes(location.pathname)
+                    ? 'bg-orange-500/15'
+                    : ''
+                }`}>
+                  <MoreHorizontal size={21} />
+                </div>
+                <span className="text-[10px] font-medium leading-none">More</span>
+              </button>
+            </div>
+            <div className="h-safe-area-inset-bottom" />
           </div>
-          {/* iOS safe area spacer */}
-          <div className="h-safe-area-inset-bottom" />
-        </div>
+
+          {/* More Sheet — backdrop */}
+          {moreOpen && (
+            <div
+              className="fixed inset-0 z-50 sm:hidden bg-black/60 backdrop-blur-sm"
+              onClick={() => setMoreOpen(false)}
+            />
+          )}
+
+          {/* More Sheet — slide-up panel */}
+          <div className={`fixed bottom-0 inset-x-0 z-50 sm:hidden transition-transform duration-300 ease-out ${
+            moreOpen ? 'translate-y-0' : 'translate-y-full'
+          }`}>
+            <div className="bg-slate-900 border-t border-slate-700 rounded-t-3xl overflow-hidden">
+              {/* Handle + header */}
+              <div className="flex items-center justify-between px-5 pt-4 pb-2">
+                <div className="w-10 h-1 bg-slate-700 rounded-full mx-auto absolute left-1/2 -translate-x-1/2 top-3" />
+                <p className="text-white font-bold text-base">More</p>
+                <button onClick={() => setMoreOpen(false)} className="p-1.5 rounded-xl text-slate-400 hover:text-white hover:bg-slate-800 transition-colors">
+                  <X size={18} />
+                </button>
+              </div>
+
+              {/* Nav items */}
+              <div className="px-4 pb-3 space-y-1">
+                {[
+                  { to: '/admin/attendance', icon: <CalendarCheck size={20} />, label: 'Attendance' },
+                  { to: '/admin/logs',       icon: <ClipboardList size={20} />,  label: 'Activity Logs' },
+                  { to: '/admin/settings',   icon: <Settings size={20} />,       label: 'Settings' },
+                ].map(({ to, icon, label }) => (
+                  <Link
+                    key={to}
+                    to={to}
+                    onClick={() => setMoreOpen(false)}
+                    className={`flex items-center gap-3.5 px-4 py-3.5 rounded-2xl transition-colors ${
+                      location.pathname === to
+                        ? 'bg-orange-500/15 text-orange-400'
+                        : 'text-slate-300 hover:bg-slate-800'
+                    }`}
+                  >
+                    <span className={location.pathname === to ? 'text-orange-400' : 'text-slate-400'}>{icon}</span>
+                    <span className="font-medium">{label}</span>
+                    {location.pathname === to && (
+                      <span className="ml-auto w-1.5 h-1.5 rounded-full bg-orange-400" />
+                    )}
+                  </Link>
+                ))}
+              </div>
+
+              {/* Divider + Logout */}
+              <div className="mx-4 border-t border-slate-800 mb-3" />
+              <div className="px-4 pb-6">
+                <button
+                  onClick={async () => {
+                    setMoreOpen(false);
+                    await adminLogout();
+                    toast.success('Logged out');
+                    navigate('/');
+                  }}
+                  className="w-full flex items-center gap-3.5 px-4 py-3.5 rounded-2xl text-red-400 hover:bg-red-500/10 transition-colors"
+                >
+                  <LogOut size={20} />
+                  <span className="font-medium">Log Out</span>
+                </button>
+              </div>
+            </div>
+          </div>
+        </>
       )}
     </>
   );

@@ -26,7 +26,7 @@ const PLAN_PRICE_KEY = {
 export default function MemberPortal() {
   const { members, getMemberStatus, MEMBERSHIP_OPTIONS, settings, submitRenewalRequest, renewalRequests } = useGym();
 
-  // view: 'home' | 'lookup' | 'pick' | 'result'
+  // view: 'home' | 'lookup' | 'pick' | 'result' | 'coach'
   const [view, setView]         = useState('home');
   const [phone, setPhone]       = useState('');
   const [matches, setMatches]   = useState([]);
@@ -37,6 +37,20 @@ export default function MemberPortal() {
   const [coachInfo, setCoachInfo]           = useState(null);
   const [coachTab, setCoachTab]             = useState('note');
   const [expandedEntryId, setExpandedEntryId] = useState(null);
+
+  // Restore session on refresh — once members are loaded, check sessionStorage
+  useEffect(() => {
+    if (!members.length) return;
+    const savedId = sessionStorage.getItem('memberPortal_id');
+    if (!savedId) return;
+    const found = members.find((m) => m.id === savedId);
+    if (found) {
+      setMember(found);
+      setView('result');
+    } else {
+      sessionStorage.removeItem('memberPortal_id');
+    }
+  }, [members]);
 
   useEffect(() => {
     if (!member?.instructorId) {
@@ -77,6 +91,7 @@ export default function MemberPortal() {
       setNotFound(true);
     } else if (found.length === 1) {
       setMember(found[0]);
+      sessionStorage.setItem('memberPortal_id', found[0].id);
       setNotFound(false);
       setView('result');
     } else {
@@ -88,6 +103,7 @@ export default function MemberPortal() {
   };
 
   const goHome = () => {
+    sessionStorage.removeItem('memberPortal_id');
     setView('home');
     setPhone('');
     setMember(null);
@@ -262,7 +278,7 @@ export default function MemberPortal() {
               return (
                 <button
                   key={m.id}
-                  onClick={() => { setMember(m); setView('result'); }}
+                  onClick={() => { setMember(m); sessionStorage.setItem('memberPortal_id', m.id); setView('result'); }}
                   className="w-full flex items-center gap-4 bg-slate-800 hover:bg-slate-700 border border-slate-700 hover:border-sky-500/50 rounded-2xl p-4 text-left transition-all"
                 >
                   <div className="w-12 h-12 rounded-xl overflow-hidden bg-slate-700 shrink-0">
